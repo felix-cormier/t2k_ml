@@ -1,4 +1,5 @@
 import argparse
+from wcsim_options import WCSimOptions
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--doWCSim", help="run WCSim", action="store_true")
@@ -7,6 +8,9 @@ args = parser.parse_args()
 
 if args.doWCSim:
     print("Running WCSim")
+    wcsim_options = WCSimOptions(num_events=10)
+    wcsim_options.set_options(filename='WCSim_toEdit_test.mac')
+
 
 test=1
 print(test)
