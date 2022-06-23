@@ -1,48 +1,68 @@
 import re 
 import shutil
+import os
 
 class WCSimOptions():
-    """_summary_
+    """A class which can set, store, steer WCSim and its options
     """
-    def __init__(self, generator='gun', particle='e-', energy=[500,'MeV'], direction=[1,0,0], position=[0,0,0], output_name=['wcsim.root'], num_events=500) -> None:
+    def __init__(self, generator='gun', particle='e-', energy=[500,'MeV'], direction=[1,0,0], position=[0,0,0], output_name='wcsim.root', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/', num_events=500) -> None:
         """_summary_
 
         Args:
-            generator (str, optional): _description_. Defaults to 'gun'.
-            particle (str, optional): _description_. Defaults to 'e-'.
-            energy (list, optional): _description_. Defaults to [500,'MeV'].
-            direction (list, optional): _description_. Defaults to [1,0,0].
-            position (list, optional): _description_. Defaults to [0,0,0].
-            output_name (list, optional): _description_. Defaults to ['wcsim.root'].
-            num_events (int, optional): _description_. Defaults to 500.
+            generator (str, optional): Type of Generator Defaults to 'gun'.
+            particle (str, optional): Particle being simulated Defaults to 'e-'.
+            energy (list, optional): Energy of particle Defaults to [500,'MeV'].
+            direction (list, optional): Initial direction of particle momentum Defaults to [1,0,0].
+            position (list, optional): Initial position of particle Defaults to [0,0,0].
+            output_name (list, optional): Name of root file (can include file path) Defaults to ['wcsim.root'].
+            num_events (int, optional): Number of events to simulate Defaults to 500.
         """
         self.generator = generator
         self.particle = particle
         self.energy = energy
         self.direction = direction
         self.position = position
-        self.output_name = output_name
+        self.output_directory = output_directory
+        self.output_name = str(output_directory) + '/' + str(output_name)
         self.num_events = num_events
 
     def set_options(self, filename='WCSim_toEdit.mac'):
+        """Sets options on dummy WCSim.mac file by converting pre-typed strings to values set in options
+
+        Args:
+            filename (str, optional): Filename to copy and edit Defaults to 'WCSim_toEdit.mac'.
+
+        Returns:
+            _type_: _description_
+        """
         pat = re.compile(b'GENERATOR|PARTICLE|ENERGY_NUM|ENERGY_UNIT|DIR_0|DIR_1|DIR_2|POS_0|POS_1|POS_2|OUTPUT_NAME|NUM_EVENTS')
 
-        def jojo(mat,dic = {'GENERATOR':str.encode(str(self.generator)),
-                            'PARTICLE':str.encode(str(self.particle)),
-                            'ENERGY_NUM':str.encode(str(self.energy[0])),
-                            'ENERGY_UNIT':str.encode(str(self.energy[1])),
-                            'DIR_0':str.encode(str(self.direction[0])),
-                            'DIR_1':str.encode(str(self.direction[1])),
-                            'DIR_2':str.encode(str(self.direction[2])),
-                            'POS_0':str.encode(str(self.position[0])),
-                            'POS_1':str.encode(str(self.position[1])),
-                            'POS_2':str.encode(str(self.position[2])),
-                            'OUTPUT_NAME':str.encode(str(self.output_name)),
-                            'NUM_EVENTS':str.encode(str(self.num_events))} ):
+        def jojo(mat,dic = {b'GENERATOR':str.encode(str(self.generator)),
+                            b'PARTICLE':str.encode(str(self.particle)),
+                            b'ENERGY_NUM':str.encode(str(self.energy[0])),
+                            b'ENERGY_UNIT':str.encode(str(self.energy[1])),
+                            b'DIR_0':str.encode(str(self.direction[0])),
+                            b'DIR_1':str.encode(str(self.direction[1])),
+                            b'DIR_2':str.encode(str(self.direction[2])),
+                            b'POS_0':str.encode(str(self.position[0])),
+                            b'POS_1':str.encode(str(self.position[1])),
+                            b'POS_2':str.encode(str(self.position[2])),
+                            b'OUTPUT_NAME':str.encode(str(self.output_name)),
+                            b'NUM_EVENTS':str.encode(str(self.num_events))} ):
             return dic[mat.group()]
-
-        with open(filename,'rb+') as f:
+        shutil.copyfile(filename,'WCSim.mac')
+        with open('WCSim.mac','rb+') as f:
             content = f.read()
             f.seek(0,0)
             f.write(pat.sub(jojo,content))
             f.truncate()
+
+    def set_output_directory(self):
+        if not(os.path.exists(self.output_directory) and os.path.isdir(self.output_directory)):
+            os.makedirs(self.output_directory)
+
+    def run_local_wcsim(self):
+        self.set_output_directory()
+        os.system('cp -r /opt/HyperK/WCSim/macros .')
+        os.system('/opt/HyperK/WCSim/exe/bin/Linux-g++/WCSim WCSim.mac')
+        os.system('rm -rf macros')
