@@ -26,14 +26,37 @@ class WCSimOptions():
         self.output_name = str(output_directory) + '/' + str(output_name)
         self.num_events = num_events
 
+    def save_options(self,filepath,filename):
+        """Save the class and its variables in file
+
+        Args:
+            filepath (_type_): Path to file
+            filename (_type_): Name of file
+        """
+        with open(filepath+'/'+filename,'wb') as f:
+            pickle.dump(self,f)
+
+    def load_options(self,filepath,filename):
+        """Load the class and its variables from file
+
+        Args:
+            filepath (_type_): Path to file
+            filename (_type_): Name of file
+
+        Returns:
+            WCSimOptions class object: Loaded class
+        """
+        with open(filepath+'/'+filename,'rb') as f:
+            new_options = pickle.load(f)
+            return new_options
+
+
     def set_options(self, filename='WCSim_toEdit.mac'):
         """Sets options on dummy WCSim.mac file by converting pre-typed strings to values set in options
 
         Args:
             filename (str, optional): Filename to copy and edit Defaults to 'WCSim_toEdit.mac'.
 
-        Returns:
-            _type_: _description_
         """
         pat = re.compile(b'GENERATOR|PARTICLE|ENERGY_NUM|ENERGY_UNIT|DIR_0|DIR_1|DIR_2|POS_0|POS_1|POS_2|OUTPUT_NAME|NUM_EVENTS')
 
@@ -65,4 +88,5 @@ class WCSimOptions():
         self.set_output_directory()
         os.system('cp -r /opt/HyperK/WCSim/macros .')
         os.system('/opt/HyperK/WCSim/exe/bin/Linux-g++/WCSim WCSim.mac')
+        self.save_options(self.output_directory,'wc_options.pkl')
         os.system('rm -rf macros')
