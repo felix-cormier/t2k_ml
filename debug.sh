@@ -1,6 +1,6 @@
 myfunction() {
     #do things with parameters like $1 such as
-    python3 -m debugpy --listen cdr977:1080 --wait-for-client $@
+    python3 -m debugpy --listen nc10503:1080 --wait-for-client $@
 }
 
 

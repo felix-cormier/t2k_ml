@@ -1,11 +1,12 @@
 import re 
 import shutil
 import os
+import pickle
 
 class WCSimOptions():
     """A class which can set, store, steer WCSim and its options
     """
-    def __init__(self, generator='gun', particle='e-', energy=[500,'MeV'], direction=[1,0,0], position=[0,0,0], output_name='wcsim.root', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/', num_events=500) -> None:
+    def __init__(self, generator='gun', particle='e-', energy=[500,'MeV'], direction=[1,0,0], position=[0,0,0], output_name='wcsim.root', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/', num_events=500, batch=False):
         """_summary_
 
         Args:
@@ -25,6 +26,7 @@ class WCSimOptions():
         self.output_directory = output_directory
         self.output_name = str(output_directory) + '/' + str(output_name)
         self.num_events = num_events
+        self.batch=batch
 
     def save_options(self,filepath,filename):
         """Save the class and its variables in file
@@ -82,7 +84,12 @@ class WCSimOptions():
 
     def set_output_directory(self):
         if not(os.path.exists(self.output_directory) and os.path.isdir(self.output_directory)):
-            os.makedirs(self.output_directory)
+            try:
+                os.makedirs(self.output_directory)
+            except FileExistsError as error:
+                print("Directory " + str(self.output_directory) +" already exists")
+                if self.batch is True:
+                    exit
 
     def run_local_wcsim(self):
         self.set_output_directory()

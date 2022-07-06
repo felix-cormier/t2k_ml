@@ -139,11 +139,11 @@
 # for a full list of /gun/ commands see:
 # http://geant4.web.cern.ch/geant4/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/Control/UIcommands/_gun_.html
 /mygen/generator GENERATOR
-/gun/particle PARTICLE
+/GENERATOR/particle PARTICLE
 #/gun/particle pi0
-/gun/energy ENERGY_NUM ENERGY_UNIT
-/gun/direction DIR_0 DIR_1 DIR_2 
-/gun/position POS_0 POS_1 POS_2  
+/GENERATOR/energy ENERGY_NUM ENERGY_UNIT
+/GENERATOR/direction DIR_0 DIR_1 DIR_2 
+/GENERATOR/position POS_0 POS_1 POS_2  
 
 # Or you can use the G4 General Particle Source
 # you can do a lot more with this than a monoenergetic, monodirectional, single-particle gun

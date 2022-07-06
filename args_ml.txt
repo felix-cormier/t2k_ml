@@ -1,0 +1,8 @@
+--doTransform
+--doWCSim
+--doBatch
+--numJobs=1
+--eventsPerJob=20
+--output_path=/scratch/fcormier/t2k/ml/output_wcsim/test_batch/
+--transformPath=/scratch/fcormier/t2k/ml/output_wcsim/test/
+--transformName=wcsim.root
