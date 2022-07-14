@@ -6,7 +6,7 @@ import pickle
 class WCSimOptions():
     """A class which can set, store, steer WCSim and its options
     """
-    def __init__(self, generator='gun', particle='e-', energy=[500,'MeV'], direction=[1,0,0], position=[0,0,0], output_name='wcsim.root', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/', num_events=500, batch=False):
+    def __init__(self, generator='gun', particle='e-', energy=[500,'MeV'], direction=[1,0,0], position=[0,0,0], output_name='wcsim.root', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/', num_events=500, batch=False, save_input_options=False):
         """_summary_
 
         Args:
@@ -27,6 +27,18 @@ class WCSimOptions():
         self.output_name = str(output_directory) + '/' + str(output_name)
         self.num_events = num_events
         self.batch=batch
+        self.save_input_options=save_input_options
+
+    def dump_options(self):
+        print(f'Generator: {self.generator}')
+        print(f'Particle: {self.particle}')
+        print(f'Energy: {self.energy}')
+        print(f'Position: {self.position}')
+        print(f'Output Directory: {self.output_directory}')
+        print(f'Output Name: {self.output_name}')
+        print(f'Number of events: {self.num_events}')
+        print(f'Batch: {self.batch}')
+        print(f'Save Input: {self.save_input_options}')
 
     def save_options(self,filepath,filename):
         """Save the class and its variables in file
@@ -95,5 +107,6 @@ class WCSimOptions():
         self.set_output_directory()
         os.system('cp -r /opt/HyperK/WCSim/macros .')
         os.system('/opt/HyperK/WCSim/exe/bin/Linux-g++/WCSim WCSim.mac')
-        self.save_options(self.output_directory,'wc_options.pkl')
+        if self.save_input_options:
+            self.save_options(self.output_directory,'wc_options.pkl')
         os.system('rm -rf macros')

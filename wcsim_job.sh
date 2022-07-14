@@ -2,7 +2,12 @@
 #SBATCH --output=/scratch/fcormier/t2k/ml/output_wcsim/logfiles/%j.out
 #SBATCH --error=/scratch/fcormier/t2k/ml/output_wcsim/logfiles/%j.err
 
-
+cp -r ../t2k_ml/ $SLURM_TMPDIR
+cd $SLURM_TMPDIR/t2k_ml/
+cp $ARG2/wc_options.pkl .
+mkdir data/
+ls -hltr
+pwd
 
 if ! [[ "$PATH" =~ "$HOME/.local/bin:$HOME/bin:" ]]
 then
@@ -27,14 +32,17 @@ conda activate t2k_ml_root_2
 /home/fcormier/misc/bashrc
 
 module load singularity/3.8
-export SINGULARITY_BINDPATH="/scratch/"
-singularity exec /scratch/fcormier/singularity_containers/wcsim.sif bash "/home/fcormier/t2k/t2k_ml_base/t2k_ml/singularity_run.sh"
+export SINGULARITY_BINDPATH="/scratch/,/localscratch/"
+singularity exec /scratch/fcormier/singularity_containers/wcsim.sif bash "$SLURM_TMPDIR/t2k_ml/singularity_run.sh"
 #bash "/home/fcormier/t2k/t2k_ml_base/t2k_ml/singularity_run.sh"
 #python wcsim_batch.py $ARG1 $ARG2
 echo "finished wcsim"
 
 source transform_modules.sh
-python transform_batch.py $ARG2 $SLURM_JOBID
+python transform_batch.py "$SLURM_TMPDIR/t2k_ml/data/" $SLURM_JOBID
 echo "finished transform"
-ls -lhtr
+cp data/*.hy $ARG2
+cp *.mac $ARG2
+cd $SLURM_TMPDIR
+rm -rf t2k_ml/
 

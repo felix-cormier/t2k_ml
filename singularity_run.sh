@@ -1,3 +1,5 @@
+cd $SLURM_TMPDIR/t2k_ml/
+
 export LD_LIBRARY_PATH=/opt/HyperK/geant4.10.01.p03-install/lib64:/opt/HyperK/geant4.10.01.p03-install/lib64:/opt/HyperK/root/lib:/.singularity.d/libs
 export G4LEDATA=/opt/HyperK/geant4.10.01.p03-install/share/Geant4-10.1.3/data/G4EMLOW6.41/
 export G4LEVELGAMMADATA=/opt/HyperK/geant4.10.01.p03-install/share/Geant4-10.1.3/data/PhotonEvaporation3.1
@@ -27,5 +29,4 @@ fi
 unset __conda_setup
 
 conda activate t2k_ml_root_2
-echo $PATH
-python wcsim_batch.py $ARG1 $ARG2 $SLURM_JOBID
+python wcsim_batch.py $ARG1 "$SLURM_TMPDIR/t2k_ml/data/" $SLURM_JOBID

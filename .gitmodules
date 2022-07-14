@@ -1,3 +1,6 @@
 [submodule "DataTools"]
 	path = DataTools
 	url = https://github.com/WatChMaL/DataTools.git
+[submodule "generics_python"]
+	path = generics_python
+	url = https://github.com/felix-cormier/generics_python.git
