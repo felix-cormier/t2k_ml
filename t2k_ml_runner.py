@@ -43,7 +43,7 @@ if args.doWCSim and args.doTransform and args.doBatch and args.output_path is no
     print("Submitting jobs")
     num_jobs = int(args.numJobs)
     events_per_job = int(args.eventsPerJob)
-    wcsim_options = WCSimOptions(output_directory=args.output_path, save_input_options=False,  generator = 'gps', particle='gamma')
+    wcsim_options = WCSimOptions(output_directory=args.output_path, save_input_options=False,  generator = 'gps', particle='e-')
     wcsim_options.set_output_directory()
     wcsim_options.save_options(args.output_path,'wc_options.pkl')
 
@@ -62,7 +62,7 @@ elif args.doTransform:
     from DataTools.root_utils.event_dump import dump_file
     print("Transform from ROOT to .h5")
     wcsim_options = WCSimOptions()
-    wcsim_options = wcsim_options.load_options(args.transformPath, 'wc_options.pkl')
+    #wcsim_options = wcsim_options.load_options(args.transformPath, 'wc_options.pkl')
     test = dump_file(str(args.transformPath) + '/' + str(args.transformName), str(args.transformPath) + '/' + 'wcsim_transform')
 
 if args.makeVisualizations:
