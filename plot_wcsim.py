@@ -88,6 +88,13 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
     wall = []
     towall = []
 
+    direction_x = []
+    direction_y = []
+    direction_z = []
+    position_x = []
+    position_y = []
+    position_z = []
+
     truth_energy = []
     truth_veto = []
     truth_labels = []
@@ -98,7 +105,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
         options_exists = os.path.isfile(path+'/'+'wc_options.pkl')
         if options_exists:
             print(f'Loading options from: {path}wc_options.pkl')
-            wcsim_options.load_options(path, 'wc_options.pkl')
+            wcsim_options = wcsim_options.load_options(path, 'wc_options.pkl')
             print(f'Particle: {wcsim_options.particle}')
         with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
 
@@ -117,13 +124,20 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
             temp_num_pmt = []
             temp_wall = []
             temp_towall = []
+            
+            temp_direction_x = []
+            temp_direction_y = []
+            temp_direction_z = []
+            temp_position_x = []
+            temp_position_y = []
+            temp_position_z = []
 
             temp_truth_energy = [] 
             temp_truth_veto = [] 
             temp_truth_labels = [] 
 
-            if False:
-                temp_label = [wcsim_options.particle]
+            if options_exists:
+                temp_label = [wcsim_options.particle[0]]
             else:
                 temp_label = convert_label(np.median(h5fw['labels']))
             
@@ -138,15 +152,25 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
                     temp_truth_energy.append(float(h5fw['energies'][i]))
                     temp_truth_labels.append(float(h5fw['labels'][i]))
                     temp_truth_veto.append(float(h5fw['veto'][i]))
+
+
+                    temp_direction_x.append(float(h5fw['directions'][i][:,0]))
+                    temp_direction_y.append(float(h5fw['directions'][i][:,1]))
+                    temp_direction_z.append(float(h5fw['directions'][i][:,2]))
+                    temp_position_x.append(float(h5fw['positions'][i][:,0]))
+                    temp_position_y.append(float(h5fw['positions'][i][:,1]))
+                    temp_position_z.append(float(h5fw['positions'][i][:,2]))
+
                     temp_mean_charge.append(np.mean(h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
                     temp_total_charge.append(np.sum(h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
                     temp_mean_time.append(np.mean(h5fw['hit_time'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
                     temp_mean_x.append(np.mean(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,0]))
                     temp_mean_y.append(np.mean(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,1]))
                     temp_mean_z.append(np.mean(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,2]))
-                    temp_weighted_mean_x.append(np.average(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,0],weights=h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
-                    temp_weighted_mean_y.append(np.average(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,1],weights=h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
-                    temp_weighted_mean_z.append(np.average(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,2],weights=h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
+                    if np.sum(h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]) > 0:
+                        temp_weighted_mean_x.append(np.average(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,0],weights=h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
+                        temp_weighted_mean_y.append(np.average(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,1],weights=h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
+                        temp_weighted_mean_z.append(np.average(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,2],weights=h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
                     temp_std_x.append(np.std(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,0]))
                     temp_std_y.append(np.std(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,1]))
                     temp_std_z.append(np.std(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,2]))
@@ -182,6 +206,13 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
         truth_labels.append(temp_truth_labels)
         label.append(temp_label)
 
+        direction_x.append(temp_direction_x)
+        direction_y.append(temp_direction_y)
+        direction_z.append(temp_direction_z)
+        position_x.append(temp_position_x)
+        position_y.append(temp_position_y)
+        position_z.append(temp_position_z)
+
     yname="Num. Events"
     generic_histogram(mean_charge, 'Mean Charge', output_path, 'mean_charge', y_name = yname, label=label, bins=20)
     generic_histogram(total_charge, 'Total Charge', output_path, 'total_charge', y_name = yname, label=label, bins=20)
@@ -197,8 +228,16 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
     generic_histogram(std_x, 'std dev PMT X', output_path, 'std_x', y_name = yname, label=label, bins=20)
     generic_histogram(std_y, 'std dev PMT Y', output_path, 'std_y', y_name = yname, label=label, bins=20)
     generic_histogram(std_z, 'std dev PMT Z', output_path, 'std_z', y_name = yname, label=label, bins=20)
-    generic_histogram(num_pmt, 'Number of PMTs', output_path, 'num_pmt', y_name = yname, label=label, bins=20)
+    generic_histogram(num_pmt, 'Number of PMTs', output_path, 'num_pmt', y_name = yname, label=label, range=[0,2000], bins=20)
     generic_histogram(truth_energy, 'Truth Energy [MeV]', output_path, 'truth_energy', y_name = yname, label=label, bins=20)
     generic_histogram(truth_veto, 'Truth veto', output_path, 'truth_veto', y_name = yname, label=label, bins=20)
     generic_histogram(truth_labels, 'Truth label', output_path, 'truth_label', y_name = yname, label=label, bins=20)
+
+    generic_histogram(direction_x, 'Truth Direction X', output_path, 'truth_direction_x', y_name = yname, label=label, bins=20)
+    generic_histogram(direction_y, 'Truth Direction Y', output_path, 'truth_direction_y', y_name = yname, label=label, bins=20)
+    generic_histogram(direction_z, 'Truth Direction Z', output_path, 'truth_direction_z', y_name = yname, label=label, bins=20)
+
+    generic_histogram(position_x, 'Truth position X', output_path, 'truth_position_x', y_name = yname, label=label, bins=20)
+    generic_histogram(position_y, 'Truth position Y', output_path, 'truth_position_y', y_name = yname, label=label, bins=20)
+    generic_histogram(position_z, 'Truth position Z', output_path, 'truth_position_z', y_name = yname, label=label, bins=20)
 

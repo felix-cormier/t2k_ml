@@ -141,9 +141,17 @@
 /mygen/generator GENERATOR
 /GENERATOR/particle PARTICLE
 #/gun/particle pi0
-/GENERATOR/energy ENERGY_NUM ENERGY_UNIT
-/GENERATOR/direction DIR_0 DIR_1 DIR_2 
-/GENERATOR/position POS_0 POS_1 POS_2  
+/GENERATOR/pos/type Volume
+/GENERATOR/pos/shape Cylinder
+/GENERATOR/pos/centre 0 0 0 m
+/GENERATOR/pos/halfz 18.7 m
+/GENERATOR/pos/radius 17.65 m
+/GENERATOR/ang/type iso
+/GENERATOR/ene/type Lin
+/GENERATOR/ene/min 100 MeV
+/GENERATOR/ene/max 1000 MeV
+/GENERATOR/ene/gradient 0
+/GENERATOR/ene/intercept 1
 
 # Or you can use the G4 General Particle Source
 # you can do a lot more with this than a monoenergetic, monodirectional, single-particle gun

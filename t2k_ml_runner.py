@@ -3,7 +3,6 @@ import os
 import subprocess
 
 from wcsim_options import WCSimOptions
-from plot_wcsim import plot_wcsim
 from DataTools.root_utils.merge_h5 import combine_files
 
 import h5py
@@ -43,9 +42,10 @@ if args.doWCSim and args.doTransform and args.doBatch and args.output_path is no
     print("Submitting jobs")
     num_jobs = int(args.numJobs)
     events_per_job = int(args.eventsPerJob)
-    wcsim_options = WCSimOptions(output_directory=args.output_path, save_input_options=False,  generator = 'gps', particle='e-')
+    wcsim_options = WCSimOptions(output_directory=args.output_path, save_input_options=False,  generator = 'gps', particle='gamma')
     wcsim_options.set_output_directory()
     wcsim_options.save_options(args.output_path,'wc_options.pkl')
+    print(wcsim_options.particle)
 
     for i in range(num_jobs):
         talk = ('sbatch  --mem-per-cpu=4G --nodes=1 --ntasks-per-node=1 --time=01:00:00 --export=ALL,ARG1='+str(events_per_job)+',ARG2='+str(args.output_path)+' wcsim_job.sh')
@@ -54,7 +54,7 @@ if args.doWCSim and args.doTransform and args.doBatch and args.output_path is no
 
 elif args.doWCSim:
     print("Running WCSim")
-    wcsim_options = WCSimOptions(num_events=10, generator = 'gps', particle='gamma', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/test_muon/')
+    wcsim_options = WCSimOptions(num_events=100, generator = 'gps', particle='gamma', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/test_cyl_muon/')
     wcsim_options.set_options(filename='WCSim_toEdit.mac')
     wcsim_options.run_local_wcsim()
 
@@ -66,6 +66,7 @@ elif args.doTransform:
     test = dump_file(str(args.transformPath) + '/' + str(args.transformName), str(args.transformPath) + '/' + 'wcsim_transform')
 
 if args.makeVisualizations:
+    from plot_wcsim import plot_wcsim
     from make_visualizations import make_visualizations
     myfile = h5py.File(args.input_vis_file_path,'r')
     wcsim_options = WCSimOptions(output_directory=args.output_vis_path)
@@ -77,6 +78,7 @@ if args.doCombination:
 
 if args.makeInputPlots:
 
+    from plot_wcsim import plot_wcsim
     wcsim_options = WCSimOptions()
     use_text_file=False
     if ".txt" in args.input_plot_path:
@@ -94,7 +96,7 @@ if args.dumpOptions:
         path = path.strip('\n')
         print(f'New path: {path}')
         wcsim_options = WCSimOptions()
-        wcsim_options.load_options(path, 'wc_options.pkl')
+        wcsim_options = wcsim_options.load_options(path, 'wc_options.pkl')
         print(f'Particle: {wcsim_options.particle}')
 
 

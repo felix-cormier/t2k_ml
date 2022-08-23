@@ -62,6 +62,7 @@ class WCSimOptions():
         """
         with open(filepath+'/'+filename,'rb') as f:
             new_options = pickle.load(f)
+            print(new_options.particle)
             return new_options
 
 
