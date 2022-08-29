@@ -50,7 +50,7 @@ This uses the DataTools submodule taken from the WatChMaL group. The .root -> h5
 
 Where transform path tells the code where to look for the .root file, and the transform name tells the name of the rootfile to transform
 
-#### Batch jobs doing a joint WCSim simulation and transform to hyp5 format
+#### Batch jobs for doing a joint WCSim simulation and transform to hyp5 format
 
 Batch jobs serve to send many simulations at once, using the slurm scheduler on Compute Canada cluster. If you are running this on a different type of cluster, you will have to change some of the commands to match your scheduler. To run this, you must include all commands below:
 
@@ -64,3 +64,28 @@ Batch jobs serve to send many simulations at once, using the slurm scheduler on 
 ```
 
 where number of jobs is the number of jobs to be sent to the scheduler, and events per Job is how many will be simulated. Total number of events you will get is thus `numJobs*eventsPerJob`. Output path is where all the hyp5 files from jobs will be sent to, as well as a file which shows which wcsim options were used for the job.
+
+#### Look at saved options
+
+Batch jobs save the WCSimOptions used as _wcsim\_options.pkl_. To read these out, run
+
+```
+--dumpOptions
+--inputPlotPath=[...]
+```
+
+where _input\_plot\_path_ is the path and name of a text file containing paths for WCSimOptions files youw ant to read out. Right now this code is bare-bones and only prints out the particle simualated, but could be expanded based on user's needs.
+
+#### Combine h5py files
+
+You can use this to combine a directory of hypy (.hy) files to one large h5py file. Simply do
+
+```
+--doCombination
+--input_combination_path=[...]
+--output_combination_path=[...]
+```
+
+Where the input path is a path to a directory where the .hy files to be merged are, and output path is where the combination output file should be saved to. In _t2k\_ml\_runner.py_, in the line for doing combination, the third options is a common string it will look for in all files to combine. In practice this will usually be 'digi'.
+
+#### Plot input variables
