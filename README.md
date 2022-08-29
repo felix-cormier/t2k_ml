@@ -89,3 +89,25 @@ You can use this to combine a directory of hypy (.hy) files to one large h5py fi
 Where the input path is a path to a directory where the .hy files to be merged are, and output path is where the combination output file should be saved to. In _t2k\_ml\_runner.py_, in the line for doing combination, the third options is a common string it will look for in all files to combine. In practice this will usually be 'digi'.
 
 #### Plot input variables
+
+You can plot some of the variables from a WCSim transformed .hy file. To do this use
+
+```
+--makeInputPlots
+--input_plot_path=[...]
+--output_plot_path=[...]
+```
+
+Where input plot path can be either a directory, or the path and name of a file which then contains multiple paths and names of files (preferably a combination .hy file). The output path is where the plots generated will be stored. N.B. there is an artificial limit of 5000 on the number of events looked at for each .hy file to speed this up.
+
+#### Make Visualizations
+
+To make some visuals of some data events, and visuals of simulated particles, do
+
+```
+--makeVisualizations
+--input_vis_path=[...]
+--output_vis_path=[...]
+```
+
+where the input path is the path and name of a .hy file (could be individual or combination), and the output path is where the plots will be stored.
