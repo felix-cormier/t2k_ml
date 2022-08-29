@@ -9,7 +9,7 @@ def decision(probability):
 def make_visualizations(h5_file, output_path):
     print("Keys: %s" % h5_file.keys())
     print(h5_file['event_hits_index'].shape)
-    num_visualization = 50
+    num_visualization = 10
 
     max = h5_file['event_hits_index'].shape[0]
 
@@ -38,5 +38,4 @@ def make_visualizations(h5_file, output_path):
     generic_2D_plot(x_pos,y_pos,[-1800,1800], 100, 'X [cm]', [-1800,1800], 100, 'Y [cm]', '', output_path, 'radial', save_plot=True)
     generic_2D_plot(x_pos,z_pos,[-1800,1800], 100, 'X [cm]', [-1800,1800], 100, 'Z [cm]', '', output_path, 'long_x', save_plot=True)
     generic_2D_plot(y_pos,z_pos,[-1800,1800], 100, 'Y [cm]', [-1800,1800], 100, 'Z [cm]', '', output_path, 'long_y', save_plot=True)
-    print(len(x_pos))
     generic_3D_plot(x_pos,y_pos,z_pos, np.ones(len(x_pos)), 'X [cm]', 'Y [cm]', 'Z [cm]', 'Arbitrary', output_path, 'truth_position')

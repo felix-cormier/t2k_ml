@@ -42,7 +42,7 @@ if args.doWCSim and args.doTransform and args.doBatch and args.output_path is no
     print("Submitting jobs")
     num_jobs = int(args.numJobs)
     events_per_job = int(args.eventsPerJob)
-    wcsim_options = WCSimOptions(output_directory=args.output_path, save_input_options=False,  generator = 'gps', particle='gamma')
+    wcsim_options = WCSimOptions(output_directory=args.output_path, save_input_options=False,  generator = 'gps', particle='e-')
     wcsim_options.set_output_directory()
     wcsim_options.save_options(args.output_path,'wc_options.pkl')
     print(wcsim_options.particle)
@@ -54,7 +54,7 @@ if args.doWCSim and args.doTransform and args.doBatch and args.output_path is no
 
 elif args.doWCSim:
     print("Running WCSim")
-    wcsim_options = WCSimOptions(num_events=100, generator = 'gps', particle='gamma', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/test_cyl_muon/')
+    wcsim_options = WCSimOptions(num_events=100, generator = 'gps', particle='gamma', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/test_cyl_electrons_aug26/')
     wcsim_options.set_options(filename='WCSim_toEdit.mac')
     wcsim_options.run_local_wcsim()
 
@@ -63,7 +63,7 @@ elif args.doTransform:
     print("Transform from ROOT to .h5")
     wcsim_options = WCSimOptions()
     #wcsim_options = wcsim_options.load_options(args.transformPath, 'wc_options.pkl')
-    test = dump_file(str(args.transformPath) + '/' + str(args.transformName), str(args.transformPath) + '/' + 'wcsim_transform')
+    test = dump_file(str(args.transformPath) + '/' + str(args.transformName), str(args.transformPath) + '/' + 'wcsim_transform', create_image_file=False)
 
 if args.makeVisualizations:
     from plot_wcsim import plot_wcsim
@@ -74,7 +74,7 @@ if args.makeVisualizations:
     make_visualizations(myfile, args.output_vis_path)
 
 if args.doCombination:
-    combine_files(args.input_combination_path, args.output_combination_path, 'digi')
+    combine_files(args.input_combination_path, args.output_combination_path, 'combine')
 
 if args.makeInputPlots:
 

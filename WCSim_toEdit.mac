@@ -5,6 +5,9 @@
 /hits/verbose 0
 /grdm/verbose 0
 
+/random/setSeeds SEED SEED
+/WCSim/random/seed SEED
+
 ## select the geometry
 # Default config if you do nothing is currently SuperK
 #
@@ -143,9 +146,9 @@
 #/gun/particle pi0
 /GENERATOR/pos/type Volume
 /GENERATOR/pos/shape Cylinder
-/GENERATOR/pos/centre 0 0 0 m
-/GENERATOR/pos/halfz 18.7 m
-/GENERATOR/pos/radius 17.65 m
+/GENERATOR/pos/centre 0. 0. 0. cm
+/GENERATOR/pos/halfz 1600. cm
+/GENERATOR/pos/radius 1600. cm
 /GENERATOR/ang/type iso
 /GENERATOR/ene/type Lin
 /GENERATOR/ene/min 100 MeV
