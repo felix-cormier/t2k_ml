@@ -147,8 +147,8 @@
 /GENERATOR/pos/type Volume
 /GENERATOR/pos/shape Cylinder
 /GENERATOR/pos/centre 0. 0. 0. cm
-/GENERATOR/pos/halfz 1600. cm
-/GENERATOR/pos/radius 1600. cm
+/GENERATOR/pos/halfz HALFZ_NUM HALFZ_UNIT
+/GENERATOR/pos/radius RADIUS_NUM RADIUS_UNIT
 /GENERATOR/ang/type iso
 /GENERATOR/ene/type Lin
 /GENERATOR/ene/min 100 MeV

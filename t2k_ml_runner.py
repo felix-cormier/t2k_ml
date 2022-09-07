@@ -18,12 +18,12 @@ parser.add_argument("--dumpOptions", help="make 3D plots of events", action="sto
 parser.add_argument("--transformPath", help="path to files to transform")
 parser.add_argument("--transformName", help="Name of files to transform")
 parser.add_argument("--output_path", help="Path to output for batch jobs")
-parser.add_argument("--input_vis_file_path", help="Path to output for batch jobs")
-parser.add_argument("--input_plot_path", help="Path to output for batch jobs")
-parser.add_argument("--output_vis_path", help="Path to output for batch jobs")
-parser.add_argument("--output_plot_path", help="Path to output for batch jobs")
-parser.add_argument("--input_combination_path", help="Path to output for batch jobs")
-parser.add_argument("--output_combination_path", help="Path to output for batch jobs")
+parser.add_argument("--input_vis_file_path", help="Where to output visualizations")
+parser.add_argument("--input_plot_path", help="Directory where to get .hy files from which to make plots")
+parser.add_argument("--output_vis_path", help="Where to output visualizations")
+parser.add_argument("--output_plot_path", help="Where to output plots")
+parser.add_argument("--input_combination_path", help="Path to directory to combine .hy files")
+parser.add_argument("--output_combination_path", help="Path to directory where the output of combination is saved ")
 parser.add_argument("--eventsPerJob", help="Batch Generation: number to generate per job")
 parser.add_argument("--numJobs", help="Batch Generation: Number of jobs to submit")
 args = parser.parse_args(['--transformPath','foo','@args_ml.txt',
@@ -42,7 +42,7 @@ if args.doWCSim and args.doTransform and args.doBatch and args.output_path is no
     print("Submitting jobs")
     num_jobs = int(args.numJobs)
     events_per_job = int(args.eventsPerJob)
-    wcsim_options = WCSimOptions(output_directory=args.output_path, save_input_options=False,  generator = 'gps', particle='e-')
+    wcsim_options = WCSimOptions(output_directory=args.output_path, save_input_options=False,  radius=[1700.,'cm'], halfz=[1800.,'cm'], generator = 'gps', particle='gamma')
     wcsim_options.set_output_directory()
     wcsim_options.save_options(args.output_path,'wc_options.pkl')
     print(wcsim_options.particle)
@@ -54,7 +54,7 @@ if args.doWCSim and args.doTransform and args.doBatch and args.output_path is no
 
 elif args.doWCSim:
     print("Running WCSim")
-    wcsim_options = WCSimOptions(num_events=100, generator = 'gps', particle='gamma', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/test_cyl_electrons_aug26/')
+    wcsim_options = WCSimOptions(num_events=20,  radius=[2000.,'cm'], halfz=[2001.,'cm'], generator = 'gps', particle='e-', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/test_2000halfz2001radCyl_electrons_sep2/')
     wcsim_options.set_options(filename='WCSim_toEdit.mac')
     wcsim_options.run_local_wcsim()
 
@@ -74,7 +74,7 @@ if args.makeVisualizations:
     make_visualizations(myfile, args.output_vis_path)
 
 if args.doCombination:
-    combine_files(args.input_combination_path, args.output_combination_path, 'combine')
+    combine_files(args.input_combination_path, args.output_combination_path, 'digi')
 
 if args.makeInputPlots:
 
