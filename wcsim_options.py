@@ -6,21 +6,28 @@ import pickle
 class WCSimOptions():
     """A class which can set, store, steer WCSim and its options
     """
-    def __init__(self, generator='gun', particle='e-', energy=[500,'MeV'], direction=[1,0,0], position=[0,0,0], output_name='wcsim.root', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/', num_events=500, batch=False, save_input_options=False, seed=0):
+    def __init__(self, generator='gun', particle='e-', energy=[500,'MeV'], halfz = [2007.,'cm'], radius= [1965., 'cm'], direction=[1,0,0], position=[0,0,0], output_name='wcsim.root', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/', num_events=500, batch=False, save_input_options=False, seed=0):
         """_summary_
 
         Args:
             generator (str, optional): Type of Generator Defaults to 'gun'.
             particle (str, optional): Particle being simulated Defaults to 'e-'.
-            energy (list, optional): Energy of particle Defaults to [500,'MeV'].
-            direction (list, optional): Initial direction of particle momentum Defaults to [1,0,0].
-            position (list, optional): Initial position of particle Defaults to [0,0,0].
+            energy (list, optional): DEPRECATED. Energy of particle Defaults to [500,'MeV'].
+            halfz (list, optional): The half-height of cylinder to create particles.
+            radius (list, optional): The radius of cylinder to create particles.
+            direction (list, optional): DEPRECATED. Initial direction of particle momentum Defaults to [1,0,0].
+            position (list, optional): DEPRECATED. Initial position of particle Defaults to [0,0,0].
             output_name (list, optional): Name of root file (can include file path) Defaults to ['wcsim.root'].
             num_events (int, optional): Number of events to simulate Defaults to 500.
+            batch (int, optional): If the generation and/or transformation will be run as batch jobs.
+            seed (int, optional): The random seed to be used for WCSim generation.
+            save_input (bool, optional): Whether to save the options listed here for the future.
         """
         self.generator = generator
         self.particle = particle
         self.energy = energy
+        self.halfz = halfz
+        self.radius = radius
         self.direction = direction
         self.position = position
         self.output_directory = output_directory
@@ -33,6 +40,8 @@ class WCSimOptions():
     def dump_options(self):
         print(f'Generator: {self.generator}')
         print(f'Particle: {self.particle}')
+        print(f'Energy: {self.energy}')
+        print(f'Energy: {self.energy}')
         print(f'Energy: {self.energy}')
         print(f'Position: {self.position}')
         print(f'Output Directory: {self.output_directory}')
@@ -74,13 +83,17 @@ class WCSimOptions():
             filename (str, optional): Filename to copy and edit Defaults to 'WCSim_toEdit.mac'.
 
         """
-        pat = re.compile(b'GENERATOR|PARTICLE|SEED|ENERGY_NUM|ENERGY_UNIT|DIR_0|DIR_1|DIR_2|POS_0|POS_1|POS_2|OUTPUT_NAME|NUM_EVENTS')
+        pat = re.compile(b'GENERATOR|PARTICLE|SEED|ENERGY_NUM|ENERGY_UNIT|HALFZ_NUM|HALFZ_UNIT|RADIUS_NUM|RADIUS_UNIT|DIR_0|DIR_1|DIR_2|POS_0|POS_1|POS_2|OUTPUT_NAME|NUM_EVENTS')
 
         def jojo(mat,dic = {b'GENERATOR':str.encode(str(self.generator)),
                             b'PARTICLE':str.encode(str(self.particle)),
                             b'SEED':str.encode(str(self.seed)),
                             b'ENERGY_NUM':str.encode(str(self.energy[0])),
                             b'ENERGY_UNIT':str.encode(str(self.energy[1])),
+                            b'HALFZ_NUM':str.encode(str(self.halfz[0])),
+                            b'HALFZ_UNIT':str.encode(str(self.halfz[1])),
+                            b'RADIUS_NUM':str.encode(str(self.radius[0])),
+                            b'RADIUS_UNIT':str.encode(str(self.radius[1])),
                             b'DIR_0':str.encode(str(self.direction[0])),
                             b'DIR_1':str.encode(str(self.direction[1])),
                             b'DIR_2':str.encode(str(self.direction[2])),
@@ -98,6 +111,8 @@ class WCSimOptions():
             f.truncate()
 
     def set_output_directory(self):
+        """Makes an output file as given in the arguments
+        """
         if not(os.path.exists(self.output_directory) and os.path.isdir(self.output_directory)):
             try:
                 os.makedirs(self.output_directory)
@@ -107,6 +122,8 @@ class WCSimOptions():
                     exit
 
     def run_local_wcsim(self):
+        """Runs WCSim on current CPU
+        """
         self.set_output_directory()
         os.system('cp -r /opt/HyperK/WCSim/macros .')
         os.system('/opt/HyperK/WCSim/exe/bin/Linux-g++/WCSim WCSim.mac')

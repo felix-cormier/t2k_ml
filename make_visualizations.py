@@ -7,8 +7,17 @@ def decision(probability):
 
 
 def make_visualizations(h5_file, output_path):
+    """Make event displays for some events in the input h5_file. Visualizations will be of the PMTs, as well as truth positions
+    
+
+
+    Args:
+        h5_file (_type_): File to draw events from
+        output_path (_type_): Where to save the plots
+    """
     print("Keys: %s" % h5_file.keys())
     print(h5_file['event_hits_index'].shape)
+    #How many event displays to make
     num_visualization = 10
 
     max = h5_file['event_hits_index'].shape[0]

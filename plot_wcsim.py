@@ -7,12 +7,24 @@ import math
 from generics_python.make_plots import generic_histogram
 
 def calculate_wcsim_wall_variables(position, direction):
+    """Generates wall and towall variables for input position and direction
+
+    Args:
+        position (_type_): three-coordinate position
+        direction (_type_): three-coordinate direction
+
+    Returns:
+        float, float: wall, towall variables
+    """
+
+    #Calculate wall variables
     position = position[0]
     direction = direction[0]
     min_vertical_wall = 2070-abs(position[2])
     min_horizontal_wall = 1965 - math.sqrt(position[0]*position[0] + position[1]*position[1])
     wall = min(min_vertical_wall,min_horizontal_wall)
 
+    #Calculate towall
     point_1 = [position[0], position[1]]
     point_2 = [position[0] + direction[0],position[1] + direction[1]]
     coefficients = np.polyfit([point_1[0], point_2[0]],[point_1[1], point_2[1]],1)
@@ -62,15 +74,25 @@ def convert_label(label):
         return label
 
 def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
+    """Plots PMT and event variables
+
+    Args:
+        input_path (_type_): Path to either .hy file or text file with multiple paths and names of .hy files
+        output_path (_type_): Where to save plots
+        wcsim_options (_type_): options class
+        text_file (bool, optional): If the input is in text file or string to single .hy file. Defaults to False.
+    """
 
     num_files=1
     file_paths=input_path
+    #Behaviour different depending on format of input (single or multiple files)
     if text_file:
         print(f'Getting files from: {str(input_path)}')
         text_file = open(input_path, "r")
         file_paths = text_file.readlines()
         num_files = len(file_paths)
 
+    #Initialize lists of variables
     mean_charge = []
     total_charge = []
     mean_time = []
@@ -99,6 +121,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
     truth_veto = []
     truth_labels = []
 
+    #Loop through all .hy files
     for j, path in enumerate(file_paths):
         path = path.strip('\n')
         print(f'New path: {path}')
@@ -109,6 +132,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
             print(f'Particle: {wcsim_options.particle}')
         with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
 
+            #Temporary list of variables for each event
             temp_mean_charge = []
             temp_total_charge = []
             temp_mean_time = []
@@ -136,17 +160,26 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
             temp_truth_veto = [] 
             temp_truth_labels = [] 
 
+            #Get label from options, if not, take median of labels in file
             if options_exists:
                 temp_label = [wcsim_options.particle[0]]
             else:
                 temp_label = convert_label(np.median(h5fw['labels']))
             
             max = h5fw['event_hits_index'].shape[0]
+            #Loop through all events in file
             for i,index in enumerate(h5fw['event_hits_index']):
+                #Stop at 5000 events, to make it go faster
                 if i > 5000:
                     continue
                 if i < max-1:
                     wall_out, towall_out = calculate_wcsim_wall_variables(h5fw['positions'][i], h5fw['directions'][i])
+
+                    '''
+                    if ( abs(float(h5fw['positions'][i][:,2])) >  1000 or math.sqrt(float(h5fw['positions'][i][:,0])**2 + float(h5fw['positions'][i][:,1])**2) > 1000):
+                        continue
+                    '''
+
                     temp_wall.append(wall_out)
                     temp_towall.append(towall_out)
                     temp_truth_energy.append(float(h5fw['energies'][i]))
@@ -213,6 +246,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
         position_y.append(temp_position_y)
         position_z.append(temp_position_z)
 
+    #Plot all
     yname="Num. Events"
     generic_histogram(mean_charge, 'Mean Charge', output_path, 'mean_charge', y_name = yname, label=label, bins=20)
     generic_histogram(total_charge, 'Total Charge', output_path, 'total_charge', y_name = yname, label=label, bins=20)
@@ -228,7 +262,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
     generic_histogram(std_x, 'std dev PMT X', output_path, 'std_x', y_name = yname, label=label, bins=20)
     generic_histogram(std_y, 'std dev PMT Y', output_path, 'std_y', y_name = yname, label=label, bins=20)
     generic_histogram(std_z, 'std dev PMT Z', output_path, 'std_z', y_name = yname, label=label, bins=20)
-    generic_histogram(num_pmt, 'Number of PMTs', output_path, 'num_pmt', y_name = yname, label=label, range=[0,250], bins=20)
+    generic_histogram(num_pmt, 'Number of PMTs', output_path, 'num_pmt', y_name = yname, label=label, range=[0,4000], bins=20)
     generic_histogram(truth_energy, 'Truth Energy [MeV]', output_path, 'truth_energy', y_name = yname, label=label, bins=20)
     generic_histogram(truth_veto, 'Truth veto', output_path, 'truth_veto', y_name = yname, label=label, bins=20)
     generic_histogram(truth_labels, 'Truth label', output_path, 'truth_label', y_name = yname, label=label, bins=20)
