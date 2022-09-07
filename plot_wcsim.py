@@ -20,15 +20,15 @@ def calculate_wcsim_wall_variables(position, direction):
     #Calculate wall variables
     position = position[0]
     direction = direction[0]
-    min_vertical_wall = 2070-abs(position[2])
-    min_horizontal_wall = 1965 - math.sqrt(position[0]*position[0] + position[1]*position[1])
+    min_vertical_wall = 1800-abs(position[2])
+    min_horizontal_wall = 1700 - math.sqrt(position[0]*position[0] + position[1]*position[1])
     wall = min(min_vertical_wall,min_horizontal_wall)
 
     #Calculate towall
     point_1 = [position[0], position[1]]
     point_2 = [position[0] + direction[0],position[1] + direction[1]]
     coefficients = np.polyfit([point_1[0], point_2[0]],[point_1[1], point_2[1]],1)
-    for_quadratic = [1+coefficients[0]*coefficients[0],2*coefficients[0]*coefficients[1],coefficients[1]*coefficients[1]-(1965*1965)]
+    for_quadratic = [1+coefficients[0]*coefficients[0],2*coefficients[0]*coefficients[1],coefficients[1]*coefficients[1]-(1700*1700)]
     quad_sols_x = np.roots(for_quadratic)
     quad_sols_y = [coefficients[0]*quad_sols_x[0] + coefficients[1], coefficients[0]*quad_sols_x[1] + coefficients[1] ]
     small_index = np.argmin([quad_sols_x[0], quad_sols_x[1]])
@@ -39,7 +39,7 @@ def calculate_wcsim_wall_variables(position, direction):
         right_index = small_index
 
     time_to_horizontal = abs(position[0] - quad_sols_x[right_index])/direction[0]
-    vertical_towall_distance = np.min([abs(position[2]-2007),abs(position[2]+2007)])
+    vertical_towall_distance = np.min([abs(position[2]-1800),abs(position[2]+1800)])
     time_to_vertical = abs(vertical_towall_distance/direction[2])
 
     if time_to_horizontal < time_to_vertical:

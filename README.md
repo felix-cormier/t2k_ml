@@ -17,13 +17,14 @@ This will download and install miniconda, with prompts to decide where to instal
 
 ```
 conda env create --file=t2k_ml_root_4.yml
-conda activate t2k_ml_root_4
+conda env create --file=t2k_ml_root_2.yml
+conda activate t2k_ml_root_2
 ```
 
 This conda environment should give you access to most libraries needed in this repo. If running things locally, when in the main repo directory, one should run this every new shell, except when running WCSim:
 
 ```
-conda activate t2k_ml_root_4
+conda activate t2k_ml_root_2
 source transform_modules.sh
 ```
 

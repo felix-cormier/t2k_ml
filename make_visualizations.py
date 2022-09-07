@@ -23,7 +23,7 @@ def make_visualizations(h5_file, output_path):
     max = h5_file['event_hits_index'].shape[0]
 
     ratio = num_visualization/max
-    random.seed(1)
+    random.seed(0)
 
     x_pos=[]
     y_pos=[]
