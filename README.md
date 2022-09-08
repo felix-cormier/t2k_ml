@@ -4,7 +4,21 @@
 
 ### Set-up
 
-Once you've cloned the directory, there is some setup to do.
+To clone the repo
+
+```
+git clone https://github.com/felix-cormier/t2k_ml.git
+```
+
+Since we're using the WatChMaL _DataTools_ submodule, navigate to the repo directory and initialize the submodule by
+
+```
+cd t2k_ml/
+git submodule init
+git submodule update
+```
+
+Once you've cloned the repo and initialized the submodule, there is some setup to do.
 
 You want to use anaconda to install some packages. Make a folder in your home directory (e.g. miniconda), navigate to it,  and run
 
@@ -131,7 +145,9 @@ You can plot some of the variables from a WCSim transformed .hy file. To do this
 --output_plot_path=[...]
 ```
 
-Where input plot path can be either a directory, or the path and name of a file which then contains multiple paths and names of files (preferably a combination .hy file). The output path is where the plots generated will be stored. N.B. there is an artificial limit of 5000 on the number of events looked at for each .hy file to speed this up.
+Where input plot path can be either a directory, or the path and name of a text file which then contains multiple paths and names of files (preferably a combination .hy file). The output path is where the plots generated will be stored. N.B. there is an artificial limit of 5000 on the number of events looked at for each .hy file to speed this up.
+
+N.B. If you want to plot multiple different labels (e.g. electrons and muons) at the same time, this code expects to have these in separate .hy files. You will have to provide a text file with multiple paths and names of the files you want to plot.
 
 #### Make Visualizations
 
