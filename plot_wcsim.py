@@ -122,6 +122,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
     truth_labels = []
 
     #Loop through all .hy files
+    file_paths = file_paths if text_file else [file_paths]
     for j, path in enumerate(file_paths):
         path = path.strip('\n')
         print(f'New path: {path}')
