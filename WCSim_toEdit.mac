@@ -93,7 +93,7 @@
 # default dark noise frequency (and conversion factor) is PMT property (NEW), set in the code.
 # Below gives possibility to overwrite nominal values, eg. to switch OFF the Dark Noise.
 #/DarkRate/SetDarkRate 0 kHz   #Turn dark noise off
-#/DarkRate/SetDarkRate 4.2 kHz #This is the value for SKI set in SKDETSIM.
+/DarkRate/SetDarkRate 4.2 kHz #This is the value for SKI set in SKDETSIM.
 #/DarkRate/SetDarkRate 8.4 kHz #For 20 inch HPDs and Box and Line PMTs, based on High QE 20 inch R3600 dark rate from EGADS nov 2014
 #/DarkRate/SetDarkRate 3.0 kHz #For 12 inch HPDs and Box and Line PMTs, based on High QE 20 inch R3600 dark rate from EGADS nov 2014
 
@@ -151,8 +151,8 @@
 /GENERATOR/pos/radius RADIUS_NUM RADIUS_UNIT
 /GENERATOR/ang/type iso
 /GENERATOR/ene/type Lin
-/GENERATOR/ene/min 100 MeV
-/GENERATOR/ene/max 1000 MeV
+/GENERATOR/ene/min ENERGY_MIN ENERGY_UNIT
+/GENERATOR/ene/max ENERGY_MAX ENERGY_UNIT
 /GENERATOR/ene/gradient 0
 /GENERATOR/ene/intercept 1
 

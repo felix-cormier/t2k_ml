@@ -38,23 +38,24 @@ args = parser.parse_args(['--transformPath','foo','@args_ml.txt',
                    '--numJobs','foo','@args_ml.txt',
                    '--transformName','foo','@args_ml.txt'])
 
+
 if args.doWCSim and args.doTransform and args.doBatch and args.output_path is not None:
     print("Submitting jobs")
     num_jobs = int(args.numJobs)
     events_per_job = int(args.eventsPerJob)
-    wcsim_options = WCSimOptions(output_directory=args.output_path, save_input_options=False,  radius=[1700.,'cm'], halfz=[1800.,'cm'], generator = 'gps', particle='gamma')
+    wcsim_options = WCSimOptions(output_directory=args.output_path, save_input_options=False,  energy=[0,1200,'MeV'], radius=[1690.,'cm'], halfz=[1750.,'cm'], generator = 'gps', particle='gamma')
     wcsim_options.set_output_directory()
     wcsim_options.save_options(args.output_path,'wc_options.pkl')
     print(wcsim_options.particle)
 
     for i in range(num_jobs):
-        talk = ('sbatch  --mem-per-cpu=4G --nodes=1 --ntasks-per-node=1 --time=01:00:00 --export=ALL,ARG1='+str(events_per_job)+',ARG2='+str(args.output_path)+' wcsim_job.sh')
+        talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=4G --nodes=1 --ntasks-per-node=1 --time=02:00:00 --export=ALL,ARG1='+str(events_per_job)+',ARG2='+str(args.output_path)+' wcsim_job.sh')
         subprocess.call(talk, shell=True)
 
 
 elif args.doWCSim:
     print("Running WCSim")
-    wcsim_options = WCSimOptions(num_events=20,  radius=[2000.,'cm'], halfz=[2001.,'cm'], generator = 'gps', particle='e-', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/test_2000halfz2001radCyl_electrons_sep2/')
+    wcsim_options = WCSimOptions(num_events=500, energy=[0,1200,'MeV'], radius=[1690.,'cm'], halfz=[1750.,'cm'], generator = 'gps', particle='gamma', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/test_2000halfz2001radCyl_electrons_sep2/')
     wcsim_options.set_options(filename='WCSim_toEdit.mac')
     wcsim_options.run_local_wcsim()
 
@@ -63,7 +64,7 @@ elif args.doTransform:
     print("Transform from ROOT to .h5")
     wcsim_options = WCSimOptions()
     #wcsim_options = wcsim_options.load_options(args.transformPath, 'wc_options.pkl')
-    test = dump_file(str(args.transformPath) + '/' + str(args.transformName), str(args.transformPath) + '/' + 'wcsim_transform', create_image_file=False)
+    test = dump_file(str(args.transformPath) + '/' + str(args.transformName), str(args.transformPath) + '/' + 'wcsim_transform', create_image_file=False, create_geo_file=False)
 
 if args.makeVisualizations:
     from plot_wcsim import plot_wcsim
@@ -74,7 +75,8 @@ if args.makeVisualizations:
     make_visualizations(myfile, args.output_vis_path)
 
 if args.doCombination:
-    combine_files(args.input_combination_path, args.output_combination_path, 'digi')
+    extra_string = 'digi'
+    combine_files(args.input_combination_path, args.output_combination_path, extra_string)
 
 if args.makeInputPlots:
 
@@ -87,7 +89,7 @@ if args.makeInputPlots:
         wcsim_options = wcsim_options.load_options(args.input_plot_path, 'wc_options.pkl')
     wcsim_options.output_directory = args.output_plot_path
     wcsim_options.set_output_directory()
-    plot_wcsim(args.input_plot_path, args.output_plot_path, wcsim_options, text_file=use_text_file)
+    plot_wcsim(args.input_plot_path, args.output_plot_path, wcsim_options, text_file=use_text_file, truthOnly=True)
 
 if args.dumpOptions:
     text_file = open(args.input_plot_path, "r")

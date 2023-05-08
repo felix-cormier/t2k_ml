@@ -20,15 +20,15 @@ def calculate_wcsim_wall_variables(position, direction):
     #Calculate wall variables
     position = position[0]
     direction = direction[0]
-    min_vertical_wall = 1800-abs(position[2])
-    min_horizontal_wall = 1700 - math.sqrt(position[0]*position[0] + position[1]*position[1])
+    min_vertical_wall = 1810-abs(position[2])
+    min_horizontal_wall = 1690 - math.sqrt(position[0]*position[0] + position[1]*position[1])
     wall = min(min_vertical_wall,min_horizontal_wall)
 
     #Calculate towall
     point_1 = [position[0], position[1]]
     point_2 = [position[0] + direction[0],position[1] + direction[1]]
     coefficients = np.polyfit([point_1[0], point_2[0]],[point_1[1], point_2[1]],1)
-    for_quadratic = [1+coefficients[0]*coefficients[0],2*coefficients[0]*coefficients[1],coefficients[1]*coefficients[1]-(1700*1700)]
+    for_quadratic = [1+coefficients[0]*coefficients[0],2*coefficients[0]*coefficients[1],coefficients[1]*coefficients[1]-(1690*1690)]
     quad_sols_x = np.roots(for_quadratic)
     quad_sols_y = [coefficients[0]*quad_sols_x[0] + coefficients[1], coefficients[0]*quad_sols_x[1] + coefficients[1] ]
     small_index = np.argmin([quad_sols_x[0], quad_sols_x[1]])
@@ -39,12 +39,19 @@ def calculate_wcsim_wall_variables(position, direction):
         right_index = small_index
 
     time_to_horizontal = abs(position[0] - quad_sols_x[right_index])/direction[0]
-    vertical_towall_distance = np.min([abs(position[2]-1800),abs(position[2]+1800)])
+    vertical_towall_distance = np.min([abs(position[2]-1810),abs(position[2]+1810)])
     time_to_vertical = abs(vertical_towall_distance/direction[2])
 
     if time_to_horizontal < time_to_vertical:
         new_z = position[2] + time_to_horizontal*direction[2]
-        towall =  math.sqrt( (position[0] - quad_sols_x[right_index])**2 + (position[1] - quad_sols_y[right_index])**2 + (position[2]-new_z)**2) 
+        try:
+            towall =  math.sqrt( (position[0] - quad_sols_x[right_index])**2 + (position[1] - quad_sols_y[right_index])**2 + (position[2]-new_z)**2) 
+        except ValueError:
+            print(f'towall had a math domain error')
+            new_x = position[0] + time_to_vertical*direction[0]
+            new_y = position[1] + time_to_vertical*direction[1]
+            towall = math.sqrt( (position[0] - new_x)**2 + (position[1] - new_y)**2 + vertical_towall_distance**2 )
+
     else:
         new_x = position[0] + time_to_vertical*direction[0]
         new_y = position[1] + time_to_vertical*direction[1]
@@ -62,6 +69,14 @@ def calculate_wcsim_wall_variables(position, direction):
         pass
     '''
 
+def load_geofile(geofile_name):
+
+    with np.load(geofile_name) as data:
+        return data['position']
+
+def convert_values(geofile,input):
+    return [geofile[x] for x in input]
+
 
 def convert_label(label):
     if label == 0:
@@ -73,7 +88,11 @@ def convert_label(label):
     else:
         return label
 
-def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
+def get_cherenkov_threshold(label):
+    threshold_dict = {0: 160., 1:0.8, 2: 0.}
+    return threshold_dict[label]
+
+def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnly = False):
     """Plots PMT and event variables
 
     Args:
@@ -84,6 +103,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
     """
 
     num_files=1
+    geofile = load_geofile('data/geofile.npz')
     file_paths=input_path
     #Behaviour different depending on format of input (single or multiple files)
     if text_file:
@@ -117,7 +137,9 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
     position_y = []
     position_z = []
 
+
     truth_energy = []
+    truth_visible_energy = []
     truth_veto = []
     truth_labels = []
 
@@ -157,6 +179,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
             temp_position_z = []
 
             temp_truth_energy = [] 
+            temp_truth_visible_energy = [] 
             temp_truth_veto = [] 
             temp_truth_labels = [] 
 
@@ -170,7 +193,11 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
             #Loop through all events in file
             for i,index in enumerate(h5fw['event_hits_index']):
                 #Stop at 5000 events, to make it go faster
-                if i > 5000:
+                if i > 20000:
+                    continue
+                if i>=(len(h5fw['event_hits_index'])-1):
+                    break
+                if h5fw['event_hits_index'][i]==h5fw['event_hits_index'][i+1]:
                     continue
                 if i < max-1:
                     wall_out, towall_out = calculate_wcsim_wall_variables(h5fw['positions'][i], h5fw['directions'][i])
@@ -183,6 +210,8 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
                     temp_wall.append(wall_out)
                     temp_towall.append(towall_out)
                     temp_truth_energy.append(float(h5fw['energies'][i]))
+
+                    temp_truth_visible_energy.append(float(h5fw['energies'][i])-get_cherenkov_threshold(h5fw['labels'][i]))
                     temp_truth_labels.append(float(h5fw['labels'][i]))
                     temp_truth_veto.append(float(h5fw['veto'][i]))
 
@@ -193,21 +222,29 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
                     temp_position_x.append(float(h5fw['positions'][i][:,0]))
                     temp_position_y.append(float(h5fw['positions'][i][:,1]))
                     temp_position_z.append(float(h5fw['positions'][i][:,2]))
+                    if ((abs(float(h5fw['positions'][i][:,0])) + abs(float(h5fw['positions'][i][:,1]))+ abs(float(h5fw['positions'][i][:,2]))) < 1.0):
+                        print(float(h5fw['positions'][i][:,0]))                                        
+
+                    temp_num_pmt.append(h5fw['event_hits_index'][i+1] - h5fw['event_hits_index'][i])
+
+                    if truthOnly:
+                        continue
+
+                    pmt_positions = np.array(convert_values(geofile,h5fw['hit_pmt'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
 
                     temp_mean_charge.append(np.mean(h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
                     temp_total_charge.append(np.sum(h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
                     temp_mean_time.append(np.mean(h5fw['hit_time'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
-                    temp_mean_x.append(np.mean(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,0]))
-                    temp_mean_y.append(np.mean(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,1]))
-                    temp_mean_z.append(np.mean(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,2]))
+                    temp_mean_x.append(np.mean(pmt_positions[:,0]))
+                    temp_mean_y.append(np.mean(pmt_positions[:,1]))
+                    temp_mean_z.append(np.mean(pmt_positions[:,2]))
                     if np.sum(h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]) > 0:
-                        temp_weighted_mean_x.append(np.average(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,0],weights=h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
-                        temp_weighted_mean_y.append(np.average(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,1],weights=h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
-                        temp_weighted_mean_z.append(np.average(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,2],weights=h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
-                    temp_std_x.append(np.std(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,0]))
-                    temp_std_y.append(np.std(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,1]))
-                    temp_std_z.append(np.std(h5fw['hit_pmt_pos'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]][:,2]))
-                    temp_num_pmt.append(h5fw['event_hits_index'][i+1] - h5fw['event_hits_index'][i])
+                        temp_weighted_mean_x.append(np.average(pmt_positions[:,0],weights=h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
+                        temp_weighted_mean_y.append(np.average(pmt_positions[:,1],weights=h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
+                        temp_weighted_mean_z.append(np.average(pmt_positions[:,2],weights=h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
+                    temp_std_x.append(np.std(pmt_positions[:,0]))
+                    temp_std_y.append(np.std(pmt_positions[:,1]))
+                    temp_std_z.append(np.std(pmt_positions[:,2]))
                     '''
                     n_pmt = h5fw['event_hits_index'][i+1] - h5fw['event_hits_index'][i]
                     tot_charge = np.sum(h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]])
@@ -235,6 +272,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
         std_z.append(temp_std_z)
         num_pmt.append(temp_num_pmt)
         truth_energy.append(temp_truth_energy)
+        truth_visible_energy.append(temp_truth_visible_energy)
         truth_veto.append(temp_truth_veto)
         truth_labels.append(temp_truth_labels)
         label.append(temp_label)
@@ -246,24 +284,13 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
         position_y.append(temp_position_y)
         position_z.append(temp_position_z)
 
+
     #Plot all
     yname="Num. Events"
-    generic_histogram(mean_charge, 'Mean Charge', output_path, 'mean_charge', y_name = yname, label=label, bins=20)
-    generic_histogram(total_charge, 'Total Charge', output_path, 'total_charge', y_name = yname, label=label, bins=20)
     generic_histogram(wall, 'Wall [cm]', output_path, 'wall', range=[0,2000], y_name = yname, label=label, bins=20)
     generic_histogram(towall, 'Towall [cm]', output_path, 'towall', range = [0,5000], y_name = yname, label=label, bins=20)
-    generic_histogram(mean_time, 'Mean Time', output_path, 'mean_time', y_name = yname, label=label, bins=20)
-    generic_histogram(mean_x, 'Mean PMT X', output_path, 'mean_x', y_name = yname, label=label, bins=20)
-    generic_histogram(mean_y, 'Mean PMT Y', output_path, 'mean_y', y_name = yname, label=label, bins=20)
-    generic_histogram(mean_z, 'Mean PMT Z', output_path, 'mean_z', y_name = yname, label=label, bins=20)
-    generic_histogram(weighted_mean_x, 'Weighted Mean PMT X', output_path, 'weighted_mean_x', y_name = yname, label=label, bins=20)
-    generic_histogram(weighted_mean_y, 'Weighted Mean PMT Y', output_path, 'weighted_mean_y', y_name = yname, label=label, bins=20)
-    generic_histogram(weighted_mean_z, 'Weighted Mean PMT Z', output_path, 'weighted_mean_z', y_name = yname, label=label, bins=20)
-    generic_histogram(std_x, 'std dev PMT X', output_path, 'std_x', y_name = yname, label=label, bins=20)
-    generic_histogram(std_y, 'std dev PMT Y', output_path, 'std_y', y_name = yname, label=label, bins=20)
-    generic_histogram(std_z, 'std dev PMT Z', output_path, 'std_z', y_name = yname, label=label, bins=20)
-    generic_histogram(num_pmt, 'Number of PMTs', output_path, 'num_pmt', y_name = yname, label=label, range=[0,4000], bins=20)
     generic_histogram(truth_energy, 'Truth Energy [MeV]', output_path, 'truth_energy', y_name = yname, label=label, bins=20)
+    generic_histogram(truth_visible_energy, 'Truth Visible Energy [MeV]', output_path, 'truth_visible_energy', y_name = yname, label=label, bins=20)
     generic_histogram(truth_veto, 'Truth veto', output_path, 'truth_veto', y_name = yname, label=label, bins=20)
     generic_histogram(truth_labels, 'Truth label', output_path, 'truth_label', y_name = yname, label=label, bins=20)
 
@@ -271,7 +298,24 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False):
     generic_histogram(direction_y, 'Truth Direction Y', output_path, 'truth_direction_y', y_name = yname, label=label, bins=20)
     generic_histogram(direction_z, 'Truth Direction Z', output_path, 'truth_direction_z', y_name = yname, label=label, bins=20)
 
-    generic_histogram(position_x, 'Truth position X', output_path, 'truth_position_x', y_name = yname, label=label, bins=20)
-    generic_histogram(position_y, 'Truth position Y', output_path, 'truth_position_y', y_name = yname, label=label, bins=20)
-    generic_histogram(position_z, 'Truth position Z', output_path, 'truth_position_z', y_name = yname, label=label, bins=20)
+    generic_histogram(position_x, 'Truth position X [cm]', output_path, 'truth_position_x', y_name = yname, label=label, bins=20)
+    generic_histogram(position_y, 'Truth position Y [cm]', output_path, 'truth_position_y', y_name = yname, label=label, bins=20)
+    generic_histogram(position_z, 'Truth position Z [cm]', output_path, 'truth_position_z', y_name = yname, label=label, bins=20)
+
+    if truthOnly:
+        return 0
+
+    generic_histogram(mean_time, 'Mean Time', output_path, 'mean_time', y_name = yname, label=label, bins=20)
+    generic_histogram(mean_charge, 'Mean Charge', output_path, 'mean_charge', y_name = yname, label=label, bins=20)
+    generic_histogram(total_charge, 'Total Charge', output_path, 'total_charge', y_name = yname, label=label, bins=20)
+    generic_histogram(mean_x, 'Mean PMT X [cm]', output_path, 'mean_x', y_name = yname, label=label, bins=20)
+    generic_histogram(mean_y, 'Mean PMT Y [cm]', output_path, 'mean_y', y_name = yname, label=label, bins=20)
+    generic_histogram(mean_z, 'Mean PMT Z [cm]', output_path, 'mean_z', y_name = yname, label=label, bins=20)
+    generic_histogram(weighted_mean_x, 'Weighted Mean PMT X [cm]', output_path, 'weighted_mean_x', y_name = yname, label=label, bins=20)
+    generic_histogram(weighted_mean_y, 'Weighted Mean PMT Y [cm]', output_path, 'weighted_mean_y', y_name = yname, label=label, bins=20)
+    generic_histogram(weighted_mean_z, 'Weighted Mean PMT Z [cm]', output_path, 'weighted_mean_z', y_name = yname, label=label, bins=20)
+    generic_histogram(std_x, 'std dev PMT X [cm]', output_path, 'std_x', y_name = yname, label=label, bins=20)
+    generic_histogram(std_y, 'std dev PMT Y [cm]', output_path, 'std_y', y_name = yname, label=label, bins=20)
+    generic_histogram(std_z, 'std dev PMT Z [cm]', output_path, 'std_z', y_name = yname, label=label, bins=20)
+    generic_histogram(num_pmt, 'Number of PMTs', output_path, 'num_pmt', y_name = yname, label=label, range=[0,4000], bins=20)
 
