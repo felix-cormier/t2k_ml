@@ -6,7 +6,7 @@ import pickle
 class WCSimOptions():
     """A class which can set, store, steer WCSim and its options
     """
-    def __init__(self, generator='gun', particle='e-', energy=[500,'MeV'], halfz = [2007.,'cm'], radius= [1965., 'cm'], direction=[1,0,0], position=[0,0,0], output_name='wcsim.root', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/', num_events=500, batch=False, save_input_options=False, seed=0):
+    def __init__(self, generator='gun', particle='e-', energy=[0,1000,'MeV'], halfz = [2007.,'cm'], radius= [1965., 'cm'], direction=[1,0,0], position=[0,0,0], output_name='wcsim.root', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/', num_events=500, batch=False, save_input_options=False, seed=0):
         """_summary_
 
         Args:
@@ -26,6 +26,7 @@ class WCSimOptions():
         self.generator = generator
         self.particle = particle
         self.energy = energy
+        self.correct_energy()
         self.halfz = halfz
         self.radius = radius
         self.direction = direction
@@ -36,6 +37,13 @@ class WCSimOptions():
         self.batch=batch
         self.seed=seed
         self.save_input_options=save_input_options
+
+    def correct_energy(self):
+        """Corrects input energy with Cherenkov threshold per particle
+        """
+        threshold_dict = {'mu-':54.6, 'mu+':54.6, 'e-':0.264, 'e+':0.264, 'gamma':2*0.511+0.264}
+        self.energy[0] = self.energy[0] + threshold_dict[self.particle]
+        self.energy[1] = self.energy[1] + threshold_dict[self.particle]
 
     def dump_options(self):
         print(f'Generator: {self.generator}')
@@ -83,13 +91,14 @@ class WCSimOptions():
             filename (str, optional): Filename to copy and edit Defaults to 'WCSim_toEdit.mac'.
 
         """
-        pat = re.compile(b'GENERATOR|PARTICLE|SEED|ENERGY_NUM|ENERGY_UNIT|HALFZ_NUM|HALFZ_UNIT|RADIUS_NUM|RADIUS_UNIT|DIR_0|DIR_1|DIR_2|POS_0|POS_1|POS_2|OUTPUT_NAME|NUM_EVENTS')
+        pat = re.compile(b'GENERATOR|PARTICLE|SEED|ENERGY_MIN|ENERGY_MAX|ENERGY_UNIT|HALFZ_NUM|HALFZ_UNIT|RADIUS_NUM|RADIUS_UNIT|DIR_0|DIR_1|DIR_2|POS_0|POS_1|POS_2|OUTPUT_NAME|NUM_EVENTS')
 
         def jojo(mat,dic = {b'GENERATOR':str.encode(str(self.generator)),
                             b'PARTICLE':str.encode(str(self.particle)),
                             b'SEED':str.encode(str(self.seed)),
-                            b'ENERGY_NUM':str.encode(str(self.energy[0])),
-                            b'ENERGY_UNIT':str.encode(str(self.energy[1])),
+                            b'ENERGY_MIN':str.encode(str(self.energy[0])),
+                            b'ENERGY_MAX':str.encode(str(self.energy[1])),
+                            b'ENERGY_UNIT':str.encode(str(self.energy[2])),
                             b'HALFZ_NUM':str.encode(str(self.halfz[0])),
                             b'HALFZ_UNIT':str.encode(str(self.halfz[1])),
                             b'RADIUS_NUM':str.encode(str(self.radius[0])),

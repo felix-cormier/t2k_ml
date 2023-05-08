@@ -10,7 +10,7 @@
             "request": "attach",
             "justMyCode": false,
             "connect": {
-                "host": "nc20529",
+                "host": "nc11115",
                 "port": 1080
             },
             "pathMappings": [
