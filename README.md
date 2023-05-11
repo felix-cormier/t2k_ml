@@ -14,8 +14,7 @@ Since we're using the WatChMaL _DataTools_ submodule, navigate to the repo direc
 
 ```
 cd t2k_ml/
-git submodule init
-git submodule update
+git submodule update --init --recursive
 ```
 
 Once you've cloned the repo and initialized the submodule, there is some setup to do.
