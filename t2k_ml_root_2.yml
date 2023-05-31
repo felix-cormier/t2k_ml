@@ -1,0 +1,11 @@
+name: t2k_ml_root_4
+channels:
+  - defaults
+dependencies:
+  - debugpy
+  - root==6.20.04=py36h603e393_3
+  - python=3.6
+  - numpy
+  - geant4
+  - h5py
+prefix: /home/ipress/t2k_ml_old/t2k_ml_root_4
