@@ -186,7 +186,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnl
 
             #Get label from options, if not, take median of labels in file
             if options_exists:
-                temp_label = [wcsim_options.particle[0]]
+                temp_label = wcsim_options.particle[0]
             else:
                 temp_label = convert_label(np.median(h5fw['labels']))
             
@@ -194,7 +194,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnl
             #Loop through all events in file
             for i,index in enumerate(h5fw['event_hits_index']):
                 #Stop at 5000 events, to make it go faster
-                if i > 20000:
+                if i > 5000:
                     continue
                 if i>=(len(h5fw['event_hits_index'])-1):
                     break
