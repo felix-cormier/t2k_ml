@@ -3,12 +3,14 @@ import os
 import subprocess
 
 from wcsim_options import WCSimOptions
+from skdetsim_options import SKDETSimOptions
 from DataTools.root_utils.merge_h5 import combine_files
 
 import h5py
 
 parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
 parser.add_argument("--doWCSim", help="run WCSim", action="store_true")
+parser.add_argument("--doSKDETSim", help="run SKDETSim", action="store_true")
 parser.add_argument("--doTransform", help="transform WCSim root file to numpy", action="store_true")
 parser.add_argument("--doBatch", help="use the batch system", action="store_true")
 parser.add_argument("--doCombination", help="use the batch system", action="store_true")
@@ -40,7 +42,7 @@ args = parser.parse_args(['--transformPath','foo','@args_ml.txt',
 
 
 if args.doWCSim and args.doTransform and args.doBatch and args.output_path is not None:
-    print("Submitting jobs")
+    print("Submitting WCSim jobs")
     num_jobs = int(args.numJobs)
     events_per_job = int(args.eventsPerJob)
     wcsim_options = WCSimOptions(output_directory=args.output_path, save_input_options=False,  energy=[0,1200,'MeV'], radius=[1690.,'cm'], halfz=[1750.,'cm'], generator = 'gps', particle='gamma')
@@ -52,12 +54,38 @@ if args.doWCSim and args.doTransform and args.doBatch and args.output_path is no
         talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=4G --nodes=1 --ntasks-per-node=1 --time=02:00:00 --export=ALL,ARG1='+str(events_per_job)+',ARG2='+str(args.output_path)+' wcsim_job.sh')
         subprocess.call(talk, shell=True)
 
+elif args.doSKDETSim and args.doTransform and args.doBatch and args.output_path is not None:
+    print("Submitting SKDETSim jobs")
+    num_jobs = int(args.numJobs)
+    events_per_job = int(args.eventsPerJob)
+    skdetsim_options = SKDETSimOptions(output_directory=args.output_path, save_input_options=False,  energy=[0,1200,'MeV'], particle=11)
+    skdetsim_options.set_output_directory()
+    skdetsim_options.save_options(args.output_path,'sk_options.pkl')
+    print(skdetsim_options.particle)
+
+    for i in range(num_jobs):
+        talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=4G --nodes=1 --ntasks-per-node=1 --time=02:00:00 --export=ALL,ARG1='+str(events_per_job)+',ARG2='+str(args.output_path)+' skdetsim_job.sh')
+        subprocess.call(talk, shell=True)
+
 
 elif args.doWCSim:
     print("Running WCSim")
     wcsim_options = WCSimOptions(num_events=500, energy=[0,1200,'MeV'], radius=[1690.,'cm'], halfz=[1750.,'cm'], generator = 'gps', particle='gamma', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/test_2000halfz2001radCyl_electrons_sep2/')
     wcsim_options.set_options(filename='WCSim_toEdit.mac')
     wcsim_options.run_local_wcsim()
+
+elif args.doTransform and args.doSKDETSim:
+    from DataTools.root_utils.event_dump import dump_file_skdetsim
+    print("Transform from .root to .h5")
+    skdetsim_options = SKDETSimOptions()
+    #wcsim_options = wcsim_options.load_options(args.transformPath, 'wc_options.pkl')
+    test = dump_file_skdetsim(str(args.transformPath) + '/' + str(args.transformName), str(args.transformPath) + '/' + 'skdetsim_transform', create_image_file=False, create_geo_file=False)
+
+elif args.doSKDETSim:
+    print("Running SKDETSim")
+    skdetsim_options = SKDETSimOptions(num_events=10, energy=[0,1200], wall=100, particle=11, output_directory='/scratch/fcormier/t2k/ml/output_skdetsim/test_electron_wall100_jul4/')
+    skdetsim_options.set_options(filename='sk4_odtune_toEdit.card')
+    skdetsim_options.run_local_skdetsim()
 
 elif args.doTransform:
     from DataTools.root_utils.event_dump import dump_file
