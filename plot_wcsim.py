@@ -53,7 +53,13 @@ def calculate_wcsim_wall_variables(position, direction):
         right_index = small_index
 
     time_to_horizontal = abs(position[0] - quad_sols_x[right_index])/direction[0]
-    vertical_towall_distance = np.min([abs(position[2]-1810),abs(position[2]+1810)])
+    if direction[2] < 0:
+        vertical_towall_distance = 1810+position[2]
+    elif direction[2] > 0:
+        vertical_towall_distance = 1810-position[2]
+    else:
+        vertical_towall_distance = 0
+    #vertical_towall_distance = np.min([abs(position[2]-1810),abs(position[2]+1810)])
     time_to_vertical = abs(vertical_towall_distance/direction[2])
 
     if time_to_horizontal < time_to_vertical:
@@ -178,7 +184,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnl
             print(f'Loading options from: {path}wc_options.pkl')
             wcsim_options = wcsim_options.load_options(path, 'wc_options.pkl')
             print(f'Particle: {wcsim_options.particle}')
-        with h5py.File(path+'/digi_combine_50k.hy',mode='r') as h5fw:
+        with h5py.File(path,mode='r') as h5fw:
 
             #Temporary list of variables for each event
             temp_mean_charge = []
@@ -238,28 +244,28 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnl
             #Loop through all events in file
             for i,index in enumerate(h5fw['event_hits_index']):
                 #Stop at 5000 events, to make it go faster
-                if i > 5000:
+                if i > (len(h5fw['event_hits_index']) - 2):
                     continue
                 if i>=(len(h5fw['event_hits_index'])-1):
                     break
                 if h5fw['event_hits_index'][i]==h5fw['event_hits_index'][i+1]:
                     continue
                 if i < max-1:
-                    wall_out, towall_out = calculate_wcsim_wall_variables(h5fw['gamma_start_vtx'][i], h5fw['directions'][i])
-                    wall_out_gev, towall_out_gev= calculate_wcsim_wall_variables(h5fw['positions'][i], h5fw['directions'][i])
+                    #wall_out, towall_out = calculate_wcsim_wall_variables(h5fw['gamma_start_vtx'][i], h5fw['directions'][i])
+                    #wall_out_gev, towall_out_gev= calculate_wcsim_wall_variables(h5fw['positions'][i], h5fw['directions'][i])
 
-                    if ((abs(float(h5fw['positions'][i][:,0])) + abs(float(h5fw['positions'][i][:,1]))+ abs(float(h5fw['positions'][i][:,2]))) < 1.0):
-                        continue
-                    if 'g' in temp_label and ((abs(float(h5fw['gamma_start_vtx'][i][:,0])) + abs(float(h5fw['gamma_start_vtx'][i][:,1])) + abs(float(h5fw['gamma_start_vtx'][i][:,2]))) < 1.0):
-                        continue
+                    #if ((abs(float(h5fw['positions'][i][:,0])) + abs(float(h5fw['positions'][i][:,1]))+ abs(float(h5fw['positions'][i][:,2]))) < 1.0):
+                        #continue
+                    #if 'g' in temp_label and ((abs(float(h5fw['gamma_start_vtx'][i][:,0])) + abs(float(h5fw['gamma_start_vtx'][i][:,1])) + abs(float(h5fw['gamma_start_vtx'][i][:,2]))) < 1.0):
+                    #    continue
                     #print('wall_out', wall_out)
-                    temp_wall.append(wall_out)
-                    temp_towall.append(towall_out)
-                    temp_wall_gev.append(wall_out_gev)
-                    temp_towall_gev.append(towall_out_gev)
-                    temp_truth_energy.append(float(h5fw['energies'][i]))
+                    #temp_wall.append(wall_out)
+                    #temp_towall.append(towall_out)
+                    #temp_wall_gev.append(wall_out_gev)
+                    #temp_towall_gev.append(towall_out_gev)
+                    #temp_truth_energy.append(float(h5fw['energies'][i]))
 
-                    temp_truth_visible_energy.append(float(h5fw['energies'][i])-get_cherenkov_threshold(h5fw['labels'][i]))
+                    #temp_truth_visible_energy.append(float(h5fw['energies'][i])-get_cherenkov_threshold(h5fw['labels'][i]))
                     temp_truth_labels.append(float(h5fw['labels'][i]))
                     temp_truth_veto.append(float(h5fw['veto'][i]))
 
@@ -317,7 +323,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnl
                         print(f'label: {event_label}')
                     '''
 
-            
+        '''     
         mean_charge.append(temp_mean_charge)
         total_charge.append(temp_total_charge)
         wall.append(temp_wall)
@@ -339,10 +345,11 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnl
         truth_energy.append(temp_truth_energy)
         truth_visible_energy.append(temp_truth_visible_energy)
         truth_veto.append(temp_truth_veto)
+        '''
         truth_labels.append(temp_truth_labels)
         label.append(temp_label)
         #print('label = ', truth_labels)
-
+        
         #mean_r.append(sqrt(square(mean_x) + square(mean_y)))
 
         temp_direction_x = np.array(temp_direction_x)
@@ -351,11 +358,11 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnl
         temp_position_x = np.array(temp_position_x)
         temp_position_y = np.array(temp_position_y)
         temp_position_z = np.array(temp_position_z)
-        temp_gamma_end_vtx_x = np.array(temp_gamma_end_vtx_x)
-        temp_gamma_end_vtx_y = np.array(temp_gamma_end_vtx_y)
-        temp_gamma_end_vtx_z = np.array(temp_gamma_end_vtx_z)
+        #temp_gamma_end_vtx_x = np.array(temp_gamma_end_vtx_x)
+        #temp_gamma_end_vtx_y = np.array(temp_gamma_end_vtx_y)
+        #temp_gamma_end_vtx_z = np.array(temp_gamma_end_vtx_z)
         #print('temp position y', len(temp_position_y))
-        temp_direction_r = np.sqrt(np.square(temp_direction_x) + np.square(temp_direction_y))
+        #temp_direction_r = np.sqrt(np.square(temp_direction_x) + np.square(temp_direction_y))
         #print('temp direction r', len(temp_direction_r))
         direction_x.append(temp_direction_x)
         direction_y.append(temp_direction_y)
@@ -369,7 +376,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnl
         position_z.append(temp_position_z)
         #position_r.append(sqrt(square(temp_position_x) + square(temp_position_y)))
         position_r.append(temp_position_r)
-        print('gamma_end_vtx_xyz.append')
+        #print('gamma_end_vtx_xyz.append')
         temp_gamma_end_vtx_r = (np.sqrt(np.square(temp_gamma_end_vtx_x) + np.square(temp_gamma_end_vtx_y)))
         gamma_end_vtx_x.append(temp_gamma_end_vtx_x)
         #print('temp gamma end vtx r', len(temp_gamma_end_vtx_r))
@@ -385,9 +392,11 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnl
     position_r = list(position_r)
     #print('electrons', position_x[1])
     #print('gammas', position_x[0])
-    electron_prod_x = gamma_end_vtx_x[1]
-    electron_prod_y = gamma_end_vtx_y[1]
-    electron_prod_z = gamma_end_vtx_z[1]
+    
+    electron_prod_x = gamma_end_vtx_x
+    electron_prod_y = gamma_end_vtx_y
+    electron_prod_z = gamma_end_vtx_z
+    '''
     print(electron_prod_x)
     electron_prod_r = np.sqrt(np.square(electron_prod_x) + np.square(electron_prod_y))
     #print('electron_prod = ', electron_prod)
@@ -406,7 +415,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnl
     gamma_end_vtx_r = list(gamma_end_vtx_r)
     towall = list(towall)
     towall_gev = list(towall_gev)
-        
+     
     #Plot all
     decay_distance = np.array(decay_distance)
     decay_distance.flatten()
@@ -428,7 +437,30 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnl
     truth_veto = np.array(truth_veto[0])
     towall_gev = np.array(towall_gev[0])
     electron_prod_r = np.array(electron_prod_r)
-    #print(wall)
+    '''
+    yname = 'Num. events'
+    print('this is running')
+    print('3')
+    generic_histogram(electron_prod_x, 'Truth Direction X', output_path, 'truth_elec_position_x', y_name = yname, label=label, bins=20)
+    print('4')
+    generic_histogram(electron_prod_y, 'Truth Direction X', output_path, 'truth_elec_position_y', y_name = yname, label=label, bins=20)
+    print('5')
+    generic_histogram(electron_prod_z, 'Truth Direction X', output_path, 'truth_elec_position_z', y_name = yname, label=label, bins=20)
+    print('6')
+    generic_histogram(direction_x, 'Truth Direction X', output_path, 'truth_direction_x', y_name = yname, label=label, bins=20)
+    print('7')
+    generic_histogram(direction_y, 'Truth Direction Y', output_path, 'truth_direction_y', y_name = yname, label=label, bins=20)
+    print('8')
+    generic_histogram(direction_z, 'Truth Direction Z', output_path, 'truth_direction_z', y_name = yname, label=label, bins=20)
+    print('9')
+   # generic_histogram(direction_r, 'Truth Direction R', output_path, 'truth_direction_r', y_name = yname, label=label, bins=20)
+    print('10')
+    generic_histogram(position_x, 'Truth position X [cm]', output_path, 'truth_position_x', y_name = yname, label=label, bins=20)
+    print('11')
+    generic_histogram(position_y, 'Truth position Y [cm]', output_path, 'truth_position_y', y_name = yname, label=label, bins=20)
+    print('12')
+    generic_histogram(position_z, 'Truth position Z [cm]', output_path, 'truth_position_z', y_name = yname, label=label, bins=20)
+#print(wall)
     #print(electron_prod.shape, electron_prod.ndim)
     #print(electron_prod)
     #print(wall_gev)
@@ -437,6 +469,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnl
     #print('wall = ', wall)
     #print('wall_gev = ', wall_gev)
     #print('types ', type(wall), type(position_r), type(100))
+    '''
     position_r_distance = position_r[wall0 > 150]
     position_r_gev = gamma_end_vtx_r[wall_gev > 150]
     #wall_gev_cut = wall_gev[wall > 200 & veto < 1]
@@ -454,7 +487,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnl
     position_z_cut_100 = position_z[wall0 > 100]
     position_z_gev_cut_100 = gamma_end_vtx_z[wall_gev > 100]
     electron_prod_distance_100 = electron_prod_r[wall1 > 100]
-
+    
 
 
     #print('types ', type(wall), type(position_r), type(100))
@@ -481,7 +514,8 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnl
     #wall_cut = wall[wall > 200 & veto < 1]
     #position_z_cut = position_z[truth_veto < 1]
     #position_z_gev_cut = gamma_end_vtx_z[truth_veto < 1]
-
+    '''
+'''
     #turn every nparray into a list to optimize histogram making
     towall = list(towall)
     towall_gev = list(towall_gev)
@@ -515,7 +549,8 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnl
     wall2 = list(wall2)
     wall3 = list(wall3)
     wall4 = list(wall4)
-   # generic_histogram(wall, 'Wall [cm]', output_path, 'wall', range=[0,2000], y_name = yname, label=label, bins=20)
+'''
+    #generic_histogram(wall, 'Wall [cm]', output_path, 'wall', range=[0,2000], y_name = yname, label=label, bins=20)
    # generic_histogram(wall_gev, 'Wall [cm]', output_path, 'wall_gev', range=[0,2000], y_name = yname, label=label, bins=20)
    # generic_histogram(wall_gev, 'Wall [cm]', output_path, 'wall_gev smal', range=[0,100], y_name = yname, label=label, bins=20)
    # print('1')
@@ -528,31 +563,32 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnl
     #generic_histogram(truth_energy, 'Truth Energy [MeV]', output_path, 'truth_energy', y_name = yname, label=label, bins=20)
     #print('3')
     #generic_histogram(truth_visible_energy, 'Truth Visible Energy [MeV]', output_path, 'truth_visible_energy', y_name = yname, label=label, bins=20)
+'''
     #print('4')
     #generic_histogram(truth_veto, 'Truth veto', output_path, 'truth_veto', y_name = yname, label=label, bins=20)
    # print('5')
    # generic_histogram(truth_labels, 'Truth label', output_path, 'truth_label', y_name = yname, label=label, bins=20)
-   # print('6')
-   # generic_histogram(direction_x, 'Truth Direction X', output_path, 'truth_direction_x', y_name = yname, label=label, bins=20)
-   # print('7')
-   # generic_histogram(direction_y, 'Truth Direction Y', output_path, 'truth_direction_y', y_name = yname, label=label, bins=20)
-   # print('8')
-   # generic_histogram(direction_z, 'Truth Direction Z', output_path, 'truth_direction_z', y_name = yname, label=label, bins=20)
-   # print('9')
+    #print('6')
+    generic_histogram(direction_x, 'Truth Direction X', output_path, 'truth_direction_x', y_name = yname, label=label, bins=20)
+    print('7')
+    generic_histogram(direction_y, 'Truth Direction Y', output_path, 'truth_direction_y', y_name = yname, label=label, bins=20)
+    print('8')
+    generic_histogram(direction_z, 'Truth Direction Z', output_path, 'truth_direction_z', y_name = yname, label=label, bins=20)
+    print('9')
    # generic_histogram(direction_r, 'Truth Direction R', output_path, 'truth_direction_r', y_name = yname, label=label, bins=20)
-   # print('10')
-   # generic_histogram(position_x, 'Truth position X [cm]', output_path, 'truth_position_x', y_name = yname, label=label, bins=20)
-    #print('11')
-    #generic_histogram(position_y, 'Truth position Y [cm]', output_path, 'truth_position_y', y_name = yname, label=label, bins=20)
-    #print('12')
-    #generic_histogram(position_z, 'Truth position Z [cm]', output_path, 'truth_position_z', y_name = yname, label=label, bins=20)
+    print('10')
+    generic_histogram(position_x, 'Truth position X [cm]', output_path, 'truth_position_x', y_name = yname, label=label, bins=20)
+    print('11')
+    generic_histogram(position_y, 'Truth position Y [cm]', output_path, 'truth_position_y', y_name = yname, label=label, bins=20)
+    print('12')
+    generic_histogram(position_z, 'Truth position Z [cm]', output_path, 'truth_position_z', y_name = yname, label=label, bins=20)
     #print('13')
     #generic_histogram(position_r, 'Truth position R [cm]', output_path, 'truth_position_r', y_name = yname, label=label, bins=20)
     #print('14')
-    
+'''    
     #print(position_r_gev)
     #print('elect', electron_prod_distance)
-
+'''
     decay_distance = decay_distance[0]
     gamma_end_vtx_x = gamma_end_vtx_x[0]
     gamma_end_vtx_y = gamma_end_vtx_y[0]
@@ -561,42 +597,42 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnl
     position_y = position_y[0]
     position_z = position_z[0]
     
-
-    generic_histogram2(np.abs(position_r_gev), np.abs(position_r_distance), 'Truth position R [cm]', output_path, 'towall and dwall with 150 cut', y_name = yname, label=label, bins=20, range = (1400, 1750), label2 = 'gamma generation with 150 cut', label1 = 'gamma end vertex with cut')
-    generic_histogram2(np.abs(position_r_gev_100), np.abs(position_r_distance_100), 'Truth position R [cm]', output_path, 'towall and dwall with 100 cut', y_name = yname, label=label, bins=20, range = (1400, 1750), label2 = 'gamma generation with 100 cut', label1 = 'gamma end vertex with 100 cut')
-    generic_histogram2(np.abs(position_r_gev_50), np.abs(position_r_distance_50), 'Truth position R [cm]', output_path, 'towall and dwall with 50 cut', y_name = yname, label=label, bins=20, range = (1400, 1750), label2 = 'gamma generation with 50 cut', label1 = 'gamma end vertex with 50 cut')
-    print('15')
+'''
+    #generic_histogram2(np.abs(position_r_gev), np.abs(position_r_distance), 'Truth position R [cm]', output_path, 'towall and dwall with 150 cut', y_name = yname, label=label, bins=20, range = (1400, 1750), label2 = 'gamma generation with 150 cut', label1 = 'gamma end vertex with cut')
+    #generic_histogram2(np.abs(position_r_gev_100), np.abs(position_r_distance_100), 'Truth position R [cm]', output_path, 'towall and dwall with 100 cut', y_name = yname, label=label, bins=20, range = (1400, 1750), label2 = 'gamma generation with 100 cut', label1 = 'gamma end vertex with 100 cut')
+    #generic_histogram2(np.abs(position_r_gev_50), np.abs(position_r_distance_50), 'Truth position R [cm]', output_path, 'towall and dwall with 50 cut', y_name = yname, label=label, bins=20, range = (1400, 1750), label2 = 'gamma generation with 50 cut', label1 = 'gamma end vertex with 50 cut')
+    #print('15')
     #generic_histogram_d(decay_distance, 'Truth decay distance [cm]', output_path, 'truth_decay_distance_r', y_name = yname, label = label, bins=40, range = (0, 400))
-    print('16')
-    generic_histogram2(np.abs(position_z_gev_cut), np.abs(position_z_cut), 'truth position z cut [cm]', output_path, 'position z 150 cut', y_name = yname, label=label, bins=20, range = (1400, 1750), label1 = 'gamma end vertex with 150 cut', label2 = 'electron generation with 150 cut')
-    generic_histogram2(np.abs(position_z_gev_cut_50), np.abs(position_z_cut_50), 'Truth position Z cut [cm]', output_path, 'position z 50 cut', y_name = yname, label=label, bins=20, range = (1400, 1750), label1 = 'gamma end vertex with 50 cut', label2 = 'electron generation with 50 cut')
-    generic_histogram2(np.abs(position_z_gev_cut_100), np.abs(position_z_cut_100), 'Truth position Z cut [cm]', output_path, 'position z 100 cut', y_name = yname, label=label, bins=20, range = (1400, 1750), label1 = 'gamma end vertex with 100 cut', label2 = 'electron generation with 100 cut')
-    print('17')
+    #print('16')
+    #generic_histogram2(np.abs(position_z_gev_cut), np.abs(position_z_cut), 'truth position z cut [cm]', output_path, 'position z 150 cut', y_name = yname, label=label, bins=20, range = (1400, 1750), label1 = 'gamma end vertex with 150 cut', label2 = 'electron generation with 150 cut')
+    #generic_histogram2(np.abs(position_z_gev_cut_50), np.abs(position_z_cut_50), 'Truth position Z cut [cm]', output_path, 'position z 50 cut', y_name = yname, label=label, bins=20, range = (1400, 1750), label1 = 'gamma end vertex with 50 cut', label2 = 'electron generation with 50 cut')
+    #generic_histogram2(np.abs(position_z_gev_cut_100), np.abs(position_z_cut_100), 'Truth position Z cut [cm]', output_path, 'position z 100 cut', y_name = yname, label=label, bins=20, range = (1400, 1750), label1 = 'gamma end vertex with 100 cut', label2 = 'electron generation with 100 cut')
+    #print('17')
     #generic_histogram2(wall_gev_cut, wall_cut, 'dwall [cm]', output_path, 'dwall cut', y_name = yname, label = label, bins=20, range = (0, 400), label1 = 'gamma end vertex d_wall with towall <100 cut', label2 = 'gamma generation d_wall with towall <100 cut')
-    generic_histogram2(np.abs(electron_prod_distance), np.abs(position_r_gev), 'Truth position R cut [cm]', output_path, 'electron gamma_end_vtx cut', y_name = yname, label=label, bins=20, range = (1400, 1800), label2 = 'gamma end vertex with 150 cut', label1 = '$e^{-}$ generation with 150 cut')
-    generic_histogram2(np.abs(electron_prod_distance), np.abs(position_r_gev), 'Truth position R cut [cm]', output_path, 'electron gamma_end_vtx cut', y_name = yname, label=label, bins=20, range = (0, 1800), label2 = 'gamma end vertex with 150 cut', label1 = '$e^{-}$ generation with 150 cut')
-    generic_histogram2(np.abs(electron_prod_r), np.abs(position_r), 'Truth position R cut [cm]', output_path, 'electron gamma_end_vtx cut zoomed out', y_name = yname, label=label, bins=20, range = (0, 1800), label2 = 'gamma end vertex no cut', label1 = '$e^{-}$ generation with 150 cut')
-    generic_histogram2(np.abs(electron_prod_r), np.abs(position_r), 'Truth position R cut [cm]', output_path, 'electron gamma_end_vtx no cut zoomed out', y_name = yname, label=label, bins=20, range = (0, 1800), label2 = 'gamma end vertex with no cut', label1 = '$e^{-}$ generation with no cut')
+    #generic_histogram2(np.abs(electron_prod_distance), np.abs(position_r_gev), 'Truth position R cut [cm]', output_path, 'electron gamma_end_vtx cut', y_name = yname, label=label, bins=20, range = (1400, 1800), label2 = 'gamma end vertex with 150 cut', label1 = '$e^{-}$ generation with 150 cut')
+    #generic_histogram2(np.abs(electron_prod_distance), np.abs(position_r_gev), 'Truth position R cut [cm]', output_path, 'electron gamma_end_vtx cut', y_name = yname, label=label, bins=20, range = (0, 1800), label2 = 'gamma end vertex with 150 cut', label1 = '$e^{-}$ generation with 150 cut')
+    #generic_histogram2(np.abs(electron_prod_r), np.abs(position_r), 'Truth position R cut [cm]', output_path, 'electron gamma_end_vtx cut zoomed out', y_name = yname, label=label, bins=20, range = (0, 1800), label2 = 'gamma end vertex no cut', label1 = '$e^{-}$ generation with 150 cut')
+    #generic_histogram2(np.abs(electron_prod_r), np.abs(position_r), 'Truth position R cut [cm]', output_path, 'electron gamma_end_vtx no cut zoomed out', y_name = yname, label=label, bins=20, range = (0, 1800), label2 = 'gamma end vertex with no cut', label1 = '$e^{-}$ generation with no cut')
 
 
-    generic_histogram2(np.abs(electron_prod_distance_100), np.abs(position_r_gev_100), 'Truth position R cut [cm]', output_path, 'electron gamma_end_vtx with 100 cut', y_name = yname, label=label, bins=20, range = (1400, 1800), label2 = 'gamma end vertex with 100 cut', label1 = '$e^{-}$ generation with 100 cut')
-    generic_histogram2(np.abs(electron_prod_distance_100), np.abs(position_r_gev_100), 'Truth position R cut [cm]', output_path, 'electron gamma_end_vtx with 100 cut zoomed out', y_name = yname, label=label, bins=20, range = (0, 1800), label2 = 'gamma end vertex with 100 cut', label1 = '$e^{-}$ generation with 100 cut')
-    generic_histogram2(np.abs(electron_prod_distance_50), np.abs(position_r_gev_50), 'Truth position R cut [cm]', output_path, 'electron gamma_end_vtx 50 cut', y_name = yname, label=label, bins=20, range = (1400, 1800), label2 = 'gamma end vertex with 50 cut', label1 = '$e^{-}$ generation with 50 cut')
-    generic_histogram2(np.abs(electron_prod_distance_50), np.abs(position_r_gev_50), 'Truth position R cut [cm]', output_path, 'electron gamma_end_vtx 50 cut zoomed out', y_name = yname, label=label, bins=20, range = (0, 1800), label2 = 'gamma end vertex with 50 cut', label1 = '$e^{-}$ generation with 50 cut')
+    #generic_histogram2(np.abs(electron_prod_distance_100), np.abs(position_r_gev_100), 'Truth position R cut [cm]', output_path, 'electron gamma_end_vtx with 100 cut', y_name = yname, label=label, bins=20, range = (1400, 1800), label2 = 'gamma end vertex with 100 cut', label1 = '$e^{-}$ generation with 100 cut')
+    #generic_histogram2(np.abs(electron_prod_distance_100), np.abs(position_r_gev_100), 'Truth position R cut [cm]', output_path, 'electron gamma_end_vtx with 100 cut zoomed out', y_name = yname, label=label, bins=20, range = (0, 1800), label2 = 'gamma end vertex with 100 cut', label1 = '$e^{-}$ generation with 100 cut')
+    #generic_histogram2(np.abs(electron_prod_distance_50), np.abs(position_r_gev_50), 'Truth position R cut [cm]', output_path, 'electron gamma_end_vtx 50 cut', y_name = yname, label=label, bins=20, range = (1400, 1800), label2 = 'gamma end vertex with 50 cut', label1 = '$e^{-}$ generation with 50 cut')
+    #generic_histogram2(np.abs(electron_prod_distance_50), np.abs(position_r_gev_50), 'Truth position R cut [cm]', output_path, 'electron gamma_end_vtx 50 cut zoomed out', y_name = yname, label=label, bins=20, range = (0, 1800), label2 = 'gamma end vertex with 50 cut', label1 = '$e^{-}$ generation with 50 cut')
 
     
     
     
-    generic_histogram2(np.abs(wall2), np.abs(towall2), 'Wall [cm]', output_path, 'wall towall 50 cut', y_name = yname, label=label, bins=20, range = (0, 1800), label2 = 'towall 50 cut', label1 = 'wall 50 cut')
-    generic_histogram2(np.abs(wall3), np.abs(towall3), 'Wall [cm]', output_path, 'wall towall 100 cut', y_name = yname, label=label, bins=20, range = (0, 1800), label2 = 'towall 100 cut', label1 = 'wall 100 cut')
-    generic_histogram2(np.abs(wall4), np.abs(towall4), 'Wall [cm]', output_path, 'wall towall 150 cut', y_name = yname, label=label, bins=20, range = (0, 1800), label2 = 'towall 150 cut', label1 = 'wall 150 cut')
+    #generic_histogram2(np.abs(wall2), np.abs(towall2), 'Wall [cm]', output_path, 'wall towall 50 cut', y_name = yname, label=label, bins=20, range = (0, 1800), label2 = 'towall 50 cut', label1 = 'wall 50 cut')
+    #generic_histogram2(np.abs(wall3), np.abs(towall3), 'Wall [cm]', output_path, 'wall towall 100 cut', y_name = yname, label=label, bins=20, range = (0, 1800), label2 = 'towall 100 cut', label1 = 'wall 100 cut')
+    #generic_histogram2(np.abs(wall4), np.abs(towall4), 'Wall [cm]', output_path, 'wall towall 150 cut', y_name = yname, label=label, bins=20, range = (0, 1800), label2 = 'towall 150 cut', label1 = 'wall 150 cut')
     
     
-    
+'''   
     #generic_histogram2(wall_gev_cut, wall_cut, 'dwall [cm]', output_path, 'dwall cut but smaller', y_name = yname, label = label, bins=20, range = (0, 200), label1 = 'gamma end vertex d_wall with towall <100 cut', label2 = 'gamma generation d_wall with towall <100 cut')
     #generic_histogram2(wall_gev, wall, 'dwall [cm]', output_path, 'dwall no cut', y_name = yname, label = label, bins=20, range = (0, 400), label1 = 'gamma end vertex d_wall', label2 = 'gamma generation d_wall')
     #generic_histogram2(wall_gev, wall, 'dwall [cm]', output_path, 'dwall no cut but smaller', y_name = yname, label = label, bins=20, range = (0, 200), label1 = 'gamma end vertex d_wall', label2 = 'gamma generation d_wall')
-    print('18')
+    #print('18')
     #generic_histogram(gamma_end_vtx_x, 'e+/e- pair production position X [cm]', output_path, 'truth_gamma_end_vtx_x', y_name = yname, label=label, bins = 20)
     print('19')
     #generic_histogram(gamma_end_vtx_y, 'e+/e- pair production position Y [cm]', output_path, 'truth_gamma_end_vtx_y', y_name = yname, label=label, bins=20)
@@ -658,4 +694,4 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnl
     generic_histogram(std_y, 'std dev PMT Y [cm]', output_path, 'std_y', y_name = yname, label=label, bins=20)
     generic_histogram(std_z, 'std dev PMT Z [cm]', output_path, 'std_z', y_name = yname, label=label, bins=20)
     generic_histogram(num_pmt, 'Number of PMTs', output_path, 'num_pmt', y_name = yname, label=label, range=[0,4000], bins=20)
-
+'''

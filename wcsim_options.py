@@ -6,7 +6,7 @@ import pickle
 class WCSimOptions():
     """A class which can set, store, steer WCSim and its options
     """
-    def __init__(self, generator='gun', particle='e-', energy=[0,1000,'MeV'], halfz = [2007.,'cm'], radius= [1965., 'cm'], direction=[1,0,0], position=[0,0,0], output_name='wcsim.root', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/', num_events=500, batch=False, save_input_options=False, seed=0):
+    def __init__(self, generator='gun', particle='e-', energy=[0,1000,'MeV'], halfz = [2007.,'cm'], radius= [1965., 'cm'], direction=[1,0,0], position=[0,0,0], output_name='wcsim.root', output_directory='/fast_scratch/ipress/t2k/gamma_analysis/', num_events=500, batch=False, save_input_options=False, seed=0):
         """_summary_
 
         Args:

@@ -164,6 +164,16 @@ def generic_2D_plot(x,y,x_range, x_bins, x_name, y_range, y_bins, y_name, label,
     if return_hist:
         return hh, xedges, yedges
 
+def generic_det_unraveler(x,y,strength, x_label, y_label, strength_label, output_path, output_name):
+    fig, ax = plt.subplots()
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    p = ax.scatter(x, y, c = strength, cmap = 'plasma', s = 2)
+    cbar = fig.colorbar(p, ax=ax)
+    ax.grid(linestyle = '--')
+    cbar.set_label(strength_label)
+    plt.savefig(output_path+'/'+output_name+'.png', format='png', transparent=False)
+
 def generic_3D_plot(x,y,z,strength, x_label, y_label, z_label, strength_label, output_path, output_name):
     fig = plt.figure()
     ax = plt.axes(projection='3d')

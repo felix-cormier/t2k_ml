@@ -60,11 +60,13 @@ elif args.doWCSim:
     wcsim_options.run_local_wcsim()
 
 elif args.doTransform:
-    from DataTools.root_utils.event_dump import dump_file
+    from DataTools.root_utils.event_dump import image_file
+    #from DataTools.root_utils.barrel_maker import image_file
     print("Transform from ROOT to .h5")
     wcsim_options = WCSimOptions()
+    #test = image_file('data/geofile.npz')
     #wcsim_options = wcsim_options.load_options(args.transformPath, 'wc_options.pkl')
-    test = dump_file(str(args.transformPath) + '/' + str(args.transformName), str(args.transformPath) + '/' + 'wcsim_transform', create_image_file=False, create_geo_file=False)
+    #test = dump_file(str(args.transformPath) + '/' + str(args.transformName), str(args.transformPath) + '/' + 'wcsim_transform', create_image_file=True, create_geo_file=False)
 
 if args.makeVisualizations:
     from plot_wcsim import plot_wcsim
