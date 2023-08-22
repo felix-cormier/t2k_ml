@@ -2,9 +2,10 @@ from generics_python.make_plots import generic_3D_plot, generic_2D_plot, generic
 import random
 import numpy as np
 from angle_between import *
-from plot_wcsim import calculate_wcsim_wall_variables
+from plot_wcsim import *
 from tqdm import tqdm
-
+import torch
+from generics_python.make_plots import *
 
 def decision(probability):
     return random.random() < probability
@@ -38,72 +39,98 @@ def make_visualizations(h5_file, output_path):
     ratio = num_visualization/max
     random.seed(0)
 
-    x_pos=[]
-    y_pos=[]
-    z_pos=[]
-    x_stop_pos=[]
-    y_stop_pos=[]
-    z_stop_pos=[]
+    x_elec=[]
+    y_elec=[]
+    z_elec=[]
     
-    energies_gamma = []
+    x_muon=[]
+    y_muon=[]
+    z_muon=[]
+
+    x_dir_muon, y_dir_muon, z_dir_muon = [], [], []
+    x_dir_elec, y_dir_elec, z_dir_elec = [], [], []
+
+    truth_visible_energy_elec, truth_visible_energy_muon = [], []
+    energies_muon = []
     energies_electron = []
     energies = []
-    num_pmt_gamma = []
+    num_pmt_muon = []
     num_pmt_elec = []
 
     temp_towall_gev = []
     towall_gev = []
-
-    r_dir_pos = []
+    yname = 'Counts'
+    yaxis = 'log'
+    r_dir_muon = []
     r_dir_elec = []
     r_dir_gam = []
     r_dir_gen_elec = []
     r_dir_generated_particles = []
     theta = []
+    
+    time_muon = []
+    time_electron = []
 
     hits = []
-    total_charge_gamma = []
+    total_charge_muon = []
     total_charge_electron = []
     mean_time_electron = []
-    mean_time_gamma = []
-
-    labels = h5_file['labels']
-    energy = h5_file['energies']
+    mean_time_muon = []
+    total_charge = []
+    mean_time = []
     
-    for i,index in enumerate(h5_file['event_hits_index'][500000:500500]):
-        i = 500000 + i
+    labels = h5_file['labels']
+    #time = h5_file['hit_time'][:]
+    #dec_elec_exists = h5_file['decay_electron_exists'][:]
+    #dec_elec_time = h5_file['decay_electron_time'][:]
+    '''
+    for i,index in enumerate(h5_file['event_hits_index']):#[999950:1000050]):
+        #i = 999950 + i
+        #print(h5_file['hit_time'])
         if i < max-1:
-            #r_dir_elec.append(h5_file['directions_electron'][i][:])
-            #r_dir_pos.append(h5_file['directions_positron'][i][:])
-            #r_dir_generated_particles.append(h5_file['directions'][i][:])
+            #print(i)
             #wall_out_gev, towall_out_gev= calculate_wcsim_wall_variables(h5_file['positions'][i], h5_file['directions'][i])
             #temp_towall_gev.append(towall_out_gev)
+            #print(i)
             if labels[i] == 0:
-                num_pmt_gamma.append(h5_file['event_hits_index'][i+1] - h5_file['event_hits_index'][i])
-                energies_gamma.append(float(h5_file['energies'][i]))
-                total_charge_gamma.append(np.sum(h5_file['hit_charge'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
-                mean_time_gamma.append(np.mean(h5_file['hit_time'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
+                time_muon.append(float(h5_file['hit_time'][i]))
+                #print('time_muon = ', time_muon)
+                
+                num_pmt_muon.append(h5_file['event_hits_index'][i+1] - h5_file['event_hits_index'][i])
+                energies_muon.append(float(h5_file['energies'][i]))
+                total_charge_muon.append(np.sum(h5_file['hit_charge'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
+                mean_time_muon.append(np.mean(h5_file['hit_time'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
+                x_muon.append(float(h5_file['positions'][i][:,0]))
+                y_muon.append(float(h5_file['positions'][i][:,1]))
+                z_muon.append(float(h5_file['positions'][i][:,2]))
+                x_dir_muon.append(float(h5_file['directions'][i][:,0]))
+                y_dir_muon.append(float(h5_file['directions'][i][:,1]))
+                z_dir_muon.append(float(h5_file['directions'][i][:,2]))
+                truth_visible_energy_muon.append(float(h5_file['energies'][i])-get_cherenkov_threshold(h5_file['labels'][i]))
+                
             else:
+                time_electron.append(float(h5_file['hit_time'][i]))
+                #print('time_electron = ', time_electron)
+                
                 energies_electron.append(float(h5_file['energies'][i]))
                 num_pmt_elec.append(h5_file['event_hits_index'][i+1] - h5_file['event_hits_index'][i])
                 total_charge_electron.append(np.sum(h5_file['hit_charge'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
                 mean_time_electron.append(np.mean(h5_file['hit_time'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
-            
-            energies.append(float(h5_file['energies'][i]))
-
-            #pmt_positions = np.array(convert_values(geofile,h5_file['hit_pmt'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
-            x_pos.append(float(h5_file['positions'][i][:,0])) 
-            y_pos.append(float(h5_file['positions'][i][:,1])) 
-            z_pos.append(float(h5_file['positions'][i][:,2]))
-            #r_dir_elec.append((h5_file['directions_electron'][i][:]))
-            
-            #r_dir_pos.append((h5_file['directions_positron'][i][:]))
+                x_elec.append(float(h5_file['positions'][i][:,0]))
+                y_elec.append(float(h5_file['positions'][i][:,1]))
+                z_elec.append(float(h5_file['positions'][i][:,2]))
+                x_dir_elec.append(float(h5_file['directions'][i][:,0]))
+                y_dir_elec.append(float(h5_file['directions'][i][:,1]))
+                z_dir_elec.append(float(h5_file['directions'][i][:,2]))
+                truth_visible_energy_elec.append(float(h5_file['energies'][i])-get_cherenkov_threshold(h5_file['labels'][i]))
+                
             #energies.append(float(h5_file['energies'][i]))
-            
-            #x_stop_pos.append(float(h5_file['stop_positions'][i][:,0])) 
-            #y_stop_pos.append(float(h5_file['stop_positions'][i][:,1])) 
-            #z_stop_pos.append(float(h5_file['stop_positions'][i][:,2])) 
-            
+    
+            #pmt_positions = np.array(convert_values(geofile,h5_file['hit_pmt'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
+    '''     
+    '''
+    '''
+    '''
             if decision(ratio) and (h5_file['event_hits_index'][i+1]- h5_file['event_hits_index'][i])> 0:
                 print(i)
                 print(h5_file['labels'][i])
@@ -121,37 +148,91 @@ def make_visualizations(h5_file, output_path):
                 generic_det_unraveler(x, z, charges, 'X [cm]', 'Z [cm]', 'PMT charge', output_path, output_name_xz)
                 generic_det_unraveler(x, y, charges, 'X [cm]', 'Y [cm]', 'PMT charge', output_path, output_name_xy)
                 generic_det_unraveler(y, z, charges, 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name_yz)
-            
-    r_dir_generated_particles = np.array(r_dir_generated_particles)
+    '''
+    '''
+    
+    
     hits = np.array(hits)
-    energies_gamma = np.array(energies_gamma)
+    energies_muon = np.array(energies_muon)
     energies_electron = np.array(energies_electron)
-    mean_time_gamma = np.array(mean_time_gamma)
+    mean_time_muon = np.array(mean_time_muon)
     mean_time_electron = np.array(mean_time_electron)
-    total_charge_gamma = np.array(total_charge_gamma)
+    total_charge_muon = np.array(total_charge_muon)
     total_charge_electron = np.array(total_charge_electron)
     energies = np.array(energies)
+    truth_visible_energy_elec = np.array(truth_visible_energy_elec)
+    truth_visible_energy_muon = np.array(truth_visible_energy_muon)
+    '''
+    
+    #time_muon = np.array(time_muon)
+    #time_electron = np.array(time_electron)
+    #print('len time muon = ', len(time_muon))
+    #print('len time electron = ', len(time_electron))
+    '''
+    x_muon = np.array(x_muon)
+    y_muon = np.array(y_muon)
+    z_muon = np.array(z_muon)
 
-    r_dir_gen_elec = r_dir_generated_particles[(labels == 1)]
-    r_dir_gen_gam = r_dir_generated_particles[(labels == 0)]
+    x_elec = np.array(x_elec)
+    y_elec = np.array(y_elec)
+    z_elec = np.array(z_elec)
 
-    hits_gamma = []
+    x_dir_elec = np.array(x_dir_elec)
+    y_dir_elec = np.array(y_dir_elec)
+    z_dir_elec = np.array(z_dir_elec)
+    
+    x_dir_muon = np.array(x_dir_muon)
+    y_dir_muon = np.array(y_dir_muon)
+    z_dir_muon = np.array(z_dir_muon)
+
+    hits_muon = []
     hits_elec = []
 
-    hits_gamma = np.array(num_pmt_gamma)
+    hits_muon = np.array(num_pmt_muon)
     hits_elec = np.array(num_pmt_elec)
-    
-    tot_charge_gamma_lt100 = []
-    tot_charge_gamma_12 = []
-    tot_charge_gamma_23 = []
-    tot_charge_gamma_34 = []
-    tot_charge_gamma_45 = []
-    tot_charge_gamma_56 = []
-    tot_charge_gamma_67 = []
-    tot_charge_gamma_78 = []
-    tot_charge_gamma_89 = []
-    tot_charge_gamma_910 = []
-    tot_charge_gamma_gt10 = []
+    '''
+    #generic_histogram(time_muon, 'Truth time', output_path, 'Truth_time_muon', y_name = yname, label = 'time_muon', range = (0, 11000), y_axis = yaxis, bins = 20)
+    #generic_histogram(time_electron, 'Truth time', output_path, 'Truth_time_electron', y_name = yname, range = (0, 11000), y_axis = yaxis, label = 'time_electron', bins = 20)
+    '''
+    generic_histogram(x_dir_elec, 'Truth Direction X', output_path, 'truth_elec_direction_x', y_name = yname, label = 'electron', bins=20)
+    generic_histogram(y_dir_elec, 'Truth Direction X', output_path, 'truth_elec_direction_y', y_name = yname, label = 'electron', bins=20)
+    generic_histogram(z_dir_elec, 'Truth Direction X', output_path, 'truth_elec_direction_z', y_name = yname, label = 'electron', bins=20)
+    generic_histogram(x_dir_muon, 'Truth Direction X', output_path, 'truth_muon_direction_x', y_name = yname, label = 'muon', bins=20)
+    generic_histogram(y_dir_muon, 'Truth Direction Y', output_path, 'truth_muon_direction_y', y_name = yname, label = 'muon', bins=20)
+    generic_histogram(z_dir_muon, 'Truth Direction Z', output_path, 'truth_muon_direction_z', y_name = yname, label = 'muon', bins=20)
+    generic_histogram(x_elec, 'Truth position X [cm]', output_path, 'truth_position_x_elec', y_name = yname, label = 'electron',  bins=20)
+    generic_histogram(y_elec, 'Truth position Y [cm]', output_path, 'truth_position_y_elec', y_name = yname, label = 'electron',  bins=20)
+    generic_histogram(z_elec, 'Truth position Z [cm]', output_path, 'truth_position_z_elec', y_name = yname, label = 'electron',  bins=20)
+    generic_histogram(x_muon, 'Truth position X [cm]', output_path, 'truth_position_x_muon', y_name = yname, label = 'muon',  bins=20)
+    generic_histogram(y_muon, 'Truth position Y [cm]', output_path, 'truth_position_y_muon', y_name = yname, label = 'muon',  bins=20)
+    generic_histogram(z_muon, 'Truth position Z [cm]', output_path, 'truth_position_z_muon', y_name = yname, label = 'muon',  bins=20)
+
+    generic_histogram(energies_muon, 'Truth Energy [MeV]', output_path, 'truth_energy', y_name = yname, label = 'muon', bins=20)
+    generic_histogram(energies_electron, 'Truth Energy [MeV]', output_path, 'truth_energy', y_name = yname, label = 'electron', bins=20)
+    generic_histogram(truth_visible_energy_muon, 'Truth Visible Energy [MeV]', output_path, 'truth_visible_energy', y_name = yname, label = 'muon', bins=20)
+    generic_histogram(truth_visible_energy_elec, 'Truth Visible Energy [MeV]', output_path, 'truth_visible_energy', y_name = yname, label = 'electron', bins=20)
+  
+    generic_histogram2(x_dir_elec, x_dir_muon, 'Truth Direction X [cm]', output_path, 'X direction', y_name = yname, bins=20, label2 = 'muon', label1 = 'electron')
+    generic_histogram2(y_dir_elec, y_dir_muon, 'Truth Direction Y [cm]', output_path, 'Y direction', y_name = yname, bins=20, label2 = 'muon', label1 = 'electron')
+    generic_histogram2(z_dir_elec, z_dir_muon, 'Truth Direction X [cm]', output_path, 'Z direction', y_name = yname, bins=20, label2 = 'muon', label1 = 'electron')
+    generic_histogram2(x_elec, x_muon, 'Truth Direction X [cm]', output_path, 'X direction', y_name = yname, bins=20, label2 = 'muon', label1 = 'electron')
+    generic_histogram2(y_elec, y_muon, 'Truth Direction Y [cm]', output_path, 'Y direction', y_name = yname, bins=20, label2 = 'muon', label1 = 'electron')
+    generic_histogram2(z_elec, z_muon, 'Truth Direction X [cm]', output_path, 'Z direction', y_name = yname, bins=20, label2 = 'muon', label1 = 'electron')
+    generic_histogram2(energies_electron, energies_muon, 'Truth Energies', output_path, 'Truth Energies', y_name = yname, bins=20, label2 = 'muon', label1 = 'electron')
+    generic_histogram2(truth_visible_energy_elec, truth_visible_energy_muon, 'Truth visible energy', output_path, 'Truth visible energy', y_name = yname, bins=20, label2 = 'muon', label1 = 'electron')
+    '''
+    '''
+    tot_charge_muon_lt100 = []
+    tot_charge_muon_12 = []
+    tot_charge_muon_23 = []
+    tot_charge_muon_34 = []
+    tot_charge_muon_45 = []
+    tot_charge_muon_56 = []
+    tot_charge_muon_67 = []
+    tot_charge_muon_78 = []
+    tot_charge_muon_89 = []
+    tot_charge_muon_910 = []
+    tot_charge_muon_gt10 = []
 
     tot_charge_elec_lt100 = []
     tot_charge_elec_12 = []
@@ -165,17 +246,17 @@ def make_visualizations(h5_file, output_path):
     tot_charge_elec_910 = []
     tot_charge_elec_gt10 = []
 
-    mean_time_gamma_lt100 = []
-    mean_time_gamma_12 = []
-    mean_time_gamma_23 = []
-    mean_time_gamma_34 = []
-    mean_time_gamma_45 = []
-    mean_time_gamma_56 = []
-    mean_time_gamma_67 = []
-    mean_time_gamma_78 = []
-    mean_time_gamma_89 = []
-    mean_time_gamma_910 = []
-    mean_time_gamma_gt10 = []
+    mean_time_muon_lt100 = []
+    mean_time_muon_12 = []
+    mean_time_muon_23 = []
+    mean_time_muon_34 = []
+    mean_time_muon_45 = []
+    mean_time_muon_56 = []
+    mean_time_muon_67 = []
+    mean_time_muon_78 = []
+    mean_time_muon_89 = []
+    mean_time_muon_910 = []
+    mean_time_muon_gt10 = []
 
     mean_time_electron_lt100 = []
     mean_time_electron_12 = []
@@ -189,17 +270,17 @@ def make_visualizations(h5_file, output_path):
     mean_time_electron_910 = []
     mean_time_electron_gt10 = []
 
-    hits_gamma_lt100 = []
-    hits_gamma_12 = []
-    hits_gamma_23 = []
-    hits_gamma_34 = []
-    hits_gamma_45 = []
-    hits_gamma_56 = []
-    hits_gamma_67 = []
-    hits_gamma_78 = []
-    hits_gamma_89 = []
-    hits_gamma_910 = []
-    hits_gamma_gt10 = []
+    hits_muon_lt100 = []
+    hits_muon_12 = []
+    hits_muon_23 = []
+    hits_muon_34 = []
+    hits_muon_45 = []
+    hits_muon_56 = []
+    hits_muon_67 = []
+    hits_muon_78 = []
+    hits_muon_89 = []
+    hits_muon_910 = []
+    hits_muon_gt10 = []
     
     hits_elec_lt100 = []
     hits_elec_12 = []
@@ -212,18 +293,20 @@ def make_visualizations(h5_file, output_path):
     hits_elec_89 = []
     hits_elec_910 = []
     hits_elec_gt10 = []
-
-    mean_time_gamma_lt100 = mean_time_gamma[energies_gamma < 100]
-    mean_time_gamma_12 = mean_time_gamma[(energies_gamma > 100) & (energies_gamma < 200)]
-    mean_time_gamma_23 = mean_time_gamma[(energies_gamma > 200) & (energies_gamma < 300)]
-    mean_time_gamma_34 = mean_time_gamma[(energies_gamma > 300) & (energies_gamma < 400)]
-    mean_time_gamma_45 = mean_time_gamma[(energies_gamma > 400) & (energies_gamma < 500)]
-    mean_time_gamma_56 = mean_time_gamma[(energies_gamma > 500) & (energies_gamma < 600)]
-    mean_time_gamma_67 = mean_time_gamma[(energies_gamma > 600) & (energies_gamma < 700)]
-    mean_time_gamma_78 = mean_time_gamma[(energies_gamma > 700) & (energies_gamma < 800)]
-    mean_time_gamma_89 = mean_time_gamma[(energies_gamma > 800) & (energies_gamma < 900)]
-    mean_time_gamma_910 = mean_time_gamma[(energies_gamma > 900) & (energies_gamma < 1000)]
-    mean_time_gamma_gt10 = mean_time_gamma[(energies_gamma > 1000)]
+    
+    print('mean time muon', mean_time_muon)
+    print('energies muon', energies_muon)
+    mean_time_muon_lt100 = mean_time_muon[energies_muon < 100]
+    mean_time_muon_12 = mean_time_muon[(energies_muon > 100) & (energies_muon < 200)]
+    mean_time_muon_23 = mean_time_muon[(energies_muon > 200) & (energies_muon < 300)]
+    mean_time_muon_34 = mean_time_muon[(energies_muon > 300) & (energies_muon < 400)]
+    mean_time_muon_45 = mean_time_muon[(energies_muon > 400) & (energies_muon < 500)]
+    mean_time_muon_56 = mean_time_muon[(energies_muon > 500) & (energies_muon < 600)]
+    mean_time_muon_67 = mean_time_muon[(energies_muon > 600) & (energies_muon < 700)]
+    mean_time_muon_78 = mean_time_muon[(energies_muon > 700) & (energies_muon < 800)]
+    mean_time_muon_89 = mean_time_muon[(energies_muon > 800) & (energies_muon < 900)]
+    mean_time_muon_910 = mean_time_muon[(energies_muon > 900) & (energies_muon < 1000)]
+    mean_time_muon_gt10 = mean_time_muon[(energies_muon > 1000)]
 
     mean_time_electron_lt100 = mean_time_electron[(energies_electron < 100)]
     mean_time_electron_12 = mean_time_electron[(energies_electron > 100) & (energies_electron < 200)]
@@ -237,17 +320,17 @@ def make_visualizations(h5_file, output_path):
     mean_time_electron_910 = mean_time_electron[(energies_electron > 900) & (energies_electron < 1000)]
     mean_time_electron_gt10 = mean_time_electron[(energies_electron > 1000)]
 
-    tot_charge_gamma_lt100 = total_charge_gamma[(energies_gamma < 100)]
-    tot_charge_gamma_12 = total_charge_gamma[(energies_gamma > 100) & (energies_gamma < 200)]
-    tot_charge_gamma_23 = total_charge_gamma[(energies_gamma > 200) & (energies_gamma < 300)]
-    tot_charge_gamma_34 = total_charge_gamma[(energies_gamma > 300) & (energies_gamma < 400)]
-    tot_charge_gamma_45 = total_charge_gamma[(energies_gamma > 400) & (energies_gamma < 500)]
-    tot_charge_gamma_56 = total_charge_gamma[(energies_gamma > 500) & (energies_gamma < 600)]
-    tot_charge_gamma_67 = total_charge_gamma[(energies_gamma > 600) & (energies_gamma < 700)]
-    tot_charge_gamma_78 = total_charge_gamma[(energies_gamma > 700) & (energies_gamma < 800)]
-    tot_charge_gamma_89 = total_charge_gamma[(energies_gamma > 800) & (energies_gamma < 900)]
-    tot_charge_gamma_910 = total_charge_gamma[(energies_gamma > 900) & (energies_gamma < 1000)]
-    tot_charge_gamma_gt10 = total_charge_gamma[(energies_gamma > 1000)]
+    tot_charge_muon_lt100 = total_charge_muon[(energies_muon < 100)]
+    tot_charge_muon_12 = total_charge_muon[(energies_muon > 100) & (energies_muon < 200)]
+    tot_charge_muon_23 = total_charge_muon[(energies_muon > 200) & (energies_muon < 300)]
+    tot_charge_muon_34 = total_charge_muon[(energies_muon > 300) & (energies_muon < 400)]
+    tot_charge_muon_45 = total_charge_muon[(energies_muon > 400) & (energies_muon < 500)]
+    tot_charge_muon_56 = total_charge_muon[(energies_muon > 500) & (energies_muon < 600)]
+    tot_charge_muon_67 = total_charge_muon[(energies_muon > 600) & (energies_muon < 700)]
+    tot_charge_muon_78 = total_charge_muon[(energies_muon > 700) & (energies_muon < 800)]
+    tot_charge_muon_89 = total_charge_muon[(energies_muon > 800) & (energies_muon < 900)]
+    tot_charge_muon_910 = total_charge_muon[(energies_muon > 900) & (energies_muon < 1000)]
+    tot_charge_muon_gt10 = total_charge_muon[(energies_muon > 1000)]
 
     tot_charge_electron_lt100 = total_charge_electron[(energies_electron < 100)]
     tot_charge_electron_12 = total_charge_electron[(energies_electron > 100) & (energies_electron < 200)]
@@ -261,44 +344,44 @@ def make_visualizations(h5_file, output_path):
     tot_charge_electron_910 = total_charge_electron[(energies_electron > 900) & (energies_electron < 1000)]
     tot_charge_electron_gt10 = total_charge_electron[(energies_electron > 1000)]
     
-    time_hist(mean_time_gamma, mean_time_electron, bins = 50, xlimit = (1000, 1100), name = 'All', title = 'All')
-    time_hist(mean_time_gamma_lt100, mean_time_electron_lt100, bins = 50, xlimit = (1000, 1100), name = 'lt100', title = 'E<100')
-    time_hist(mean_time_gamma_12, mean_time_electron_12, bins = 50, xlimit = (1000, 1100), name = '12', title = '100<E<200')
-    time_hist(mean_time_gamma_23, mean_time_electron_23, bins = 50, xlimit = (1000, 1100), name = '23', title = '200<E<300')
-    time_hist(mean_time_gamma_34, mean_time_electron_34, bins = 50, xlimit = (1000, 1100), name = '34', title = '300<E<400')
-    time_hist(mean_time_gamma_45, mean_time_electron_45, bins = 50, xlimit = (1000, 1100), name = '45', title = '400<E<500')
-    time_hist(mean_time_gamma_56, mean_time_electron_56, bins = 50, xlimit = (1000, 1100), name = '56', title = '500<E<600')
-    time_hist(mean_time_gamma_67, mean_time_electron_67, bins = 50, xlimit = (1000, 1100), name = '67', title = '600<E<700')
-    time_hist(mean_time_gamma_78, mean_time_electron_78, bins = 50, xlimit = (1000, 1100), name = '78', title = '700<E<800')
-    time_hist(mean_time_gamma_89, mean_time_electron_89, bins = 50, xlimit = (1000, 1100), name = '89', title = '800<E<900')
-    time_hist(mean_time_gamma_910, mean_time_electron_910, bins = 50, xlimit = (1000, 1100), name = '910', title = '900<E<1000')
-    time_hist(mean_time_gamma_gt10, mean_time_electron_gt10, bins = 50, xlimit = (1000, 1100), name = 'gt10', title = '1000<E')
+    time_hist(mean_time_muon, mean_time_electron, bins = 50, xlimit = None, name = 'All', title = 'All')
+    time_hist(mean_time_muon_lt100, mean_time_electron_lt100, bins = 50, xlimit = None, name = 'lt100', title = 'E<100')
+    time_hist(mean_time_muon_12, mean_time_electron_12, bins = 50, xlimit = None, name = '12', title = '100<E<200')
+    time_hist(mean_time_muon_23, mean_time_electron_23, bins = 50, xlimit = None, name = '23', title = '200<E<300')
+    time_hist(mean_time_muon_34, mean_time_electron_34, bins = 50, xlimit = None, name = '34', title = '300<E<400')
+    time_hist(mean_time_muon_45, mean_time_electron_45, bins = 50, xlimit = None, name = '45', title = '400<E<500')
+    time_hist(mean_time_muon_56, mean_time_electron_56, bins = 50, xlimit = None, name = '56', title = '500<E<600')
+    time_hist(mean_time_muon_67, mean_time_electron_67, bins = 50, xlimit = None, name = '67', title = '600<E<700')
+    time_hist(mean_time_muon_78, mean_time_electron_78, bins = 50, xlimit = None, name = '78', title = '700<E<800')
+    time_hist(mean_time_muon_89, mean_time_electron_89, bins = 50, xlimit = None, name = '89', title = '800<E<900')
+    time_hist(mean_time_muon_910, mean_time_electron_910, bins = 50, xlimit = None, name = '910', title = '900<E<1000')
+    time_hist(mean_time_muon_gt10, mean_time_electron_gt10, bins = 50, xlimit = None, name = 'gt10', title = '1000<E')
 
-    charge_hist(total_charge_gamma, total_charge_electron, bins = 50, xlimit = (0, 13000), name = 'All', title = 'All')
-    charge_hist(tot_charge_gamma_lt100, tot_charge_electron_lt100, bins = 50, xlimit = None, name = 'lt100', title = 'E<100')
-    charge_hist(tot_charge_gamma_12, tot_charge_electron_12, bins = 50, xlimit = (500, 3000), name = '12', title = '100<E<200')
-    charge_hist(tot_charge_gamma_23, tot_charge_electron_23, bins = 50, xlimit = (1500, 4000), name = '23', title = '200<E<300')
-    charge_hist(tot_charge_gamma_34, tot_charge_electron_34, bins = 50, xlimit = (2500, 5000), name = '34', title = '300<E<400')
-    charge_hist(tot_charge_gamma_45, tot_charge_electron_45, bins = 50, xlimit = (3000, 6000), name = '45', title = '400<E<500')
-    charge_hist(tot_charge_gamma_56, tot_charge_electron_56, bins = 50, xlimit = (4000, 7000), name = '56', title = '500<E<600')
-    charge_hist(tot_charge_gamma_67, tot_charge_electron_67, bins = 50, xlimit = (5000, 8000), name = '67', title = '600<E<700')
-    charge_hist(tot_charge_gamma_78, tot_charge_electron_78, bins = 50, xlimit = (6000, 9000), name = '78', title = '700<E<800')
-    charge_hist(tot_charge_gamma_89, tot_charge_electron_89, bins = 50, xlimit = (7000, 10000), name = '89', title = '800<E<900')
-    charge_hist(tot_charge_gamma_910, tot_charge_electron_910, bins = 50, xlimit = (7500, 11000), name = '910', title = '900<E<1000')
-    charge_hist(tot_charge_gamma_gt10, tot_charge_electron_gt10, bins = 50, xlimit = (8000, 13000), name = 'gt10', title = '1000<E')
+    charge_hist(total_charge_muon, total_charge_electron, bins = 50, xlimit = (0, 13000), name = 'All', title = 'All')
+    charge_hist(tot_charge_muon_lt100, tot_charge_electron_lt100, bins = 50, xlimit = None, name = 'lt100', title = 'E<100')
+    charge_hist(tot_charge_muon_12, tot_charge_electron_12, bins = 50, xlimit = None, name = '12', title = '100<E<200')
+    charge_hist(tot_charge_muon_23, tot_charge_electron_23, bins = 50, xlimit = None, name = '23', title = '200<E<300')
+    charge_hist(tot_charge_muon_34, tot_charge_electron_34, bins = 50, xlimit = None, name = '34', title = '300<E<400')
+    charge_hist(tot_charge_muon_45, tot_charge_electron_45, bins = 50, xlimit = None, name = '45', title = '400<E<500')
+    charge_hist(tot_charge_muon_56, tot_charge_electron_56, bins = 50, xlimit = None, name = '56', title = '500<E<600')
+    charge_hist(tot_charge_muon_67, tot_charge_electron_67, bins = 50, xlimit = None, name = '67', title = '600<E<700')
+    charge_hist(tot_charge_muon_78, tot_charge_electron_78, bins = 50, xlimit = None, name = '78', title = '700<E<800')
+    charge_hist(tot_charge_muon_89, tot_charge_electron_89, bins = 50, xlimit = None, name = '89', title = '800<E<900')
+    charge_hist(tot_charge_muon_910, tot_charge_electron_910, bins = 50, xlimit = None, name = '910', title = '900<E<1000')
+    charge_hist(tot_charge_muon_gt10, tot_charge_electron_gt10, bins = 50, xlimit = None, name = 'gt10', title = '1000<E')
 
     
-    hits_gamma_lt100 = hits_gamma[(energies_gamma < 100)]
-    hits_gamma_12 = hits_gamma[(energies_gamma > 100) & (energies_gamma < 200) & (hits_gamma > 700)]
-    hits_gamma_23 = hits_gamma[(energies_gamma > 200) & (energies_gamma < 300) & (hits_gamma > 700)]
-    hits_gamma_34 = hits_gamma[(energies_gamma > 300) & (energies_gamma < 400) & (hits_gamma > 700)]
-    hits_gamma_45 = hits_gamma[(energies_gamma > 400) & (energies_gamma < 500) & (hits_gamma > 700)]
-    hits_gamma_56 = hits_gamma[(energies_gamma > 500) & (energies_gamma < 600) & (hits_gamma > 700)]
-    hits_gamma_67 = hits_gamma[(energies_gamma > 600) & (energies_gamma < 700) & (hits_gamma > 700)]
-    hits_gamma_78 = hits_gamma[(energies_gamma > 700) & (energies_gamma < 800) & (hits_gamma > 700)]
-    hits_gamma_89 = hits_gamma[(energies_gamma > 800) & (energies_gamma < 900) & (hits_gamma > 700)]
-    hits_gamma_910 = hits_gamma[(energies_gamma > 900) & (energies_gamma < 1000) & (hits_gamma > 700)]
-    hits_gamma_gt10 = hits_gamma[(energies_gamma > 1000) & (hits_gamma > 700)]
+    hits_muon_lt100 = hits_muon[(energies_muon < 100)]
+    hits_muon_12 = hits_muon[(energies_muon > 100) & (energies_muon < 200) & (hits_muon > 700)]
+    hits_muon_23 = hits_muon[(energies_muon > 200) & (energies_muon < 300) & (hits_muon > 700)]
+    hits_muon_34 = hits_muon[(energies_muon > 300) & (energies_muon < 400) & (hits_muon > 700)]
+    hits_muon_45 = hits_muon[(energies_muon > 400) & (energies_muon < 500) & (hits_muon > 700)]
+    hits_muon_56 = hits_muon[(energies_muon > 500) & (energies_muon < 600) & (hits_muon > 700)]
+    hits_muon_67 = hits_muon[(energies_muon > 600) & (energies_muon < 700) & (hits_muon > 700)]
+    hits_muon_78 = hits_muon[(energies_muon > 700) & (energies_muon < 800) & (hits_muon > 700)]
+    hits_muon_89 = hits_muon[(energies_muon > 800) & (energies_muon < 900) & (hits_muon > 700)]
+    hits_muon_910 = hits_muon[(energies_muon > 900) & (energies_muon < 1000) & (hits_muon > 700)]
+    hits_muon_gt10 = hits_muon[(energies_muon > 1000) & (hits_muon > 700)]
 
     hits_elec_lt100 = hits_elec[(energies_electron < 100) & (hits_elec > 700)]
     hits_elec_12 = hits_elec[(energies_electron > 100) & (energies_electron < 200) & (hits_elec > 700)]
@@ -312,203 +395,25 @@ def make_visualizations(h5_file, output_path):
     hits_elec_910 = hits_elec[(energies_electron > 900) & (energies_electron < 1000) & (hits_elec > 700)]
     hits_elec_gt10 = hits_elec[(energies_electron > 1000) & (hits_elec > 700)]
     
-    #print(num_pmt_gamma)
-    #print('hits_elec', hits_gamma)
     
-    hits_hist(hits_gamma, hits_elec, bins = 50, xlimit = None, name = 'All', title = 'All')
-    hits_hist(hits_gamma_lt100, hits_elec_lt100, bins = 50, xlimit = None, name = 'lt100', title = 'E < 100')
-    hits_hist(hits_gamma_12, hits_elec_12, bins = 50, xlimit = (400, 1600), name = '12', title = '100<E<200')
-    hits_hist(hits_gamma_23, hits_elec_23, bins = 50, xlimit = (1000, 2400), name = '23', title = '200<E<300')
-    hits_hist(hits_gamma_34, hits_elec_34, bins = 50, xlimit = (1500, 3000), name = '34', title = '300<E<400')
-    hits_hist(hits_gamma_45, hits_elec_45, bins = 50, xlimit = (1700, 3300), name = '45', title = '400<E<500')
-    hits_hist(hits_gamma_56, hits_elec_56, bins = 50, xlimit = (2000, 3600), name = '56', title = '500<E<600')
-    hits_hist(hits_gamma_67, hits_elec_67, bins = 50, xlimit = (2300, 4000), name = '67', title = '600<E<700')
-    hits_hist(hits_gamma_78, hits_elec_78, bins = 50, xlimit = (3000, 4500), name = '78', title = '700<E<800')
-    hits_hist(hits_gamma_89, hits_elec_89, bins = 50, xlimit = (3000, 4500), name = '89', title = '800<E<900')
-    hits_hist(hits_gamma_910, hits_elec_910, bins = 50, xlimit = (3500, 5000), name = '910', title = '900<E<1000')
-    hits_hist(hits_gamma_gt10, hits_elec_gt10, bins = 50, xlimit = (3500, 6000), name = 'gt10', title = 'E > 1000')
+    hits_hist(hits_muon, hits_elec, bins = 50, xlimit = None, name = 'All', title = 'All')
+    hits_hist(hits_muon_lt100, hits_elec_lt100, bins = 50, xlimit = None, name = 'lt100', title = 'E < 100')
+    hits_hist(hits_muon_12, hits_elec_12, bins = 50, xlimit = None, name = '12', title = '100<E<200')
+    hits_hist(hits_muon_23, hits_elec_23, bins = 50, xlimit = None, name = '23', title = '200<E<300')
+    hits_hist(hits_muon_34, hits_elec_34, bins = 50, xlimit = None, name = '34', title = '300<E<400')
+    hits_hist(hits_muon_45, hits_elec_45, bins = 50, xlimit = None, name = '45', title = '400<E<500')
+    hits_hist(hits_muon_56, hits_elec_56, bins = 50, xlimit = None, name = '56', title = '500<E<600')
+    hits_hist(hits_muon_67, hits_elec_67, bins = 50, xlimit = None, name = '67', title = '600<E<700')
+    hits_hist(hits_muon_78, hits_elec_78, bins = 50, xlimit = None, name = '78', title = '700<E<800')
+    hits_hist(hits_muon_89, hits_elec_89, bins = 50, xlimit = None, name = '89', title = '800<E<900')
+    hits_hist(hits_muon_910, hits_elec_910, bins = 50, xlimit = None, name = '910', title = '900<E<1000')
+    hits_hist(hits_muon_gt10, hits_elec_gt10, bins = 50, xlimit = None, name = 'gt10', title = 'E > 1000')
     
     
 
-    #r_dir_gen_elec = r_dir_gen_elec[hits == 0.8]
-    #r_dir_gen_gam = r_dir_gen_gam[hits == 0.8]
 
-    towall_gev = temp_towall_gev
+    generic_2D_plot(x_muon,y_muon,[-1800,1800], 100, 'X [cm]', [-1800,1800], 100, 'Y [cm]', '', output_path, 'radial', save_plot=True)
+    generic_2D_plot(x_muon,z_muon,[-1800,1800], 100, 'X [cm]', [-1800,1800], 100, 'Z [cm]', '', output_path, 'long_x', save_plot=True)
+    generic_2D_plot(y_muon,z_muon,[-1800,1800], 100, 'Y [cm]', [-1800,1800], 100, 'Z [cm]', '', output_path, 'long_y', save_plot=True)
 
-    towall_gevlt100 = []
-    towall_gev12 = []
-    towall_gev23 = []
-    towall_gev34 = []
-    towall_gev45 = []
-    towall_gev56 = []
-    towall_gev67 = []
-    towall_gev78 = []
-    towall_gev89 = []
-    towall_gev910 = []
-    towall_gevgt100 = []
-    
-
-    r_dir_pos_lt100 = []
-    r_dir_pos_12 = []
-    r_dir_pos_23 = []
-    r_dir_pos_34 = []
-    r_dir_pos_45 = []
-    r_dir_pos_56 = []
-    r_dir_pos_67 = []
-    r_dir_pos_78 = []
-    r_dir_pos_89 = []
-    r_dir_pos_910 = []
-    r_dir_pos_gt10 = []
-    
-    r_dir_pos = np.array(r_dir_pos)
-    r_dir_elec = np.array(r_dir_elec)
-    towall_gev = np.array(towall_gev)
-'''
-    #print('towall_gev len', (towall_gev))
-    towall_gevlt100 = towall_gev[energies < 100]
-    towall_gev12 = towall_gev[(energies > 100) & (energies < 200)]
-    towall_gev23 = towall_gev[(energies > 200) & (energies < 300)]
-    towall_gev34 = towall_gev[(energies > 300) & (energies < 400)]
-    towall_gev45 = towall_gev[(energies > 400) & (energies < 500)]
-    towall_gev56 = towall_gev[(energies > 500) & (energies < 600)]
-    towall_gev67 = towall_gev[(energies > 600) & (energies < 700)]
-    towall_gev78 = towall_gev[(energies > 700) & (energies < 800)]
-    towall_gev89 = towall_gev[(energies > 800) & (energies < 900)]
-    towall_gev910 = towall_gev[(energies > 900) & (energies < 1000)]
-    towall_gevgt10 = towall_gev[(energies > 1000)]
-    
-    r_dir_pos_lt100 = r_dir_pos[energies < 100]
-    r_dir_pos_12 = r_dir_pos[(energies > 100) & (energies < 200)]
-    r_dir_pos_23 = r_dir_pos[(energies > 200) & (energies < 300)]
-    r_dir_pos_34 = r_dir_pos[(energies > 300) & (energies < 400)]
-    r_dir_pos_45 = r_dir_pos[(energies > 400) & (energies < 500)]
-    r_dir_pos_56 = r_dir_pos[(energies > 500) & (energies < 600)]
-    r_dir_pos_67 = r_dir_pos[(energies > 600) & (energies < 700)]
-    r_dir_pos_78 = r_dir_pos[(energies > 700) & (energies < 800)]
-    r_dir_pos_89 = r_dir_pos[(energies > 800) & (energies < 900)]
-    r_dir_pos_910 = r_dir_pos[(energies > 900) & (energies < 1000)]
-    r_dir_pos_gt10 = r_dir_pos[(energies > 1000)]
-
-    r_dir_elec_lt100 = r_dir_elec[energies < 100]
-    r_dir_elec_12 = r_dir_elec[(energies > 100) & (energies < 200)]
-    r_dir_elec_23 = r_dir_elec[(energies > 200) & (energies < 300)]
-    r_dir_elec_34 = r_dir_elec[(energies > 300) & (energies < 400)]
-    r_dir_elec_45 = r_dir_elec[(energies > 400) & (energies < 500)]
-    r_dir_elec_56 = r_dir_elec[(energies > 500) & (energies < 600)]
-    r_dir_elec_67 = r_dir_elec[(energies > 600) & (energies < 700)]
-    r_dir_elec_78 = r_dir_elec[(energies > 700) & (energies < 800)]
-    r_dir_elec_89 = r_dir_elec[(energies > 800) & (energies < 900)]
-    r_dir_elec_910 = r_dir_elec[(energies > 900) & (energies < 1000)]
-    r_dir_elec_gt10 = r_dir_elec[(energies > 1000)]
-
-    anglelt100 = []
-    angle12 = []
-    angle23 = []
-    angle34 = []
-    angle45 = []
-    angle56 = []
-    angle67 = []
-    angle78 = []
-    angle89 = []
-    angle910 = []
-    anglegt10 = []
-
-    for i in range(len(r_dir_pos_lt100)):
-        anglelt100.append(angle_try4(r_dir_pos_lt100[i], r_dir_elec_lt100[i]))
-    for i in range(len(r_dir_pos_12)):
-        angle12.append(angle_try4(r_dir_pos_12[i], r_dir_elec_12[i]))
-    for i in range(len(r_dir_pos_23)): 
-        angle23.append(angle_try4(r_dir_pos_23[i], r_dir_elec_23[i]))
-    for i in range(len(r_dir_pos_34)): 
-        angle34.append(angle_try4(r_dir_pos_34[i], r_dir_elec_34[i]))
-    for i in range(len(r_dir_pos_45)): 
-        angle45.append(angle_try4(r_dir_pos_45[i], r_dir_elec_45[i]))
-    for i in range(len(r_dir_pos_56)): 
-        angle56.append(angle_try4(r_dir_pos_56[i], r_dir_elec_56[i]))
-    for i in range(len(r_dir_pos_67)): 
-        angle67.append(angle_try4(r_dir_pos_67[i], r_dir_elec_67[i]))
-    for i in range(len(r_dir_pos_78)): 
-        angle78.append(angle_try4(r_dir_pos_78[i], r_dir_elec_78[i]))
-    for i in range(len(r_dir_pos_89)): 
-        angle89.append(angle_try4(r_dir_pos_89[i], r_dir_elec_89[i]))
-    for i in range(len(r_dir_pos_910)): 
-        angle910.append(angle_try4(r_dir_pos_910[i], r_dir_elec_910[i]))
-    for i in range(len(r_dir_pos_gt10)): 
-        anglegt10.append(angle_try4(r_dir_pos_gt10[i], r_dir_elec_gt10[i]))
-    #print(angle)
-    angle_hist(anglelt100, bins = 100, name = 'lt100', title = ' E < 100')
-    angle_hist(angle12, bins = 100, name = 12, title = ' E = (100, 200)')
-    angle_hist(angle23, bins = 100, name = 23, title = ' E = (200, 300)')
-    angle_hist(angle34, bins = 100, name = 34, title = ' E = (300, 400)')
-    angle_hist(angle45, bins = 100, name = 45, title = ' E = (400, 500)')
-    angle_hist(angle56, bins = 100, name = 56, title = ' E = (500, 600)')
-    angle_hist(angle67, bins = 100, name = 67, title = ' E = (600, 700)')
-    angle_hist(angle78, bins = 100, name = 78, title = ' E = (700, 800)')
-    angle_hist(angle89, bins = 100, name = 89, title = ' E = (800, 900)')
-    angle_hist(angle910, bins = 100, name = 910, title = ' E = (900, 1000)')
-    angle_hist(anglegt10, bins = 100, name = 'gt10', title = ' E > 1000')
-
-    #print('towall ndim', type(towall_gev))
-    
-    #print(angle23)
-    #print(towall_gev23)
-
-    detector_percentlt100 = detector_percent(towall_gevlt100, anglelt100)
-    detector_percent12 = detector_percent(towall_gev12, angle12)
-    detector_percent23 = detector_percent(towall_gev23, angle23)
-    detector_percent34 = detector_percent(towall_gev34, angle34)
-    detector_percent45 = detector_percent(towall_gev45, angle45)
-    detector_percent56 = detector_percent(towall_gev56, angle56)
-    detector_percent67 = detector_percent(towall_gev67, angle67)
-    detector_percent78 = detector_percent(towall_gev78, angle78)
-    detector_percent89 = detector_percent(towall_gev89, angle89)
-    detector_percent910 = detector_percent(towall_gev910, angle910)
-    detector_percentgt10 = detector_percent(towall_gevgt10, anglegt10)
-    #print(detector_percentlt100)
-    #print(detector_percent)
-    #print(distance)
-    distance_hist(detector_percentlt100, bins = 100, name = 'lt100', title = ' E < 100')
-    distance_hist(detector_percent12, bins = 100, name = 12, title = ' E = (100, 200)')
-    distance_hist(detector_percent23, bins = 100, name = 23, title = ' E = (200, 300)')
-    distance_hist(detector_percent34, bins = 100, name = 34, title = ' E = (300, 400)')
-    distance_hist(detector_percent45, bins = 100, name = 45, title = ' E = (400, 500)')
-    distance_hist(detector_percent56, bins = 100, name = 56, title = ' E = (500, 600)')
-    distance_hist(detector_percent67, bins = 100, name = 67, title = ' E = (600, 700)')
-    distance_hist(detector_percent78, bins = 100, name = 78, title = ' E = (700, 800)')
-    distance_hist(detector_percent89, bins = 100, name = 89, title = ' E = (800, 900)')
-    distance_hist(detector_percent910, bins = 100, name = 910, title = ' E = (900, 1000)')
-    distance_hist(detector_percentgt10, bins = 100, name = 'gt10', title = ' E > 1000')
     '''
-
-
-    #generic_2D_plot(x_pos,y_pos,[-1800,1800], 100, 'X [cm]', [-1800,1800], 100, 'Y [cm]', '', output_path, 'radial', save_plot=True)
-    #generic_2D_plot(x_pos,z_pos,[-1800,1800], 100, 'X [cm]', [-1800,1800], 100, 'Z [cm]', '', output_path, 'long_x', save_plot=True)
-    #generic_2D_plot(y_pos,z_pos,[-1800,1800], 100, 'Y [cm]', [-1800,1800], 100, 'Z [cm]', '', output_path, 'long_y', save_plot=True)
-
-    #generic_2D_plot(x_stop_pos,y_stop_pos,[-3000,3000], 100, 'X [cm]', [-3000,3000], 100, 'Y [cm]', '', output_path, 'radial', save_plot=True)
-    #generic_2D_plot(x_stop_pos,z_stop_pos,[-3000,3000], 100, 'X [cm]', [-3000,3000], 100, 'Z [cm]', '', output_path, 'long_x', save_plot=True)
-    #generic_2D_plot(y_stop_pos,z_stop_pos,[-3000,3000], 100, 'Y [cm]', [-3000,3000], 100, 'Z [cm]', '', output_path, 'long_y', save_plot=True)
-    
-#    theta = []
-#    theta = angle_try2(r_dir_elec, r_dir_pos)
-
-#    x_pos = np.array(x_pos)
-#    y_pos = np.array(y_pos)
-#    z_pos = np.array(z_pos)
-#    angle_pos = np.arctan(x_pos/y_pos)
-#    
-#    x_pos = list(x_pos)
-#    y_pos = list(y_pos)
-#    z_pos = list(z_pos)
-#    angle_pos = list(angle_pos)
-    
- #   generic_det_unraveler(angle_pos, z_pos, np.ones(len(angle_pos)), 'angle [deg]', 'Z [cm]', 'PMT charges', output_path, 'shrunken')
-
-    #print('x_pos = ', x_pos[0:10])
-    #print('y_pos = ', y_pos[0:10])
-    #print('r_pos = ', r_pos[0:10])
-
-    #generic_3D_plot(x_pos,y_pos,z_pos, np.ones(len(x_pos)), 'X [cm]', 'Y [cm]', 'Z [cm]', 'Arbitrary', output_path, 'truth_position')
-    #generic_3D_plot(x_stop_pos,y_stop_pos,z_stop_pos, np.ones(len(x_stop_pos)), 'Stop X [cm]', 'Stop Y [cm]', 'Stop Z [cm]', 'Arbitrary', output_path, 'truth_stop_position')
-
-

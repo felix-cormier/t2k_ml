@@ -1,2 +1,1 @@
-/home/ipress
-/home/ipress/electrons
+/fast_scratch/ipress/emu/wcsim/jul18_wcsim_emu_range_1M_1/combine_combine.hy

@@ -9,16 +9,19 @@ import numpy as np
 
 
 
-def generic_histogram(x, x_name, output_path, output_name, y_name = None, label=None, range=None, bins=None, in_chain=False):
+def generic_histogram(x, x_name, output_path, output_name, y_name = None, y_lim = None, y_axis = None, label=None, range=None, bins=None, in_chain=False):
     fig, ax = plt.subplots()
-    print(label)
     alpha=1
     if len(x) > 1:
         alpha=0.6
     ax.hist(x, bins=bins, range=range, label=label, alpha=alpha, histtype='stepfilled')
     ax.set_xlabel(x_name)
+    if y_lim is not None:
+        ax.set_ylim(y_lim)
+    if y_axis is not None:
+        ax.set_yscale('log')
     if y_name is not None:
-        ax.set_ylabel(y_name)
+        ax.set_ylabel('Counts')
     ax.legend(loc='best')
     ax.grid(linestyle = '--')
     if not in_chain:
@@ -26,7 +29,7 @@ def generic_histogram(x, x_name, output_path, output_name, y_name = None, label=
         plt.close()
         plt.clf()
 
-def generic_histogram2(x, x2, x_name, output_path, output_name, y_name = None, label=None, range=None, bins=None, in_chain=False, label1 = None, label2 = None):
+def generic_histogram2(x, x2, x_name, output_path, output_name, y_name = None, range=None, bins=None, in_chain=False, label1 = None, label2 = None):
     plt.hist(x, bins=bins, range=range, alpha=0.5, histtype='stepfilled', label = label1)
     plt.hist(x2, bins=bins, range=range, alpha=0.5, histtype='stepfilled', label = label2)
     plt.xlabel(x_name)

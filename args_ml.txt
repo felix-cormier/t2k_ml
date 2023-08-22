@@ -1,10 +1,10 @@
 --makeVisualizations
---input_combination_path=/fast_scratch/ipress/
---output_combination_path=/fast_scratch/ipress/
+--input_combination_path=/fast_scratch/ipress/emu/skdetsim/
+--output_combination_path=/fast_scratch/ipress/emu/skdetsim/
 --input_plot_path=data/plotting_paths.txt
---output_plot_path=/fast_scratch/ipress/gamma_analysis
---input_vis_file_path=/home/ipress/t2k_ml_test_folder//digi_combine_50k.hy
---output_vis_path=/fast_scratch/ipress/gamma_analysis/makevis
---output_path=/fast_scratch/ipress/gamma_analysis
---transformPath=/fast_scratch/ipress/gamma_analysis
+--output_plot_path=/fast_scratch/ipress/emu/wcsim/
+--input_vis_file_path=/fast_scratch/ipress/emu/jul31_emu_decayEVar_2/combine_combine.hy
+--output_vis_path=/fast_scratch/ipress/emu/wcsim/truth/
+--output_path=/fast_scratch/ipress/emu/wcsim/truth/
+--transformPath=/fast_scratch/ipress/emu/
 --transformName=wcsim.root	
