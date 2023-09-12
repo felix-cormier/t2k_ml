@@ -27,7 +27,11 @@ else
 fi
 unset __conda_setup
 
-conda activate t2k_ml_root_2
+#Old anaconda-based setup
+#conda activate t2k_ml_root_2
+
+#New compute canada script - to test
+source setup.sh
 
 /home/fcormier/misc/bashrc
 
