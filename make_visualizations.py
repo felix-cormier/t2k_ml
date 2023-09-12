@@ -1,4 +1,4 @@
-from generics_python.make_plots import generic_3D_plot, generic_2D_plot
+from generics_python.make_plots import generic_histogram, generic_3D_plot, generic_2D_plot
 import random
 import numpy as np
 
@@ -34,19 +34,19 @@ def make_visualizations(h5_file, output_path):
     ratio = num_visualization/max
     random.seed(0)
 
-    x_pos=[]
-    y_pos=[]
-    z_pos=[]
+    x_pos=(np.ravel(h5_file['positions'][:,:,0]))
+    y_pos=(np.ravel(h5_file['positions'][:,:,1]))
+    z_pos=(np.ravel(h5_file['positions'][:,:,2]))
     x_stop_pos=[]
     y_stop_pos=[]
     z_stop_pos=[]
 
+
     for i,index in enumerate(h5_file['event_hits_index']):
         if i < max-1:
-            pmt_positions = np.array(convert_values(geofile,h5_file['hit_pmt'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
-            x_pos.append(float(h5_file['positions'][i][:,0])) 
-            y_pos.append(float(h5_file['positions'][i][:,1])) 
-            z_pos.append(float(h5_file['positions'][i][:,2])) 
+            #x_pos.append(float(h5_file['positions'][i][:,0])) 
+            #y_pos.append(float(h5_file['positions'][i][:,1])) 
+            #z_pos.append(float(h5_file['positions'][i][:,2])) 
             #x_stop_pos.append(float(h5_file['stop_positions'][i][:,0])) 
             #y_stop_pos.append(float(h5_file['stop_positions'][i][:,1])) 
             #z_stop_pos.append(float(h5_file['stop_positions'][i][:,2])) 
@@ -54,9 +54,15 @@ def make_visualizations(h5_file, output_path):
                 print(i)
                 print(h5_file['labels'][i])
                 charges = h5_file['hit_charge'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]
+                pmt_positions = np.array(convert_values(geofile,h5_file['hit_pmt'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
                 x = pmt_positions[:,0]
                 y = pmt_positions[:,1]
                 z = pmt_positions[:,2]
+
+                if h5_file['decay_electron_exists'][i] and h5_file['decay_electron_energy'][i] >30:
+                    print("DECAY ELECTRON!")
+                    output_name = 'decay_electron_time_'+str(i)
+                    generic_histogram(h5_file['hit_time'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]], "PMT Time [ns]", output_path, output_name, bins=20, label = f"e time: {h5_file['decay_electron_time'][i]}")
 
 
                 output_name = 'digi_500MeV_vis_'+str(i)
