@@ -19,27 +19,27 @@ git submodule update --init --recursive
 
 Once you've cloned the repo and initialized the submodule, there is some setup to do.
 
-You want to use anaconda to install some packages. Make a folder in your home directory (e.g. miniconda), navigate to it,  and run
+If you're using Compute Canada:
 
 ```
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh 
+module load StdEnv/2020
+module load python/3.10.2
+module load scipy-stack
+module load gcc/9.3.0
+module load root/6.20.04
+virtualenv --no-download ~/ml_root_3p10
+source ~/ml_root_3p10/bin/activate
+pip install --no-index -r requirements.txt
 ```
 
-This will download and install miniconda, with prompts to decide where to install. To load the conda environment used here, simply navigate to the top directory of the repo and run
+This will install the required packages and virtual environment in your home directory.
+You can look here for more details: [Compute Canada Python Install](https://docs.alliancecan.ca/wiki/Python#Requirements_file)
+Now every time you log back in, in the top directory of this cloned repo run:
 
 ```
-conda env create --file=t2k_ml_root_4.yml
-conda env create --file=t2k_ml_root_2.yml
-conda activate t2k_ml_root_2
+source setup.sh
 ```
 
-This conda environment should give you access to most libraries needed in this repo. If running things locally, when in the main repo directory, one should run this every new shell, except when running WCSim:
-
-```
-conda activate t2k_ml_root_2
-source transform_modules.sh
-```
 
 ### Running on Compute Canada Clusters
 
