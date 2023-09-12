@@ -144,6 +144,7 @@
 /mygen/generator GENERATOR
 /GENERATOR/particle PARTICLE
 #/gun/particle pi0
+#For normal operation uncomment
 /GENERATOR/pos/type Volume
 /GENERATOR/pos/shape Cylinder
 /GENERATOR/pos/centre 0. 0. 0. cm
@@ -155,6 +156,35 @@
 /GENERATOR/ene/max ENERGY_MAX ENERGY_UNIT
 /GENERATOR/ene/gradient 0
 /GENERATOR/ene/intercept 1
+
+#Gamma study
+#/GENERATOR/pos/type Volume
+#gammas
+#/GENERATOR/pos/shape Ellipsoid
+#/GENERATOR/pos/halfx 200. cm
+#/GENERATOR/pos/halfy 150. cm
+#/GENERATOR/pos/halfz 200. cm
+#/GENERATOR/pos/centre 0. -50. 0. cm
+#electrons
+#/GENERATOR/pos/shape Sphere
+#/GENERATOR/pos/radius 200. cm
+#/GENERATOR/pos/centre 0. 0. 0. cm
+#/GENERATOR/ang/type iso
+#MAx towall attempt
+#/gps/ang/mintheta 0.666099 rad
+#/gps/ang/maxtheta 0.829706 rad
+#/gps/ang/minphi 1.39626 rad
+#/gps/ang/maxphi 1.74533 rad
+#center ball
+#/GENERATOR/ang/mintheta 1.39626 rad
+#/GENERATOR/ang/maxtheta 1.74533 rad
+#/GENERATOR/ang/minphi 4.5378 rad
+#/GENERATOR/ang/maxphi 4.8869 rad
+#/GENERATOR/ene/type Lin
+#/GENERATOR/ene/min ENERGY_MIN ENERGY_UNIT
+#/GENERATOR/ene/max ENERGY_MAX ENERGY_UNIT
+#/GENERATOR/ene/gradient 0
+#/GENERATOR/ene/intercept 1
 
 # Or you can use the G4 General Particle Source
 # you can do a lot more with this than a monoenergetic, monodirectional, single-particle gun

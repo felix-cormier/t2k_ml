@@ -27,13 +27,17 @@ else
 fi
 unset __conda_setup
 
-conda activate t2k_ml_root_2
+#Old anaconda-based setup
+#conda activate t2k_ml_root_2
+
+#New compute canada script - to test
+source setup.sh
 
 /home/fcormier/misc/bashrc
 
-module load singularity/3.8
-export SINGULARITY_BINDPATH="/scratch/,/localscratch/"
-singularity exec /scratch/fcormier/singularity_containers/wcsim.sif bash "$SLURM_TMPDIR/t2k_ml/singularity_run.sh"
+module load apptainer/1.1.8
+export APPTAINER_BINDPATH="/scratch/,/localscratch/"
+apptainer exec /scratch/fcormier/singularity_containers/wcsim.sif bash "$SLURM_TMPDIR/t2k_ml/singularity_run.sh"
 #bash "/home/fcormier/t2k/t2k_ml_base/t2k_ml/singularity_run.sh"
 #python wcsim_batch.py $ARG1 $ARG2
 echo "finished wcsim"

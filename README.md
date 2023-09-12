@@ -40,7 +40,6 @@ Now every time you log back in, in the top directory of this cloned repo run:
 source setup.sh
 ```
 
-
 ### Running on Compute Canada Clusters
 
 Preferably run this code on narval.computecanada.ca by
@@ -144,9 +143,9 @@ You can plot some of the variables from a WCSim transformed .hy file. To do this
 --output_plot_path=[...]
 ```
 
-Where input plot path can be either a directory, or the path and name of a text file which then contains multiple paths and names of files (preferably a combination .hy file). The output path is where the plots generated will be stored. N.B. there is an artificial limit of 5000 on the number of events looked at for each .hy file to speed this up.
+Where input plot path can be either a directory, or the path and name of a text file which then contains multiple paths and names of files (preferably a combination .hy file). The output path is where the plots generated will be stored. 
 
-N.B. If you want to plot multiple different labels (e.g. electrons and muons) at the same time, this code expects to have these in separate .hy files. You will have to provide a text file with multiple paths and names of the files you want to plot.
+N.B. If you want to plot multiple different labels (e.g. electrons and muons) at the same time, this code expects to have these in separate .hy files. You will have to provide a text file with multiple paths and names of the files you want to plot. Thus give _input\_plot\_path_ variable a text file with the paths to the multiple files.
 
 #### Make Visualizations
 
@@ -158,4 +157,4 @@ To make some visuals of some data events, and visuals of simulated particles, do
 --output_vis_path=[...]
 ```
 
-where the input path is the path and name of a .hy file (could be individual or combination), and the output path is where the plots will be stored.
+where the input path is the path and name of a .hy file (could be individual or combination), and the output path is where the plots will be stored. There is a variable called _num\_visualization_ in _make\_visualizations.py_ which sets how many visualizations to make in the whole file - it will choose random N events to visualize.
