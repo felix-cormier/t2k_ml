@@ -41,7 +41,7 @@ class WCSimOptions():
     def correct_energy(self):
         """Corrects input energy with Cherenkov threshold per particle
         """
-        threshold_dict = {'mu-':54.6, 'mu+':54.6, 'e-':0.264, 'e+':0.264, 'gamma':2*0.511+0.264}
+        threshold_dict = {'mu-':54.6, 'mu+':54.6, 'e-':0.264, 'e+':0.264, 'gamma':2*0.511+0.264, 'pi+': 72.1, 'pi-':72.1, 'pi0':2*(2*0.511+0.264)}
         self.energy[0] = self.energy[0] + threshold_dict[self.particle]
         self.energy[1] = self.energy[1] + threshold_dict[self.particle]
 

@@ -75,20 +75,20 @@ if args.doWCSim and args.doTransform and args.doBatch and args.output_path is no
     print("Submitting jobs")
     num_jobs = int(args.numJobs)
     events_per_job = int(args.eventsPerJob)
-    #wcsim_options = WCSimOptions(output_directory=args.output_path, save_input_options=False,  energy=[0,1200,'MeV'], radius=[1700.,'cm'], halfz=[1850.,'cm'], generator = 'gps', particle='gamma')
-    wcsim_options = WCSimOptions(output_directory=args.output_path, save_input_options=False,  energy=[0,1200,'MeV'], radius=[100.,'cm'], halfz=[100.,'cm'], generator = 'gps', particle='e-')
+    wcsim_options = WCSimOptions(output_directory=args.output_path, save_input_options=False,  energy=[50,400,'MeV'], radius=[1590.,'cm'], halfz=[1710.,'cm'], generator = 'gps', particle='e-')
+    #wcsim_options = WCSimOptions(output_directory=args.output_path, save_input_options=False,  energy=[100,1200,'MeV'], radius=[100.,'cm'], halfz=[100.,'cm'], generator = 'gps', particle='gamma')
     wcsim_options.set_output_directory()
     wcsim_options.save_options(args.output_path,'wc_options.pkl')
     print(wcsim_options.particle)
 
     for i in range(num_jobs):
-        talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=4G --nodes=1 --ntasks-per-node=1 --time=02:00:00 --export=ALL,ARG1='+str(events_per_job)+',ARG2='+str(args.output_path)+' wcsim_job.sh')
+        talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=2G --nodes=1 --ntasks-per-node=1 --time=01:00:00 --export=ALL,ARG1='+str(events_per_job)+',ARG2='+str(args.output_path)+' wcsim_job.sh')
         subprocess.call(talk, shell=True)
 
 
 elif args.doWCSim:
     print("Running WCSim")
-    wcsim_options = WCSimOptions(num_events=500, energy=[0,1200,'MeV'], radius=[1690.,'cm'], halfz=[1750.,'cm'], generator = 'gps', particle='gamma', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/test_2000halfz2001radCyl_electrons_sep2/')
+    wcsim_options = WCSimOptions(num_events=500, energy=[0,200,'MeV'], radius=[1590.,'cm'], halfz=[1710.,'cm'], generator = 'gps', particle='mu-', output_directory='/scratch/fcormier/t2k/ml/output_wcsim/test_lowEmuons_jul31/')
     wcsim_options.set_options(filename='WCSim_toEdit.mac')
     wcsim_options.run_local_wcsim()
 
@@ -125,7 +125,7 @@ if args.makeInputPlots:
         wcsim_options = wcsim_options.load_options(args.input_plot_path, 'wc_options.pkl')
     wcsim_options.output_directory = args.output_plot_path
     wcsim_options.set_output_directory()
-    plot_wcsim(args.input_plot_path, args.output_plot_path, wcsim_options, text_file=use_text_file, truthOnly=True)
+    plot_wcsim(args.input_plot_path, args.output_plot_path, wcsim_options, text_file=use_text_file, moreVariables=False)
 
 if args.dumpOptions:
     text_file = open(args.input_plot_path, "r")
