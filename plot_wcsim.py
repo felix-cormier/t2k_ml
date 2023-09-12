@@ -39,7 +39,14 @@ def calculate_wcsim_wall_variables(position, direction):
         right_index = small_index
 
     time_to_horizontal = abs(position[0] - quad_sols_x[right_index])/direction[0]
-    vertical_towall_distance = np.min([abs(position[2]-1810),abs(position[2]+1810)])
+    #Probably wrong
+    #vertical_towall_distance = np.min([abs(position[2]-1810),abs(position[2]+1810)])
+    if direction[2] < 0:
+        vertical_towall_distance = 1810+position[2]
+    elif direction[2] > 0:
+        vertical_towall_distance = 1810-position[2]
+    else:
+        vertical_towall_distance = 0
     time_to_vertical = abs(vertical_towall_distance/direction[2])
 
     if time_to_horizontal < time_to_vertical:
@@ -103,7 +110,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, truthOnl
     """
 
     num_files=1
-    geofile = load_geofile('data/geofile.npz')
+    geofile = load_geofile('data/geofile_skdetsim.npz')
     file_paths=input_path
     #Behaviour different depending on format of input (single or multiple files)
     if text_file:

@@ -14,5 +14,5 @@ if __name__ == '__main__':
     skdetsim_options.output_directory = output_directory
     skdetsim_options.output_name ='data/skdetsim_'+job_id+'.root' 
     skdetsim_options.batch = True
-    skdetsim_options.set_options(filename='skdetsim_toEdit.mac')
+    skdetsim_options.set_options(filename='sk4_odtune_toEdit.card')
     skdetsim_options.run_local_skdetsim()

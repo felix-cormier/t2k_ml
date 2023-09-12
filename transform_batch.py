@@ -14,6 +14,7 @@ if __name__ == '__main__':
         test = dump_file(str(output_directory) + '/' +'wcsim_'+job_id+'.root', str(output_directory) + '/' + 'wcsim_transform_' + job_id)
     #SKDETSim
     else: 
+        print("Running transform batch for SKDETSi")
         name, output_directory, job_id, _= sys.argv
         skdetsim_options = SKDETSimOptions()
         wcsim_options = skdetsim_options.load_options('./', 'sk_options.pkl')

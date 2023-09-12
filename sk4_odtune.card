@@ -98,7 +98,7 @@ C
 C number of generated event
 C
 
-VECT-NEVT 10
+VECT-NEVT 1000
 
 C
 C seeds for random number generators; three values must be given
@@ -145,9 +145,9 @@ C               = 1   fixed on the position specified by 'VECT-VTX'
 C               = 2   randomly generated
 
 VECT-MVTX 2
-VECT-VTX  0.0 0.0 0.0
+CVECT-VTX  0.0 0.0 0.0
 
-CVECT-100 100
+VECT-WALL 200
 
 C
 C VECT-MDIR    Control directions
@@ -157,14 +157,14 @@ VECT-MDIR 2
 CVECT-DIR -1. 0. 0.
 
 C VECT-PART    input particle ID
-VECT-PART 11
+VECT-PART 13
 
 C VECT-MMOM    Control momentum MeV
 C               = 1   fixed momentum set by the 1st argument of 'VECT-MOM'
 C               = 2   randomly set between p_1 and p_2
 
 VECT-MMOM 2
-VECT-MOM 0.264 1200.264
+VECT-MOM 154.6 1254.6
 
 C
 C

@@ -83,13 +83,13 @@ class SKDETSimOptions():
             filename (str, optional): Filename to copy and edit Defaults to 'sk4_odtune_toEdit.card'.
 
         """
-        pat = re.compile(b'PARTICLE|SEED|ENERGY_MIN|ENERGY_MAX|WALL|OUTPUT_NAME|NUM_EVENTS')
+        pat = re.compile(b'PARTICLE|SEED|ENERGY_MIN|ENERGY_MAX|WALL_SET|OUTPUT_NAME|NUM_EVENTS')
 
         def jojo(mat,dic = {b'PARTICLE':str.encode(str(self.particle)),
                             b'SEED':str.encode(str(self.seed)),
                             b'ENERGY_MIN':str.encode(str(self.energy[0])),
                             b'ENERGY_MAX':str.encode(str(self.energy[1])),
-                            b'WALL':str.encode(str(self.wall)),
+                            b'WALL_SET':str.encode(str(self.wall)),
                             b'OUTPUT_NAME':str.encode(str(self.output_name)),
                             b'NUM_EVENTS':str.encode(str(self.num_events))} ):
             return dic[mat.group()]
@@ -115,8 +115,13 @@ class SKDETSimOptions():
         """Runs SKDETSim on current CPU
         """
         self.set_output_directory()
-        os.system('source /project/rpp-blairt2k/fcormier/skdetsim_szoldosVersion/setup.sh')
-        os.system('/project/rpp-blairt2k/fcormier/skdetsim_szoldosVersion/skdetsim-v13p90_mar16/skdetsim_high.sh sk4_odtune.card '+self.output_name+'.root')
-        os.system('/project/rpp-blairt2k/fcormier/skdetsim_szoldosVersion/ZBS2ROOT/read_zbs '+self.output_name+'.root '+self.output_name+'.zbs')
+        #os.system('source /project/rpp-blairt2k/fcormier/skdetsim_szoldosVersion/setup.sh')
+        os.system("ls -l data/")
+        os.system('/project/rpp-blairt2k/fcormier/skdetsim_szoldosVersion/skdetsim-v13p90_mar16/skdetsim_high.sh sk4_odtune.card '+self.output_name+'.zbs')
+        print("Finished simulation")
+        os.system("ls -l data/")
+        os.system('/project/rpp-blairt2k/fcormier/skdetsim_szoldosVersion/ZBS2ROOT/read_zbs '+self.output_name+'.zbs ' +self.output_name)
+        os.system("ls -l data/")
+        print("Finished ZBS2ROOT")
         if self.save_input_options:
             self.save_options(self.output_directory,'sk_options.pkl')

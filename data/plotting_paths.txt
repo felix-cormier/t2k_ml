@@ -1,0 +1,2 @@
+/scratch/fcormier/t2k/ml/output_skdetsim/jul11_muons_wall100_500k_1/
+/scratch/fcormier/t2k/ml/output_skdetsim/jul11_electrons_wall100_500k_1/
