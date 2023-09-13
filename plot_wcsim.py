@@ -27,7 +27,7 @@ def calculate_wcsim_wall_variables(position, direction):
     #Calculate towall
     point_1 = [position[0], position[1]]
     point_2 = [position[0] + direction[0],position[1] + direction[1]]
-    coefficients = np.polyfit([point_1[0], point_2[0]],[point_1[1], point_2[1]],1)
+    coefficients, _1, _2, _3, _4 = np.polyfit([point_1[0], point_2[0]],[point_1[1], point_2[1]],1, full=True)
     for_quadratic = [1+coefficients[0]*coefficients[0],2*coefficients[0]*coefficients[1],coefficients[1]*coefficients[1]-(1690*1690)]
     quad_sols_x = np.roots(for_quadratic)
     quad_sols_y = [coefficients[0]*quad_sols_x[0] + coefficients[1], coefficients[0]*quad_sols_x[1] + coefficients[1] ]
@@ -88,11 +88,11 @@ def convert_values(geofile,input):
 
 def convert_label(label):
     if label == 0:
-        return 'Gamma'
+        return 'Muon'
     if label == 1:
         return 'Electron'
     if label == 2:
-        return 'Muon'
+        return 'Pi+'
     else:
         return label
 
@@ -252,11 +252,13 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVari
             temp_truth_visible_energy = np.ravel(h5fw['energies']) - cheThr
             temp_truth_veto = (np.ravel(h5fw['veto']))
 
+            '''
             temp_decayE_exists = (np.ravel(h5fw['decay_electron_exists']))
             print(np.unique(temp_decayE_exists, return_counts=True))
             temp_decayE_energy = (np.ravel(h5fw['decay_electron_energy'])[temp_decayE_exists==1])
             temp_decayE_time = (np.ravel(h5fw['decay_electron_time'])[temp_decayE_exists==1])
             print(temp_decayE_time)
+            '''
 
 
             temp_direction_x = (np.ravel(h5fw['directions'][:,:,0]))
