@@ -133,7 +133,7 @@ if args.makeInputPlots:
         plot_wcsim(args.input_plot_path, args.output_plot_path, wcsim_options, text_file=use_text_file, moreVariables=False)
 
     else:
-        plot_skdetsim(args.input_plot_path, args.output_plot_path, moreVariables=False)
+        plot_skdetsim(args.input_plot_path, args.output_plot_path, text_file=True, moreVariables=False)
 
 if args.dumpOptions:
     text_file = open(args.input_plot_path, "r")

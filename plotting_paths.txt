@@ -1,0 +1,2 @@
+/fast_scratch/WatChMaL/data/T2K/resnet_sep11_electrons_skdetsim/
+/fast_scratch/WatChMaL/data/T2K/resnet_sep11_muons_skdetsim/

@@ -513,8 +513,9 @@ def plot_skdetsim(input_path, output_path, text_file=False, moreVariables = Fals
             print(f'Loading options from: {path}wc_options.pkl')
             wcsim_options = wcsim_options.load_options(path, 'wc_options.pkl')
             print(f'Particle: {wcsim_options.particle}')
-        #with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
-        with h5py.File(path+'/combine_combine.hy',mode='r') as h5fw:
+        
+        #with h5py.File(path+'/combine_combine.hy',mode='r') as h5fw:
+        with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
 
             #Temporary list of variables for each event
             temp_mean_charge = []
