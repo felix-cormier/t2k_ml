@@ -118,7 +118,7 @@ if args.makeInputPlots:
 
     from plot_wcsim import plot_wcsim, plot_skdetsim
 
-    # temporary solution
+    # temporary solution 
     wcsim_data = False
 
     if wcsim_data == True:

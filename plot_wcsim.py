@@ -729,36 +729,6 @@ def plot_skdetsim(input_path, output_path, text_file=False, moreVariables = Fals
 
     generic_histogram(num_pmt, 'Number of PMTs', output_path, 'num_pmt', y_name = yname, label=label, range=[0,4000], bins=20)
 
-
-
-
-    #For WCSim studies
-    '''
-    primary_charged_range_e = primary_charged_range[0]
-    primary_charged_range_p = primary_charged_range[1]
-    energy_diff = epos_energy_difference[1]
-    
-    print(energy_diff)
-    for en in range(100,500,50):
-
-        print(en)
-        primary_charged_range_p_temp = primary_charged_range_p[(truth_energy[1] < en+50) & (truth_energy[1] > en)]
-        primary_charged_range_e_temp = primary_charged_range_e[(truth_energy[0] < en+50) & (truth_energy[0] > en)]
-
-        generic_histogram([primary_charged_range_e_temp, primary_charged_range_p_temp], 'Range of primary charged particle [cm]', output_path, 'range_primary_'+str(en)+'_to_'+str(en+50), range = [0.,200.], y_name = yname, label=label, bins=50, doNorm=False)
-
-    generic_histogram([truth_energy_electron[0], truth_energy_electron[1]], 'Electron Energy [MeV]', output_path, 'energy_electron', range = [0.,1500.], y_name = yname, label=label, bins=20)
-    generic_histogram([truth_energy_positron[1], truth_energy[1]], 'positron Energy [MeV]', output_path, 'energy_positron', range = [0.,1500.], y_name = yname, label=label, bins=20, doNorm=True)
-    generic_histogram(epos_energy_difference[1], 'Electron - Positron Energy / Total Energy ', output_path, 'epos_energy_difference', range = [-1.,1.], y_name = yname, label=label, bins=20, doNorm=True)
-    generic_histogram(epos_energy_sum[1], 'Electron + Positron Energy [MeV]', output_path, 'epos_energy_sum', range = [0.,1500.], y_name = yname, label=label, bins=20, doNorm=True)
-    generic_histogram(eposTotalEDiff[1], 'Electron + Positron Enenergy / Total Energy', output_path, 'epos_total_diff', range = [0.8,1.1], y_name = yname, label=label, bins=20, doNorm=True)
-    generic_histogram(decayE_exists, 'Decay Electron Found', output_path, 'decay_electron_exists', range = [0,1], y_name = yname, label=label, bins=20, doNorm=True)
-    generic_histogram(decayE_energy, 'Decay Electron Energy [MeV]', output_path, 'decay_electron_energy', range = [0,200], y_name = yname, label=label, bins=20, doNorm=True)
-    generic_histogram(decayE_time, 'Decay Electron Time [ns]', output_path, 'decay_electron_time', range = [0,2000], y_name = yname, label=label, bins=20, doNorm=True)
-    generic_2D_plot(truth_energy[0],primary_charged_range[0],[100.,1200.], 200, "Truth Energy [MeV]", [0., 200.], 20, "Range [cm]", label[0], output_path, "range_energy"+label[0])
-    generic_2D_plot(truth_energy[1],primary_charged_range[1],[100.,1200.], 200, "Truth Energy [MeV]", [0., 200.], 20, "Range [cm]", label[1], output_path, "range_energy"+label[1])
-    '''
-
     if not moreVariables:
         return 0
 
