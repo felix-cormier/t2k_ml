@@ -116,16 +116,24 @@ if args.doCombination:
 
 if args.makeInputPlots:
 
-    from plot_wcsim import plot_wcsim
-    wcsim_options = WCSimOptions()
-    use_text_file=False
-    if ".txt" in args.input_plot_path:
-        use_text_file=True
+    from plot_wcsim import plot_wcsim, plot_skdetsim
+
+    # temporary solution
+    wcsim_data = False
+
+    if wcsim_data == True:
+        wcsim_options = WCSimOptions()
+        use_text_file=False
+        if ".txt" in args.input_plot_path:
+            use_text_file=True
+        else:
+            wcsim_options = wcsim_options.load_options(args.input_plot_path, 'wc_options.pkl')
+        wcsim_options.output_directory = args.output_plot_path
+        wcsim_options.set_output_directory()
+        plot_wcsim(args.input_plot_path, args.output_plot_path, wcsim_options, text_file=use_text_file, moreVariables=False)
+
     else:
-        wcsim_options = wcsim_options.load_options(args.input_plot_path, 'wc_options.pkl')
-    wcsim_options.output_directory = args.output_plot_path
-    wcsim_options.set_output_directory()
-    plot_wcsim(args.input_plot_path, args.output_plot_path, wcsim_options, text_file=use_text_file, moreVariables=False)
+        plot_skdetsim(args.input_plot_path, args.output_plot_path, moreVariables=False)
 
 if args.dumpOptions:
     text_file = open(args.input_plot_path, "r")
