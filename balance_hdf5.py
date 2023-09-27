@@ -204,12 +204,10 @@ def sample_lowest_min_energy(input_path, output_path, text_file=False, moreVaria
                 if h5fw['event_hits_index'][i]==h5fw['event_hits_index'][i+1]:
                     continue
                 if i < max-1:
-                    '''
-                    '''
+
                     if ( abs(float(h5fw['positions'][i][:,2])) >  1000 or math.sqrt(float(h5fw['positions'][i][:,0])**2 + float(h5fw['positions'][i][:,1])**2) > 1000):
                         continue
-                    '''
-                    '''
+
                     #temp_truth_energy.append(float(h5fw['energies'][i]))
 
                     #temp_truth_labels.append(float(h5fw['labels'][i]))
@@ -222,7 +220,7 @@ def sample_lowest_min_energy(input_path, output_path, text_file=False, moreVaria
                     temp_mean_charge.append(np.mean(h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
                     temp_total_charge.append(np.sum(h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
                     temp_mean_time.append(np.mean(h5fw['hit_time'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
-                    '''
+        '''
         '''
         mean_charge.append(temp_mean_charge)
         total_charge.append(temp_total_charge)
