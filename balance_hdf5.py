@@ -29,7 +29,7 @@ def get_cherenkov_threshold(label):
     threshold_dict = {0: 160., 1:0.8, 2: 0.}
     return threshold_dict[label]
 
-def sample_lowest_min_energy(input_path, output_path, text_file=False, moreVariables = False):
+def sample_lowest_min_energy(input_path, text_file=False, moreVariables = False):
     """
     Args:
         input_path (_type_): Path to either .hy file or text file with multiple paths and names of .hy files
