@@ -22,7 +22,7 @@ There are a couple different approaches to this problem:
 The [balance_hdf5.py](balance_hdf5.py) script has been added by Ashley to create a flat distribution in truth visible energy and ensure an equal numbetr classes. More information will be added when it is complete.
 '''
 
-module_path = '~/clean_git/t2k_ml/'
+module_path = '/home/aferreira/clean_git/t2k_ml/'
 
 # import these from plot_wcsim
 def get_cherenkov_threshold(label):
