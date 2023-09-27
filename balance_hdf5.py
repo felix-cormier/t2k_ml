@@ -27,6 +27,16 @@ def get_cherenkov_threshold(label):
     threshold_dict = {0: 160., 1:0.8, 2: 0.}
     return threshold_dict[label]
 
+def convert_label(label):
+    if label == 0:
+        return 'Muon'
+    if label == 1:
+        return 'Electron'
+    if label == 2:
+        return 'Pi+'
+    else:
+        return label
+
 def sample_lowest_min_energy(input_path, text_file=False, moreVariables = False):
     """
     Args:
@@ -131,27 +141,20 @@ def sample_lowest_min_energy(input_path, text_file=False, moreVariables = False)
             temp_epos_energy_difference = []
             temp_epos_energy_sum = []
             temp_truth_veto = [] 
-            temp_truth_labels = [] 
             temp_primary_charged_range = []
 
             temp_all_charge = []
             temp_all_time = []
 
             temp_eposTotalEDiff = []
+            '''
+            temp_truth_labels = [] 
 
-            #Get label from options, if not, take median of labels in file
-            if options_exists:
-                temp_label = wcsim_options.particle[0]
-                if "e" in temp_label:
-                    temp_label = "Electrons"
-                if "m" in temp_label:
-                    temp_label = "Muons"
-            else:
-                temp_label = convert_label(np.median(h5fw['labels']))
+            temp_label = convert_label(np.median(h5fw['labels']))
+            temp_truth_labels = np.ravel(h5fw['labels'])
             
+            '''
             max = h5fw['event_hits_index'].shape[0]
-
-
             #temp_primary_charged_range = np.ravel(np.sqrt( np.add( np.add( np.square( np.subtract(h5fw['primary_charged_start'][:,:,0], h5fw['primary_charged_end'][:,:,0])), np.square( np.subtract(h5fw['primary_charged_start'][:,:,1], h5fw['primary_charged_end'][:,:,1]))), np.square( np.subtract(h5fw['primary_charged_start'][:,:,2], h5fw['primary_charged_end'][:,:,2])))))
             temp_primary_charged_range = np.ravel(h5fw['primary_charged_range'])
             temp_truth_energy = np.ravel(h5fw['energies'])
@@ -160,8 +163,6 @@ def sample_lowest_min_energy(input_path, text_file=False, moreVariables = False)
             temp_epos_energy_difference = np.divide(np.subtract(temp_truth_energy_electron, temp_truth_energy_positron), temp_truth_energy)
             temp_epos_energy_sum = np.add(temp_truth_energy_electron, temp_truth_energy_positron)
             temp_eposTotalEDiff = np.divide(np.add(temp_truth_energy_electron, temp_truth_energy_positron), temp_truth_energy)
-            temp_truth_labels = np.ravel(h5fw['labels'])
-            print(temp_truth_labels)
             wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions']), np.array(h5fw['directions'])))
             wall_vars = list(zip(*wall_vars))
             temp_wall = wall_vars[0]
@@ -242,11 +243,11 @@ def sample_lowest_min_energy(input_path, text_file=False, moreVariables = False)
         epos_energy_sum.append(temp_epos_energy_sum)
         '''
         truth_visible_energy.append(temp_truth_visible_energy)
+        truth_labels.append(temp_truth_labels)
+        label.append(temp_label)
          
         '''
         truth_veto.append(temp_truth_veto)
-        truth_labels.append(temp_truth_labels)
-        label.append(temp_label)
 
         decayE_exists.append(temp_decayE_exists)
         decayE_energy.append(temp_decayE_energy)
@@ -272,7 +273,7 @@ def sample_lowest_min_energy(input_path, text_file=False, moreVariables = False)
     #plt.hist(truth_visible_energy, bins=50)
     #plt.show() # do this work in a notebook to view
 
-    return truth_visible_energy
+    return truth_visible_energy, label # label is not filled
 
     '''
     #Plot all
