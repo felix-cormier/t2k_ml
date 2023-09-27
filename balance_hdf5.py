@@ -315,4 +315,4 @@ def sample_lowest_min_energy(input_path, text_file=False, moreVariables = False)
     '''
 
 
-sample_lowest_min_energy(input_path=module_path+'plotting.txt', text_file=True)
+sample_lowest_min_energy(input_path=module_path+'plotting_paths.txt', text_file=True)
