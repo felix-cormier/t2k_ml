@@ -22,8 +22,6 @@ There are a couple different approaches to this problem:
 The [balance_hdf5.py](balance_hdf5.py) script has been added by Ashley to create a flat distribution in truth visible energy and ensure an equal numbetr classes. More information will be added when it is complete.
 '''
 
-module_path = '/home/aferreira/clean_git/t2k_ml/'
-
 # import these from plot_wcsim
 def get_cherenkov_threshold(label):
     threshold_dict = {0: 160., 1:0.8, 2: 0.}
@@ -272,7 +270,7 @@ def sample_lowest_min_energy(input_path, text_file=False, moreVariables = False)
 
     # examine truth_visible_energy to find smallest bin
     plt.hist(truth_visible_energy, bins=50)
-    plt.show()
+    plt.show() # do this work in a notebook to view
 
     '''
     #Plot all
@@ -314,5 +312,4 @@ def sample_lowest_min_energy(input_path, text_file=False, moreVariables = False)
     generic_histogram(std_z, 'std dev PMT Z [cm]', output_path, 'std_z', y_name = yname, label=label, bins=20)
     '''
 
-
-sample_lowest_min_energy(input_path=module_path+'plotting_paths.txt', text_file=True)
+#sample_lowest_min_energy(input_path=module_path+'plotting_paths.txt', text_file=True)
