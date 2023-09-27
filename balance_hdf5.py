@@ -269,8 +269,10 @@ def sample_lowest_min_energy(input_path, text_file=False, moreVariables = False)
 
 
     # examine truth_visible_energy to find smallest bin
-    plt.hist(truth_visible_energy, bins=50)
-    plt.show() # do this work in a notebook to view
+    #plt.hist(truth_visible_energy, bins=50)
+    #plt.show() # do this work in a notebook to view
+
+    return truth_visible_energy
 
     '''
     #Plot all
