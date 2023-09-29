@@ -1,4 +1,5 @@
 import h5py
+from tqdm import tqdm
 import numpy as np
 from plot_wcsim import get_cherenkov_threshold, convert_label
 import matplotlib.pyplot as plt
@@ -118,7 +119,7 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
                 ## WAY BUT I WILL TEST THIS LATER ON
                 keys = h5fw.keys()
                 with h5py.File(output_path+f'/digi_combine_balanced_{j}.hy', "w") as new_h5fw:
-                    for k in keys:
+                    for k in tqdm(keys):
                         new_h5fw[k] = h5fw[k][new_indicies_to_save[j]]
 
     return truth_visible_energy, label
