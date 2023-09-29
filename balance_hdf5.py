@@ -4,27 +4,11 @@ import numpy as np
 from plot_wcsim import get_cherenkov_threshold, convert_label
 import matplotlib.pyplot as plt
 
-'''
-There are a couple different approaches to this problem:
-1. Take the minimum bin size and just sample everything to that bin size. 
-   This should work since stuff is generated randomly and we can try a few different
-   bin sizes to make sure its not too sensitive. Min 1000 events in a bin.
-    --> then resave a new HDF5 file (this approach is taken for now)
-2. Similar to above but instead resave the indicies file
-    --> I'm scared of messing with train/test/valid split here 
-
-
-- need to also balance for classes in each
-- need to make cut on dwall, wall vs lightup # of pmts
-
-The [balance_hdf5.py](balance_hdf5.py) script has been added by Ashley to create a flat distribution in truth visible energy and ensure an equal numbetr classes. More information will be added when it is complete.
-'''
-
 def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
     """
     Args:
-        input_path (_type_): Path to either .hy file or text file with multiple paths and names of .hy files
-        output_path (_type_): Where to save new .hy file
+        input_path (str): Path to either .hy file or text file with multiple paths and names of .hy files
+        output_path (str, optional): Where to save new .hy file that is more balanced in truth visible energy
         text_file (bool, optional): If the input is in text file or string to single .hy file. Defaults to False.
     """
     file_paths=input_path
@@ -60,9 +44,8 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
         truth_labels.append(temp_truth_labels)
         label.append(temp_label)
 
-    ## explain the process
-
-    granularity = 10
+    ## create histogra, bins and find minimim size and find minimum one
+    granularity = 10 # MeV/bin
     manual_bins = range(0, 1000+granularity, granularity)
     (n, bins, patches) = plt.hist(truth_visible_energy, label=label, bins=manual_bins, alpha=0.6, histtype='stepfilled')
 
@@ -75,45 +58,44 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
 
     print(f'the minimum bin size at a bin size of {granularity} is {min_bin_fill}')
 
+    ## make dictionaries to keep track of bins as we refill them
     bin_counts0 = {}
     bin_counts1 = {}
     for right_bound in manual_bins[1:]: 
         bin_counts0[f'{right_bound}'] = 0
         bin_counts1[f'{right_bound}'] = 0
 
+    ## save values of truth visible energy and their indicies up until bins fill to min_bin_fill
     new_truth_visible_energy = [[],[]]
     new_indicies_to_save = [[],[]]
 
-    # to be safe (or else +1)
+    # to be safe (or else, when they are seperate there seems to be +1 of one of our labels)
     loop_len = min(len(truth_visible_energy[0]), len(truth_visible_energy[1]))
 
-    # can combine loops to assure same # of each class, right now its off by 1
     for i in range(loop_len):
+        # deal with data from first label
         i0 = truth_visible_energy[0][i]
         if i0 < 0: 
             i0 = 0
-
-        i0_temp = int((abs(i0)//10)*10+10)
-
+        i0_temp = int((abs(i0)//10)*10+10) # just works for granularity=10 right now
         if bin_counts0[f'{i0_temp}'] <= min_bin_fill:
             bin_counts0[f'{i0_temp}'] += 1
             new_truth_visible_energy[0].append(i0) 
             new_indicies_to_save[0].append(i)
 
-    for i in range(loop_len):
+        # deal with data from second label (may want to combine more)
         i1 = truth_visible_energy[1][i]
         if i1 < 0: 
             i1 = 0
         i1_temp = int((abs(i1)//10)*10+10) 
-
         if bin_counts1[f'{i1_temp}'] <= min_bin_fill:
             bin_counts1[f'{i1_temp}'] += 1
             new_truth_visible_energy[1].append(i1)
             new_indicies_to_save[1].append(i)
 
-    print(len(new_indicies_to_save[1]), len(new_indicies_to_save[0]))
+    print(f'number of events for label 0 = {len(new_indicies_to_save[0])}\n number of events for label 1 = {len(new_indicies_to_save[1])}')
 
-    # save the new hdf5 file (optional argument)
+    # save the new hdf5 file (if optional argument is included)
     if output_path != None: 
         for j, path in enumerate(file_paths):
             path = path.strip('\n')

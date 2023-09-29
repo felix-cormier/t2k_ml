@@ -87,13 +87,17 @@ def plot_walls(input_path, output_dir, text_file=True):
         ax1.scatter(wall_i, num_pmt_i, alpha=0.2, label=label_i, s=2)
         ax2.scatter(towall_i, num_pmt_i, alpha=0.2, label=label_i, s=2)
 
+
+    print(max(num_pmt[0]), len(num_pmt[0]))
+    print(max(num_pmt), len(num_pmt))
+    
     # add labels and stuff to make plots more understandable
-    ax1.vlines(200, ymin=0, ymax=max(num_pmt), linestyles='--', label='2 m')
+    ax1.vlines(200, ymin=0, ymax=1, linestyles='--', label='2 m')
     ax1.set_xlabel('Wall [cm]')
     ax1.set_ylabel('Number of PMTs')
     ax1.legend()
 
-    ax2.vlines(200, ymin=0, ymax=max(num_pmt), linestyles='--', label='2 m')
+    ax2.vlines(200, ymin=0, ymax=max(num_pmt[0]), linestyles='--', label='2 m')
     ax2.set_xlabel('Towall [cm]')
     ax2.set_ylabel('Number of PMTs')
     ax2.legend()
