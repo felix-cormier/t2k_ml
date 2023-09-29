@@ -72,6 +72,9 @@ def plot_walls(input_path, output_dir, text_file=True):
         num_pmt.append(temp_num_pmt)
         label.append(temp_label)
 
+        return wall, towall, num_pmt, label
+
+'''
     # create two figrues
     fig1 = plt.figure()
     ax1 = fig1.gca()
@@ -111,3 +114,4 @@ def plot_walls(input_path, output_dir, text_file=True):
 
 # run the function
 plot_walls(input_path='plotting_paths.txt', output_dir='/fast_scratch_2/aferreira/t2k/ml/analysis_plots/')
+'''
