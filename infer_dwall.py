@@ -74,7 +74,7 @@ def plot_walls(input_path, output_dir, text_file=True):
 
         return wall, towall, num_pmt, label
 
-
+'''
     # create two figrues
     fig1 = plt.figure()
     ax1 = fig1.gca()
@@ -114,3 +114,4 @@ def plot_walls(input_path, output_dir, text_file=True):
 
 # run the function
 wall, towall, num_pmt, label = plot_walls(input_path='plotting_paths.txt', output_dir='/fast_scratch_2/aferreira/t2k/ml/analysis_plots/')
+'''
