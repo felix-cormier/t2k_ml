@@ -70,28 +70,31 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
     new_indicies_to_save = [[],[]]
 
     # to be safe (or else, when they are seperate there seems to be +1 of one of our labels)
+    # (now have basically split them off again, so need to redo this)
     loop_len = min(len(truth_visible_energy[0]), len(truth_visible_energy[1]))
 
     for i in range(loop_len):
         # deal with data from first label
-        i0 = truth_visible_energy[0][i]
-        if i0 < 0: 
-            i0 = 0
-        i0_temp = int((abs(i0)//10)*10+10) # just works for granularity=10 right now
-        if bin_counts0[f'{i0_temp}'] <= min_bin_fill:
-            bin_counts0[f'{i0_temp}'] += 1
-            new_truth_visible_energy[0].append(i0) 
-            new_indicies_to_save[0].append(i)
+        if i < len(truth_visible_energy[0]):
+            i0 = truth_visible_energy[0][i]
+            if i0 < 0: 
+                i0 = 0 # set energies a bit below 0 to 0
+            i0_temp = int((abs(i0)//10)*10+10) # just works for granularity=10 right now
+            if bin_counts0[f'{i0_temp}'] <= min_bin_fill:
+                bin_counts0[f'{i0_temp}'] += 1
+                new_truth_visible_energy[0].append(i0) 
+                new_indicies_to_save[0].append(i)
 
         # deal with data from second label (may want to combine more)
-        i1 = truth_visible_energy[1][i]
-        if i1 < 0: 
-            i1 = 0
-        i1_temp = int((abs(i1)//10)*10+10) 
-        if bin_counts1[f'{i1_temp}'] <= min_bin_fill:
-            bin_counts1[f'{i1_temp}'] += 1
-            new_truth_visible_energy[1].append(i1)
-            new_indicies_to_save[1].append(i)
+        if i < len(truth_visible_energy[1]):
+            i1 = truth_visible_energy[1][i]
+            if i1 < 0: 
+                i1 = 0
+            i1_temp = int((abs(i1)//10)*10+10) 
+            if bin_counts1[f'{i1_temp}'] <= min_bin_fill:
+                bin_counts1[f'{i1_temp}'] += 1
+                new_truth_visible_energy[1].append(i1)
+                new_indicies_to_save[1].append(i)
 
     print(f'number of events for label 0 = {len(new_indicies_to_save[0])}\n number of events for label 1 = {len(new_indicies_to_save[1])}')
 
