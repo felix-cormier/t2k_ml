@@ -136,8 +136,8 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVari
     std_z = []
     num_pmt = []
     label = []
-    ###wall = []
-    ###towall = []
+    wall = []
+    towall = []
     
     decayE_exists = []
     decayE_energy = []
@@ -192,8 +192,8 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVari
             temp_std_y = []
             temp_std_z = []
             temp_num_pmt = []
-            ###temp_wall = []
-            ###temp_towall = []
+            temp_wall = []
+            temp_towall = []
 
             temp_decayE_exists = []
             temp_decayE_energy = []
@@ -244,10 +244,10 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVari
             temp_eposTotalEDiff = np.divide(np.add(temp_truth_energy_electron, temp_truth_energy_positron), temp_truth_energy)
             temp_truth_labels = np.ravel(h5fw['labels'])
             print(temp_truth_labels)
-            ###wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions']), np.array(h5fw['directions'])))
-            ###wall_vars = list(zip(*wall_vars))
-            ###temp_wall = wall_vars[0]
-            ###temp_towall = wall_vars[1]
+            wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions']), np.array(h5fw['directions'])))
+            wall_vars = list(zip(*wall_vars))
+            temp_wall = wall_vars[0]
+            temp_towall = wall_vars[1]
             cheThr = list(map(get_cherenkov_threshold, np.ravel(h5fw['labels'])))
             temp_truth_visible_energy = np.ravel(h5fw['energies']) - cheThr
             temp_truth_veto = (np.ravel(h5fw['veto']))
@@ -327,8 +327,8 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVari
             
         mean_charge.append(temp_mean_charge)
         total_charge.append(temp_total_charge)
-        ###wall.append(temp_wall)
-        ###towall.append(temp_towall)
+        wall.append(temp_wall)
+        towall.append(temp_towall)
         mean_time.append(temp_mean_time)
         mean_x.append(temp_mean_x)
         mean_y.append(temp_mean_y)
@@ -371,8 +371,8 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVari
 
     #Plot all
     yname="Num. Events"
-    ###generic_histogram(wall, 'Wall [cm]', output_path, 'wall', range=[0,2000], y_name = yname, label=label, bins=20, doNorm=True)
-    ###generic_histogram(towall, 'Towall [cm]', output_path, 'towall', range = [0,5000], y_name = yname, label=label, bins=20, doNorm=True)
+    generic_histogram(wall, 'Wall [cm]', output_path, 'wall', range=[0,2000], y_name = yname, label=label, bins=20, doNorm=True)
+    generic_histogram(towall, 'Towall [cm]', output_path, 'towall', range = [0,5000], y_name = yname, label=label, bins=20, doNorm=True)
     generic_histogram(truth_energy, 'Truth Energy [MeV]', output_path, 'truth_energy', y_name = yname, label=label, bins=20, doNorm=True)
     generic_histogram(truth_visible_energy, 'Truth Visible Energy [MeV]', output_path, 'truth_visible_energy', range=[50,1000], y_name = yname, label=label, bins=20, doNorm=True)
     generic_histogram(truth_veto, 'Truth veto', output_path, 'truth_veto', y_name = yname, label=label, bins=20, doNorm=True)
@@ -473,8 +473,8 @@ def plot_skdetsim(input_path, output_path, text_file=False, moreVariables = Fals
     std_z = []
     num_pmt = []
     label = []
-    ###wall = []
-    ###towall = []
+    wall = []
+    towall = []
     
     decayE_exists = []
     decayE_energy = []
@@ -531,8 +531,8 @@ def plot_skdetsim(input_path, output_path, text_file=False, moreVariables = Fals
             temp_std_y = []
             temp_std_z = []
             temp_num_pmt = []
-            ###temp_wall = []
-            ###temp_towall = []
+            temp_wall = []
+            temp_towall = []
 
             temp_decayE_exists = []
             temp_decayE_energy = []
@@ -583,10 +583,10 @@ def plot_skdetsim(input_path, output_path, text_file=False, moreVariables = Fals
             temp_eposTotalEDiff = np.divide(np.add(temp_truth_energy_electron, temp_truth_energy_positron), temp_truth_energy)
             temp_truth_labels = np.ravel(h5fw['labels'])
             print(temp_truth_labels)
-            ###wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions']), np.array(h5fw['directions'])))
-            ###wall_vars = list(zip(*wall_vars))
-            ###temp_wall = wall_vars[0]
-            ###temp_towall = wall_vars[1]
+            wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions']), np.array(h5fw['directions'])))
+            wall_vars = list(zip(*wall_vars))
+            temp_wall = wall_vars[0]
+            temp_towall = wall_vars[1]
             cheThr = list(map(get_cherenkov_threshold, np.ravel(h5fw['labels'])))
             temp_truth_visible_energy = np.ravel(h5fw['energies']) - cheThr
             temp_truth_veto = (np.ravel(h5fw['veto']))
@@ -666,8 +666,8 @@ def plot_skdetsim(input_path, output_path, text_file=False, moreVariables = Fals
             
         mean_charge.append(temp_mean_charge)
         total_charge.append(temp_total_charge)
-        ###wall.append(temp_wall)
-        ###towall.append(temp_towall)
+        wall.append(temp_wall)
+        towall.append(temp_towall)
         mean_time.append(temp_mean_time)
         mean_x.append(temp_mean_x)
         mean_y.append(temp_mean_y)
@@ -710,8 +710,8 @@ def plot_skdetsim(input_path, output_path, text_file=False, moreVariables = Fals
 
     #Plot all
     yname="Num. Events"
-    ###generic_histogram(wall, 'Wall [cm]', output_path, 'wall', range=[0,2000], y_name = yname, label=label, bins=20)#, doNorm=True)
-    ###generic_histogram(towall, 'Towall [cm]', output_path, 'towall', range = [0,5000], y_name = yname, label=label, bins=20)#, doNorm=True)
+    generic_histogram(wall, 'Wall [cm]', output_path, 'wall', range=[0,2000], y_name = yname, label=label, bins=20)#, doNorm=True)
+    generic_histogram(towall, 'Towall [cm]', output_path, 'towall', range = [0,5000], y_name = yname, label=label, bins=20)#, doNorm=True)
     generic_histogram(truth_energy, 'Truth Energy [MeV]', output_path, 'truth_energy', y_name = yname, label=label, bins=20)#, doNorm=True)
     generic_histogram(truth_visible_energy, 'Truth Visible Energy [MeV]', output_path, 'truth_visible_energy', range=[50,1000], y_name = yname, label=label, bins=20)#, doNorm=True)
     generic_histogram(truth_veto, 'Truth veto', output_path, 'truth_veto', y_name = yname, label=label, bins=20)#, doNorm=True)
