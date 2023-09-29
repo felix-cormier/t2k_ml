@@ -521,8 +521,11 @@ def plot_skdetsim(input_path, output_path, text_file=False, moreVariables = Fals
         #with h5py.File(path+'/combine_combine.hy',mode='r') as h5fw:
         with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
             keys = h5fw.keys() 
+            print(keys)
             for k in keys:
                 h5fw[k] = h5fw[k][h5fw['keep_event']==True]
+
+            print(h5fw.keys())
 
             #Temporary list of variables for each event
             temp_mean_charge = []
