@@ -70,6 +70,7 @@ def plot_walls(input_path, output_dir, text_file=True):
         wall.append(temp_wall)
         towall.append(temp_towall)
         num_pmt.append(temp_num_pmt)
+        label.append(temp_label)
 
     # create two figrues
     fig1 = plt.figure()
@@ -79,6 +80,7 @@ def plot_walls(input_path, output_dir, text_file=True):
     ax2 = fig2.gca()
 
     # make scatter plot of wall and towall vs num_pmts for electrons and muons
+    print(wall.shape, towall.shape, num_pmt.shape, label.shape)
     for wall_i, towall_i, num_pmt_i, label_i in zip(wall, towall, num_pmt, label):
         str_label = convert_label(np.median(label_i))
         ax1.scatter(wall_i, num_pmt_i, alpha=0.2, label=str_label, s=2)
