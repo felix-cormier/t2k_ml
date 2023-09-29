@@ -519,11 +519,12 @@ def plot_skdetsim_v2(input_path, output_path, text_file=False, moreVariables = F
             print(f'Particle: {wcsim_options.particle}')
         
         #with h5py.File(path+'/combine_combine.hy',mode='r') as h5fw:
-        with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
-            keys = h5fw.keys() # this stuff is not printing?
-            print(keys)
+        with h5py.File(path+'/digi_combine.hy', mode='r') as h5fw:
+            keys = h5fw.keys()
+
             for k in keys:
-                h5fw[k] = h5fw[k][h5fw['keep_event']==True]
+                print(k)
+                #h5fw[k] = h5fw[k][h5fw['keep_event']==True]
 
             print(h5fw.keys())
 
