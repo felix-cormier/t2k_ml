@@ -5,6 +5,9 @@ import os
 import math
 
 from generics_python.make_plots import generic_histogram, generic_2D_plot
+import matplotlib.pyplot as plt
+
+# import these functions to use from plot_wcsim
 
 def calculate_wcsim_wall_variables(position, direction):
     """Generates wall and towall variables for input position and direction
@@ -708,7 +711,30 @@ def plot_skdetsim(input_path, output_path, text_file=False, moreVariables = Fals
         all_time.append(temp_all_time)
 
 
-    #Plot all
+    # seperate these out by label in e and m
+    # don't calculate the stuff you don't need
+    # + go back to normal input plots
+    fig1 = plt.figure()
+    fig1.scatter(wall, num_pmt, alpha=0.2, label=label)
+    fig1.vlines(200, ymin=0, ymax=max(num_pmt[0]), linestyles='--')
+    fig1.xlabel('Wall [cm]')
+    fig1.ylabel('Number of PMTs')
+    fig1.legend()
+    fig1.savefig('/fast_scratch_2/aferreira/t2k/ml/analysis_plots/wall_v_pmts.png')
+
+
+    fig1 = plt.figure()
+    fig1.scatter(towall, num_pmt, alpha=0.2, label=label)
+    fig1.vlines(200, ymin=0, ymax=max(num_pmt[0]), linestyles='--')
+    fig1.xlabel('Towall [cm]')
+    fig1.ylabel('Number of PMTs')
+    fig1.legend()
+    fig1.savefig('/fast_scratch_2/aferreira/t2k/ml/analysis_plots/towall_v_pmts.png')
+
+
+
+
+
     yname="Num. Events"
     generic_histogram(wall, 'Wall [cm]', output_path, 'wall', range=[0,2000], y_name = yname, label=label, bins=20)#, doNorm=True)
     generic_histogram(towall, 'Towall [cm]', output_path, 'towall', range = [0,5000], y_name = yname, label=label, bins=20)#, doNorm=True)

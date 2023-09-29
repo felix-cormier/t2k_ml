@@ -1,2 +1,2 @@
-/fast_scratch_2/aferreira/t2k/ml/data/sep28_electrons/
-/fast_scratch_2/aferreira/t2k/ml/data/sep28_muons/
+/fast_scratch_2/aferreira/t2k/ml/data/sep28_electrons2/
+/fast_scratch_2/aferreira/t2k/ml/data/sep28_muons2/

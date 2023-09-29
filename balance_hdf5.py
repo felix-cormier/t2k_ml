@@ -118,6 +118,7 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
                 ## THIS MEHTOD ASUMES THE FILE IS ALWAYS TRAVERSED IN THE SAME 
                 ## WAY BUT I WILL TEST THIS LATER ON
                 # it has a lot of trouble with this second iteration, not sure why
+                # --> do it seperately?
                 keys = h5fw.keys()
                 with h5py.File(output_path+f'/digi_combine_balanced2_{j}.hy', 'w') as new_h5fw:
                     for k in tqdm(keys):
