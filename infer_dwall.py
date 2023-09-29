@@ -85,7 +85,7 @@ def plot_walls(input_path, output_dir, text_file=True):
     # make scatter plot of wall and towall vs num_pmts for electrons and muons
     for wall_i, towall_i, num_pmt_i, label_i in zip(wall, towall, num_pmt, label):
         ax1.scatter(wall_i, num_pmt_i, alpha=0.2, label=label_i, s=2)
-        ax2.scatter(towall_i, num_pmt, alpha=0.2, label=label_i, s=2)
+        ax2.scatter(towall_i, num_pmt_i, alpha=0.2, label=label_i, s=2)
 
     # add labels and stuff to make plots more understandable
     ax1.vlines(200, ymin=0, ymax=max(num_pmt[0]), linestyles='--', label='2 m')
