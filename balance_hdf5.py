@@ -77,15 +77,18 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
 
     bin_counts0 = {}
     bin_counts1 = {}
-    for right_bound in manual_bins[1:]:
+    for right_bound in manual_bins[1:]: 
         bin_counts0[f'{right_bound}'] = 0
         bin_counts1[f'{right_bound}'] = 0
 
     new_truth_visible_energy = [[],[]]
     new_indicies_to_save = [[],[]]
 
+    # to be safe (or else +1)
+    loop_len = min(len(truth_visible_energy[0]), len(truth_visible_energy[1]))
+
     # can combine loops to assure same # of each class, right now its off by 1
-    for i in range(len(truth_visible_energy[0])):
+    for i in range(loop_len):
         i0 = truth_visible_energy[0][i]
         if i0 < 0: 
             i0 = 0
@@ -97,7 +100,7 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
             new_truth_visible_energy[0].append(i0) 
             new_indicies_to_save[0].append(i)
 
-    for i in range(len(truth_visible_energy[1])):
+    for i in range(loop_len):
         i1 = truth_visible_energy[1][i]
         if i1 < 0: 
             i1 = 0
@@ -107,6 +110,8 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
             bin_counts1[f'{i1_temp}'] += 1
             new_truth_visible_energy[1].append(i1)
             new_indicies_to_save[1].append(i)
+
+    print(len(new_indicies_to_save[1]), len(new_indicies_to_save[0]))
 
     # save the new hdf5 file (optional argument)
     if output_path != None: 
@@ -120,7 +125,7 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
                 # it has a lot of trouble with this second iteration, not sure why
                 # --> do it seperately?
                 keys = h5fw.keys()
-                with h5py.File(output_path+f'/digi_combine_balanced3_{j}.hy', 'w') as new_h5fw:
+                with h5py.File(output_path+f'/digi_combine_balanced4_{j}.hy', 'w') as new_h5fw:
                     for k in tqdm(keys):
                         new_h5fw[k] = h5fw[k][new_indicies_to_save[j]]
                         print(new_h5fw[k][0])
