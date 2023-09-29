@@ -59,7 +59,6 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
         truth_labels.append(temp_truth_labels)
         label.append(temp_label)
 
-    ## NEED TO DO THIS IN THE LOOP?
     ## explain the process
 
     granularity = 10
@@ -84,7 +83,7 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
     new_truth_visible_energy = [[],[]]
     new_indicies_to_save = [[],[]]
 
-    # can combine loops to assure same #, right now its off by 1
+    # can combine loops to assure same # of each class, right now its off by 1
     for i in range(len(truth_visible_energy[0])):
         i0 = truth_visible_energy[0][i]
         if i0 < 0: 
@@ -108,33 +107,19 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
             new_truth_visible_energy[1].append(i1)
             new_indicies_to_save[1].append(i)
 
-    #loop_i = 0
-    for j, path in enumerate(file_paths):
-        path = path.strip('\n')
-        print(f'Revisiting: {path}')
-
-        with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
-            ## THIS MEHTOD ASUMES THE FILE IS ALWAYS TRAVERSED IN THE SAME 
-            ## WAY BUT I WILL TEST THIS LATER ON, IN NOTEBOOK CALL
-            keys = h5fw.keys()
-            new_h5fw = h5py.File(output_path+f'/digi_combine_balanced_{j}.hy', "w")
-            for k in keys:
-                new_h5fw[k] = h5fw[k][new_indicies_to_save[j]]#loop_i]]
-
-            # is there a way to just do h5fw[indicies]?
-            # check how indicies file is used, dataloader for this?
-            # convert to pandas?
-
-        # close the file here?
-        #loop_i += 1
-
-
-    # PLAN: find indicies of ones to save, use those on all keys, resave the file, try visuals of all
-
-
-    # save the new hdf5 file (optional argument\\)
+    # save the new hdf5 file (optional argument)
     if output_path != None: 
-        output_path 
+        for j, path in enumerate(file_paths):
+            path = path.strip('\n')
+            print(f'Revisiting: {path}')
+
+            with h5py.File(path+'/digi_combine.hy', mode='r') as h5fw:
+                ## THIS MEHTOD ASUMES THE FILE IS ALWAYS TRAVERSED IN THE SAME 
+                ## WAY BUT I WILL TEST THIS LATER ON
+                keys = h5fw.keys()
+                with h5py.File(output_path+f'/digi_combine_balanced_{j}.hy', "w") as new_h5fw:
+                    for k in keys:
+                        new_h5fw[k] = h5fw[k][new_indicies_to_save[j]]
 
     return truth_visible_energy, label
 
