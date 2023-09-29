@@ -88,17 +88,19 @@ def plot_walls(input_path, output_dir, text_file=True):
         ax2.scatter(towall_i, num_pmt_i, alpha=0.2, label=label_i, s=2)
 
 
-    print(num_pmt)
-    print(len(num_pmt[0]))
-    print(len(num_pmt))
+    #print(num_pmt)
+    #print(len(num_pmt[0])) #--> why does max on here not work?
+    #print(len(num_pmt))
+    # harcoded value jsut used for now
+    y_max = 175000
     
     # add labels and stuff to make plots more understandable
-    ax1.vlines(200, ymin=0, ymax=1, linestyles='--', label='2 m')
+    ax1.vlines(200, ymin=0, ymax=y_max, linestyles='--', label='2 m')
     ax1.set_xlabel('Wall [cm]')
     ax1.set_ylabel('Number of PMTs')
     ax1.legend()
 
-    ax2.vlines(200, ymin=0, ymax=max(num_pmt), linestyles='--', label='2 m')
+    ax2.vlines(200, ymin=0, ymax=y_max, linestyles='--', label='2 m')
     ax2.set_xlabel('Towall [cm]')
     ax2.set_ylabel('Number of PMTs')
     ax2.legend()
