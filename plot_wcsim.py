@@ -38,6 +38,10 @@ def calculate_wcsim_wall_variables(position, direction):
     else:
         right_index = small_index
 
+
+    # h5['keep'==1] only for non pmt/charge ones, but this is hard
+    # new file optional
+
     time_to_horizontal = abs(position[0] - quad_sols_x[right_index])/direction[0]
     #Probably wrong
     #vertical_towall_distance = np.min([abs(position[2]-1810),abs(position[2]+1810)])

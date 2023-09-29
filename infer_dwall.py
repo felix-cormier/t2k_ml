@@ -72,7 +72,7 @@ def plot_walls(input_path, output_dir, text_file=True):
         num_pmt.append(temp_num_pmt)
         label.append(temp_label)
 
-        return wall, towall, num_pmt, label
+    return wall, towall, num_pmt, label
 
 '''
     # create two figrues
