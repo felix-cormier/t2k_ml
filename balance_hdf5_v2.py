@@ -108,8 +108,8 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
             print(f'Revisiting: {path}')
 
             # 
-            bool_array = np.zeros(len(truth_visible_energy), dtype=bool)
-            bool_array[new_indicies_to_save] = True
+            bool_array = np.zeros(len(truth_visible_energy[j]), dtype=bool)
+            bool_array[j][new_indicies_to_save[j]] = True
 
             # open original data file and 
             with h5py.File(path+'/digi_combine.hy', mode='r') as h5fw:
