@@ -95,24 +95,26 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
 
     print(f'number of events for label 0 = {len(new_indicies_to_save[0])}\n number of events for label 1 = {len(new_indicies_to_save[1])}')
 
-    # save the new hdf5 file (if optional argument is included)
+    ## save the new hdf5 file (if optional argument is included)
     if output_path != None: 
+
+        # loop over file list again
         for j, path in enumerate(file_paths):
             path = path.strip('\n')
             print(f'Revisiting: {path}')
 
+            # open original data file and 
             with h5py.File(path+'/digi_combine.hy', mode='r') as h5fw:
-                ## THIS MEHTOD ASUMES THE FILE IS ALWAYS TRAVERSED IN THE SAME 
-                ## WAY BUT I WILL TEST THIS LATER ON
-                # it has a lot of trouble with this second iteration, not sure why
-                # --> do it seperately?
                 keys = h5fw.keys()
+
+                # open new file to save data to 
                 with h5py.File(output_path+f'/digi_combine_balanced4_{j}.hy', 'w') as new_h5fw:
+                    
+                    # save data from selected indicies for each of the keys in original data
                     for k in tqdm(keys):
                         new_h5fw[k] = h5fw[k][new_indicies_to_save[j]]
-                        print(new_h5fw[k][0])
-
-    return truth_visible_energy, label
+                       
+    return truth_visible_energy, label, min_bin_fill
 
 
 sample_lowest_min_energy(input_path='plotting_paths.txt', output_path='/fast_scratch_2/aferreira/t2k/ml/data/', text_file=True)
