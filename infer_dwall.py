@@ -77,23 +77,29 @@ def plot_walls(input_path, text_file=True):
     # seperate these out by label in e and m
     # don't calculate the stuff you don't need
     # + go back to normal input plots
+
     fig1 = plt.figure()
     ax1 = fig1.gca()
-    ax1.scatter(wall, num_pmt, alpha=0.2, label=label)
-    fig1.vlines(200, ymin=0, ymax=max(num_pmt[0]), linestyles='--')
-    fig1.xlabel('Wall [cm]')
-    fig1.ylabel('Number of PMTs')
-    fig1.legend()
-    fig1.savefig('/fast_scratch_2/aferreira/t2k/ml/analysis_plots/wall_v_pmts.png')
 
     fig2 = plt.figure()
     ax2 = fig2.gca()
-    ax2.scatter(towall, num_pmt, alpha=0.2, label=label)
+
+    for wall_i, towall_i, num_pmt_i, label_i in zip(wall, towall, num_pmt, label):
+        str_label = convert_label(np.median(label_i))
+        ax1.scatter(wall_i, num_pmt_i, alpha=0.2, label=str_label)
+        ax2.scatter(towall, num_pmt, alpha=0.2, label=label)
+
     fig2.vlines(200, ymin=0, ymax=max(num_pmt[0]), linestyles='--')
     fig2.xlabel('Towall [cm]')
     fig2.ylabel('Number of PMTs')
     fig2.legend()
     fig2.savefig('/fast_scratch_2/aferreira/t2k/ml/analysis_plots/towall_v_pmts.png')
+
+    fig1.vlines(200, ymin=0, ymax=max(num_pmt[0]), linestyles='--')
+    fig1.xlabel('Wall [cm]')
+    fig1.ylabel('Number of PMTs')
+    fig1.legend()
+    fig1.savefig('/fast_scratch_2/aferreira/t2k/ml/analysis_plots/wall_v_pmts.png')
 
 
 plot_walls('plotting_paths.txt')
