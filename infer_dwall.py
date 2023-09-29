@@ -74,7 +74,7 @@ def plot_walls(input_path, output_dir, text_file=True):
 
         return wall, towall, num_pmt, label
 
-'''
+
     # create two figrues
     fig1 = plt.figure()
     ax1 = fig1.gca()
@@ -87,8 +87,8 @@ def plot_walls(input_path, output_dir, text_file=True):
 
     # make scatter plot of wall and towall vs num_pmts for electrons and muons
     for wall_i, towall_i, num_pmt_i, label_i in zip(wall, towall, num_pmt, label):
-        ax1.scatter(wall_i, num_pmt_i, alpha=0.2, label=label_i, s=2)
-        ax2.scatter(towall_i, num_pmt_i, alpha=0.2, label=label_i, s=2)
+        ax1.scatter(wall_i, num_pmt_i, alpha=0.1, label=label_i, s=1)
+        ax2.scatter(towall_i, num_pmt_i, alpha=0.1, label=label_i, s=1)
 
 
     #print(num_pmt)
@@ -113,5 +113,4 @@ def plot_walls(input_path, output_dir, text_file=True):
     fig1.savefig(output_dir+'wall_v_pmts.png')
 
 # run the function
-plot_walls(input_path='plotting_paths.txt', output_dir='/fast_scratch_2/aferreira/t2k/ml/analysis_plots/')
-'''
+wall, towall, num_pmt, label = plot_walls(input_path='plotting_paths.txt', output_dir='/fast_scratch_2/aferreira/t2k/ml/analysis_plots/')
