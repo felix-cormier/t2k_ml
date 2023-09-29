@@ -89,16 +89,17 @@ def plot_walls(input_path, text_file=True):
         ax1.scatter(wall_i, num_pmt_i, alpha=0.2, label=str_label)
         ax2.scatter(towall, num_pmt, alpha=0.2, label=label)
 
-    fig2.vlines(200, ymin=0, ymax=max(num_pmt[0]), linestyles='--')
-    fig2.xlabel('Towall [cm]')
-    fig2.ylabel('Number of PMTs')
-    fig2.legend()
-    fig2.savefig('/fast_scratch_2/aferreira/t2k/ml/analysis_plots/towall_v_pmts.png')
+    ax1.vlines(200, ymin=0, ymax=max(num_pmt[0]), linestyles='--')
+    ax1.set_xlabel('Wall [cm]')
+    ax1.set_ylabel('Number of PMTs')
+    ax1.legend()
 
-    fig1.vlines(200, ymin=0, ymax=max(num_pmt[0]), linestyles='--')
-    fig1.xlabel('Wall [cm]')
-    fig1.ylabel('Number of PMTs')
-    fig1.legend()
+    ax2.vlines(200, ymin=0, ymax=max(num_pmt[0]), linestyles='--')
+    ax2.set_xlabel('Towall [cm]')
+    ax2.set_ylabel('Number of PMTs')
+    ax2.legend()
+        
+    fig2.savefig('/fast_scratch_2/aferreira/t2k/ml/analysis_plots/towall_v_pmts.png')
     fig1.savefig('/fast_scratch_2/aferreira/t2k/ml/analysis_plots/wall_v_pmts.png')
 
 
