@@ -79,8 +79,10 @@ def plot_walls(input_path, output_dir, text_file=True):
     fig2 = plt.figure()
     ax2 = fig2.gca()
 
-    # make scatter plot of wall and towall vs num_pmts for electrons and muons
+    # test
     print(wall.shape, towall.shape, num_pmt.shape, label.shape)
+    
+    # make scatter plot of wall and towall vs num_pmts for electrons and muons
     for wall_i, towall_i, num_pmt_i, label_i in zip(wall, towall, num_pmt, label):
         str_label = convert_label(np.median(label_i))
         ax1.scatter(wall_i, num_pmt_i, alpha=0.2, label=str_label, s=2)
