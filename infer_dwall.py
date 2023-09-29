@@ -86,7 +86,7 @@ def plot_walls(input_path, output_dir, text_file=True):
     for wall_i, towall_i, num_pmt_i, label_i in zip(wall, towall, num_pmt, label):
         str_label = convert_label(np.median(label_i))
         ax1.scatter(wall_i, num_pmt_i, alpha=0.2, label=str_label, s=2)
-        ax2.scatter(towall_i, num_pmt, alpha=0.2, label=label, s=2)
+        ax2.scatter(towall_i, num_pmt, alpha=0.2, label=str_label, s=2)
 
     # add labels and stuff to make plots more understandable
     ax1.vlines(200, ymin=0, ymax=max(num_pmt[0]), linestyles='--', label='2 m')
@@ -99,7 +99,7 @@ def plot_walls(input_path, output_dir, text_file=True):
     ax2.set_ylabel('Number of PMTs')
     ax2.legend()
         
-    # save
+    # save plots
     fig2.savefig(output_dir+'towall_v_pmts.png')
     fig1.savefig(output_dir+'wall_v_pmts.png')
 
