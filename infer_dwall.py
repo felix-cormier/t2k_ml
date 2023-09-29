@@ -86,15 +86,15 @@ def plot_walls(input_path, text_file=True):
 
     for wall_i, towall_i, num_pmt_i, label_i in zip(wall, towall, num_pmt, label):
         str_label = convert_label(np.median(label_i))
-        ax1.scatter(wall_i, num_pmt_i, alpha=0.2, label=str_label)
-        ax2.scatter(towall, num_pmt, alpha=0.2, label=label)
+        ax1.scatter(wall_i, num_pmt_i, alpha=0.2, label=str_label, s=2)
+        ax2.scatter(towall, num_pmt, alpha=0.2, label=label, s=2)
 
-    ax1.vlines(200, ymin=0, ymax=max(num_pmt[0]), linestyles='--')
+    ax1.vlines(200, ymin=0, ymax=max(num_pmt[0]), linestyles='--', label='2 m')
     ax1.set_xlabel('Wall [cm]')
     ax1.set_ylabel('Number of PMTs')
     ax1.legend()
 
-    ax2.vlines(200, ymin=0, ymax=max(num_pmt[0]), linestyles='--')
+    ax2.vlines(200, ymin=0, ymax=max(num_pmt[0]), linestyles='--', label='2 m')
     ax2.set_xlabel('Towall [cm]')
     ax2.set_ylabel('Number of PMTs')
     ax2.legend()
