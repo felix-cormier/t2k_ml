@@ -72,7 +72,7 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
     # to be safe (or else, when they are seperate there seems to be +1 of one of our labels)
     # (now have basically split them off again, so need to redo this)
     loop_len = max(len(truth_visible_energy[0]), len(truth_visible_energy[1])) # changed from min
-    print(max(len(truth_visible_energy[0]), len(truth_visible_energy[1])))
+    print(len(truth_visible_energy[0]), len(truth_visible_energy[1]))
 
     for i in range(loop_len):
         # deal with data from first label
@@ -97,6 +97,7 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
                 new_truth_visible_energy[1].append(i1)
                 new_indicies_to_save[1].append(i)
 
+    # they seem equal now!
     print(f'number of events for label 0 = {len(new_indicies_to_save[0])}\n number of events for label 1 = {len(new_indicies_to_save[1])}')
 
     ## save the new hdf5 file (if optional argument is included)
