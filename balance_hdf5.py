@@ -117,7 +117,7 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
             ## THIS MEHTOD ASUMES THE FILE IS ALWAYS TRAVERSED IN THE SAME 
             ## WAY BUT I WILL TEST THIS LATER ON, IN NOTEBOOK CALL
             keys = h5fw.keys()
-            new_h5fw = h5py.File(output_path+'/digi_combine_balanced.hy', "w")
+            new_h5fw = h5py.File(output_path+f'/digi_combine_balanced_{j}.hy', "w")
             for k in keys:
                 new_h5fw[k] = h5fw[k][new_indicies_to_save[j]]#loop_i]]
 
@@ -137,3 +137,6 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
         output_path 
 
     return truth_visible_energy, label
+
+
+sample_lowest_min_energy(input_path='plotting_paths.txt', output_path='/fast_scratch_2/aferreira/t2k/ml/data/', text_file=True)
