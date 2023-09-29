@@ -120,9 +120,10 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
                 # it has a lot of trouble with this second iteration, not sure why
                 # --> do it seperately?
                 keys = h5fw.keys()
-                with h5py.File(output_path+f'/digi_combine_balanced2_{j}.hy', 'w') as new_h5fw:
+                with h5py.File(output_path+f'/digi_combine_balanced3_{j}.hy', 'w') as new_h5fw:
                     for k in tqdm(keys):
                         new_h5fw[k] = h5fw[k][new_indicies_to_save[j]]
+                        print(new_h5fw[k][0])
 
     return truth_visible_energy, label
 
