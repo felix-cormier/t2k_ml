@@ -112,7 +112,7 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
             bool_array[new_indicies_to_save[j]] = True
 
             # open original data file and 
-            with h5py.File(path+'/digi_combine.hy', mode='r') as h5fw:
+            with h5py.File(path+'/digi_combine.hy', mode='w') as h5fw:
                 h5fw['keep_event'] = bool_array
                        
     return truth_visible_energy, label, min_bin_fill
