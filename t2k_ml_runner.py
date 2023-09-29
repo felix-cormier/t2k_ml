@@ -16,6 +16,7 @@ parser.add_argument("--doBatch", help="use the batch system", action="store_true
 parser.add_argument("--doCombination", help="use the batch system", action="store_true")
 parser.add_argument("--makeVisualizations", help="make 3D plots of events", action="store_true")
 parser.add_argument("--makeInputPlots", help="make 3D plots of events", action="store_true")
+parser.add_argument("--makeBalancedInputPlots", help="make 3D plots of events with balance correction", action="store_true")
 parser.add_argument("--dumpOptions", help="make 3D plots of events", action="store_true")
 parser.add_argument("--transformPath", help="path to files to transform")
 parser.add_argument("--transformName", help="Name of files to transform")
@@ -134,6 +135,27 @@ if args.makeInputPlots:
 
     else:
         plot_skdetsim(args.input_plot_path, args.output_plot_path, text_file=True, moreVariables=False)
+
+if args.makeBalancedInputPlots:
+
+    from plot_wcsim_v2 import plot_wcsim, plot_skdetsim_v2
+
+    # temporary solution 
+    wcsim_data = False
+
+    if wcsim_data == True:
+        wcsim_options = WCSimOptions()
+        use_text_file=False
+        if ".txt" in args.input_plot_path:
+            use_text_file=True
+        else:
+            wcsim_options = wcsim_options.load_options(args.input_plot_path, 'wc_options.pkl')
+        wcsim_options.output_directory = args.output_plot_path
+        wcsim_options.set_output_directory()
+        plot_wcsim(args.input_plot_path, args.output_plot_path, wcsim_options, text_file=use_text_file, moreVariables=False)
+
+    else:
+        plot_skdetsim_v2(args.input_plot_path, args.output_plot_path, text_file=True, moreVariables=False)
 
 if args.dumpOptions:
     text_file = open(args.input_plot_path, "r")

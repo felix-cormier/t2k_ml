@@ -442,7 +442,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVari
     generic_histogram(std_z, 'std dev PMT Z [cm]', output_path, 'std_z', y_name = yname, label=label, bins=20)
 
 
-def plot_skdetsim(input_path, output_path, text_file=False, moreVariables = False):
+def plot_skdetsim_v2(input_path, output_path, text_file=False, moreVariables = False):
     """Plots PMT and event variables
 
     Args:
@@ -520,7 +520,7 @@ def plot_skdetsim(input_path, output_path, text_file=False, moreVariables = Fals
         
         #with h5py.File(path+'/combine_combine.hy',mode='r') as h5fw:
         with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
-            keys = h5fw.keys() 
+            keys = h5fw.keys() # this stuff is not printing?
             print(keys)
             for k in keys:
                 h5fw[k] = h5fw[k][h5fw['keep_event']==True]
