@@ -1,9 +1,6 @@
 import h5py
 import numpy as np
-import glob
-import os
-import math
-from generics_python.make_plots import generic_histogram, generic_2D_plot
+from plot_wcsim import get_cherenkov_threshold, convert_label
 import matplotlib.pyplot as plt
 
 '''
@@ -22,28 +19,12 @@ There are a couple different approaches to this problem:
 The [balance_hdf5.py](balance_hdf5.py) script has been added by Ashley to create a flat distribution in truth visible energy and ensure an equal numbetr classes. More information will be added when it is complete.
 '''
 
-# import these from plot_wcsim
-def get_cherenkov_threshold(label):
-    threshold_dict = {0: 160., 1:0.8, 2: 0.}
-    return threshold_dict[label]
-
-def convert_label(label):
-    if label == 0:
-        return 'Muon'
-    if label == 1:
-        return 'Electron'
-    if label == 2:
-        return 'Pi+'
-    else:
-        return label
-
-def sample_lowest_min_energy(input_path, text_file=False, moreVariables = False):
+def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
     """
     Args:
         input_path (_type_): Path to either .hy file or text file with multiple paths and names of .hy files
-        output_path (_type_): Where to save plots
+        output_path (_type_): Where to save new .hy file
         text_file (bool, optional): If the input is in text file or string to single .hy file. Defaults to False.
-        moreVariables (bool, optional): Add some variables - they are calculated from PMT vars and take a long time!
     """
     file_paths=input_path
     #Behaviour different depending on format of input (single or multiple files)
@@ -52,50 +33,9 @@ def sample_lowest_min_energy(input_path, text_file=False, moreVariables = False)
         text_file = open(input_path, "r")
         file_paths = text_file.readlines()
 
-    #Initialize lists of variables
-    mean_charge = []
-    total_charge = []
-    mean_time = []
-    mean_x = []
-    mean_y = []
-    mean_z = []
-    weighted_mean_x = []
-    weighted_mean_y = []
-    weighted_mean_z = []
-    std_x = []
-    std_y = []
-    std_z = []
-    num_pmt = []
     label = []
-    wall = []
-    towall = []
-    
-    decayE_exists = []
-    decayE_energy = []
-    decayE_time = []
-
-    direction_x = []
-    direction_y = []
-    direction_z = []
-    position_x = []
-    position_y = []
-    position_z = []
-
-    all_charge = []
-    all_time = []
-
-    primary_charged_range = []
-
-
-    truth_energy = []
-    truth_energy_electron = [] 
-    truth_energy_positron = [] 
-    epos_energy_difference = []
-    epos_energy_sum = []
     truth_visible_energy = []
-    truth_veto = []
     truth_labels = []
-    eposTotalEDiff = []
 
     #Loop through all .hy files
     file_paths = file_paths if text_file else [file_paths]
@@ -106,213 +46,94 @@ def sample_lowest_min_energy(input_path, text_file=False, moreVariables = False)
         with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
             temp_truth_visible_energy = [] 
 
-            '''
-            #Temporary list of variables for each event
-            temp_mean_charge = []
-            temp_total_charge = []
-            temp_mean_time = []
-            temp_mean_x = []
-            temp_mean_y = []
-            temp_mean_z = []
-            temp_weighted_mean_x = []
-            temp_weighted_mean_y = []
-            temp_weighted_mean_z = []
-            temp_std_x = []
-            temp_std_y = []
-            temp_std_z = []
-            temp_num_pmt = []
-            temp_wall = []
-            temp_towall = []
-
-            temp_decayE_exists = []
-            temp_decayE_energy = []
-            temp_decayE_time = []
-            
-            temp_direction_x = []
-            temp_direction_y = []
-            temp_direction_z = []
-            temp_position_x = []
-            temp_position_y = []
-            temp_position_z = []
-
-            temp_truth_energy = [] 
-            temp_truth_energy_electron = [] 
-            temp_truth_energy_positron = [] 
-            temp_epos_energy_difference = []
-            temp_epos_energy_sum = []
-            temp_truth_veto = [] 
-            temp_primary_charged_range = []
-
-            temp_all_charge = []
-            temp_all_time = []
-
-            temp_eposTotalEDiff = []
-            '''
             temp_truth_labels = [] 
 
             temp_label = convert_label(np.median(h5fw['labels']))
             temp_truth_labels = np.ravel(h5fw['labels'])
-            
-            '''
-            max = h5fw['event_hits_index'].shape[0]
-            #temp_primary_charged_range = np.ravel(np.sqrt( np.add( np.add( np.square( np.subtract(h5fw['primary_charged_start'][:,:,0], h5fw['primary_charged_end'][:,:,0])), np.square( np.subtract(h5fw['primary_charged_start'][:,:,1], h5fw['primary_charged_end'][:,:,1]))), np.square( np.subtract(h5fw['primary_charged_start'][:,:,2], h5fw['primary_charged_end'][:,:,2])))))
-            temp_primary_charged_range = np.ravel(h5fw['primary_charged_range'])
-            temp_truth_energy = np.ravel(h5fw['energies'])
-            temp_truth_energy_positron = np.ravel(h5fw['energies_positron'])
-            temp_truth_energy_electron = np.ravel(h5fw['energies_electron'])
-            temp_epos_energy_difference = np.divide(np.subtract(temp_truth_energy_electron, temp_truth_energy_positron), temp_truth_energy)
-            temp_epos_energy_sum = np.add(temp_truth_energy_electron, temp_truth_energy_positron)
-            temp_eposTotalEDiff = np.divide(np.add(temp_truth_energy_electron, temp_truth_energy_positron), temp_truth_energy)
-            wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions']), np.array(h5fw['directions'])))
-            wall_vars = list(zip(*wall_vars))
-            temp_wall = wall_vars[0]
-            temp_towall = wall_vars[1]
-            
-            '''
-            cheThr = list(map(get_cherenkov_threshold, np.ravel(h5fw['labels']))) # need to find this var/func
+
+            cheThr = list(map(get_cherenkov_threshold, np.ravel(h5fw['labels'])))
 
             temp_truth_visible_energy = np.ravel(h5fw['energies']) - cheThr
-            #temp_truth_veto = (np.ravel(h5fw['veto']))
 
-            '''
-            temp_decayE_exists = (np.ravel(h5fw['decay_electron_exists']))
-            print(np.unique(temp_decayE_exists, return_counts=True))
-            temp_decayE_energy = (np.ravel(h5fw['decay_electron_energy'])[temp_decayE_exists==1])
-            temp_decayE_time = (np.ravel(h5fw['decay_electron_time'])[temp_decayE_exists==1])
-            print(temp_decayE_time)
-            '''
-
-            '''
-            temp_direction_x = (np.ravel(h5fw['directions'][:,:,0]))
-            temp_direction_y = (np.ravel(h5fw['directions'][:,:,1]))
-            temp_direction_z = (np.ravel(h5fw['directions'][:,:,2]))
-            temp_position_x = (np.ravel(h5fw['positions'][:,:,0]))
-            temp_position_y = (np.ravel(h5fw['positions'][:,:,1]))
-            temp_position_z = (np.ravel(h5fw['positions'][:,:,2]))
-
-            temp_all_charge = np.ravel(h5fw['hit_charge'])
-            temp_all_time = np.ravel(h5fw['hit_time'])
-
-            #TODO:Check that this works
-            temp_num_pmt = np.subtract(np.ravel(h5fw['event_hits_index']), np.insert(np.delete(np.ravel(h5fw['event_hits_index']), -1),0,0))
-
-            #Loop through all events in file
-            for i,index in enumerate(h5fw['event_hits_index']):
-                if i>=(len(h5fw['event_hits_index'])-1):
-                    break
-                if h5fw['event_hits_index'][i]==h5fw['event_hits_index'][i+1]:
-                    continue
-                if i < max-1:
-
-                    if ( abs(float(h5fw['positions'][i][:,2])) >  1000 or math.sqrt(float(h5fw['positions'][i][:,0])**2 + float(h5fw['positions'][i][:,1])**2) > 1000):
-                        continue
-
-                    #temp_truth_energy.append(float(h5fw['energies'][i]))
-
-                    #temp_truth_labels.append(float(h5fw['labels'][i]))
-                    if ((abs(float(h5fw['positions'][i][:,0])) + abs(float(h5fw['positions'][i][:,1]))+ abs(float(h5fw['positions'][i][:,2]))) < 1.0):
-                        print(float(h5fw['positions'][i][:,0]))                                        
-
-                    if not moreVariables:
-                        continue
-
-                    temp_mean_charge.append(np.mean(h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
-                    temp_total_charge.append(np.sum(h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
-                    temp_mean_time.append(np.mean(h5fw['hit_time'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
-        '''
-        '''
-        mean_charge.append(temp_mean_charge)
-        total_charge.append(temp_total_charge)
-        wall.append(temp_wall)
-        towall.append(temp_towall)
-        mean_time.append(temp_mean_time)
-        mean_x.append(temp_mean_x)
-        mean_y.append(temp_mean_y)
-        mean_z.append(temp_mean_z)
-        weighted_mean_x.append(temp_weighted_mean_x)
-        weighted_mean_y.append(temp_weighted_mean_y)
-        weighted_mean_z.append(temp_weighted_mean_z)
-        std_x.append(temp_std_x)
-        std_y.append(temp_std_y)
-        std_z.append(temp_std_z)
-        num_pmt.append(temp_num_pmt)
-        truth_energy.append(temp_truth_energy)
-        truth_energy_electron.append(temp_truth_energy_electron)
-        truth_energy_positron.append(temp_truth_energy_positron)
-        epos_energy_difference.append(temp_epos_energy_difference)
-        epos_energy_sum.append(temp_epos_energy_sum)
-        '''
         truth_visible_energy.append(temp_truth_visible_energy)
         truth_labels.append(temp_truth_labels)
         label.append(temp_label)
-         
-        '''
-        truth_veto.append(temp_truth_veto)
 
-        decayE_exists.append(temp_decayE_exists)
-        decayE_energy.append(temp_decayE_energy)
-        decayE_time.append(temp_decayE_time)
+    ## NEED TO DO THIS IN THE LOOP?
+    ## explain the process
 
-        eposTotalEDiff.append(temp_eposTotalEDiff)
+    granularity = 10
+    manual_bins = range(0, 1000+granularity, granularity)
+    (n, bins, patches) = plt.hist(truth_visible_energy, label=label, bins=manual_bins, alpha=0.6, histtype='stepfilled')
 
-        primary_charged_range.append(temp_primary_charged_range)
+    min_bin_fill = np.inf
+    for i1, i2 in zip(n[0], n[1]):
+        if i1 < min_bin_fill:
+            min_bin_fill = i1
+        if i2 < min_bin_fill:
+            min_bin_fill = i2
 
-        direction_x.append(temp_direction_x)
-        direction_y.append(temp_direction_y)
-        direction_z.append(temp_direction_z)
-        position_x.append(temp_position_x)
-        position_y.append(temp_position_y)
-        position_z.append(temp_position_z)
+    print(f'the minimum bin size at a bin size of {granularity} is {min_bin_fill}')
 
-        all_charge.append(temp_all_charge)
-        all_time.append(temp_all_time)
-        '''
+    bin_counts0 = {}
+    bin_counts1 = {}
+    for right_bound in manual_bins[1:]:
+        bin_counts0[f'{right_bound}'] = 0
+        bin_counts1[f'{right_bound}'] = 0
+
+    new_truth_visible_energy = [[],[]]
+    new_indicies_to_save = [[],[]]
+
+    # can combine loops to assure same #, right now its off by 1
+    for i in range(len(truth_visible_energy[0])):
+        i0 = truth_visible_energy[0][i]
+        if i0 < 0: 
+            i0 = 0
+
+        i0_temp = int((abs(i0)//10)*10+10)
+
+        if bin_counts0[f'{i0_temp}'] <= min_bin_fill:
+            bin_counts0[f'{i0_temp}'] += 1
+            new_truth_visible_energy[0].append(i0) 
+            new_indicies_to_save[0].append(i)
+
+    for i in range(len(truth_visible_energy[1])):
+        i1 = truth_visible_energy[1][i]
+        if i1 < 0: 
+            i1 = 0
+        i1_temp = int((abs(i1)//10)*10+10) 
+
+        if bin_counts1[f'{i1_temp}'] <= min_bin_fill:
+            bin_counts1[f'{i1_temp}'] += 1
+            new_truth_visible_energy[1].append(i1)
+            new_indicies_to_save[1].append(i)
+
+    #loop_i = 0
+    for j, path in enumerate(file_paths):
+        path = path.strip('\n')
+        print(f'Revisiting: {path}')
+
+        with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
+            ## THIS MEHTOD ASUMES THE FILE IS ALWAYS TRAVERSED IN THE SAME 
+            ## WAY BUT I WILL TEST THIS LATER ON, IN NOTEBOOK CALL
+            keys = h5fw.keys()
+            new_h5fw = h5py.File(output_path+'/digi_combine_balanced.hy', "w")
+            for k in keys:
+                new_h5fw[k] = h5fw[k][new_indicies_to_save[j]]#loop_i]]
+
+            # is there a way to just do h5fw[indicies]?
+            # check how indicies file is used, dataloader for this?
+            # convert to pandas?
+
+        # close the file here?
+        #loop_i += 1
 
 
-    # examine truth_visible_energy to find smallest bin
-    #plt.hist(truth_visible_energy, bins=50)
-    #plt.show() # do this work in a notebook to view
+    # PLAN: find indicies of ones to save, use those on all keys, resave the file, try visuals of all
 
-    return truth_visible_energy, label # label is not filled
 
-    '''
-    #Plot all
-    yname="Num. Events"
-    generic_histogram(wall, 'Wall [cm]', output_path, 'wall', range=[0,2000], y_name = yname, label=label, bins=20)#, doNorm=True)
-    generic_histogram(towall, 'Towall [cm]', output_path, 'towall', range = [0,5000], y_name = yname, label=label, bins=20)#, doNorm=True)
-    generic_histogram(truth_energy, 'Truth Energy [MeV]', output_path, 'truth_energy', y_name = yname, label=label, bins=20)#, doNorm=True)
-    generic_histogram(truth_visible_energy, 'Truth Visible Energy [MeV]', output_path, 'truth_visible_energy', range=[50,1000], y_name = yname, label=label, bins=20)#, doNorm=True)
-    generic_histogram(truth_veto, 'Truth veto', output_path, 'truth_veto', y_name = yname, label=label, bins=20)#, doNorm=True)
-    generic_histogram(truth_labels, 'Truth label', output_path, 'truth_label', y_name = yname, label=label, bins=20)#, doNorm=True)
+    # save the new hdf5 file (optional argument\\)
+    if output_path != None: 
+        output_path 
 
-    generic_histogram(direction_x, 'Truth Direction X', output_path, 'truth_direction_x', y_name = yname, label=label, bins=20)#, doNorm=True)
-    generic_histogram(direction_y, 'Truth Direction Y', output_path, 'truth_direction_y', y_name = yname, label=label, bins=20)#, doNorm=True)
-    generic_histogram(direction_z, 'Truth Direction Z', output_path, 'truth_direction_z', y_name = yname, label=label, bins=20)#, doNorm=True)
-
-    generic_histogram(position_x, 'Truth position X [cm]', output_path, 'truth_position_x', y_name = yname, label=label, bins=20)#, doNorm=True)
-    generic_histogram(position_y, 'Truth position Y [cm]', output_path, 'truth_position_y', y_name = yname, label=label, bins=20)#, doNorm=True)
-    generic_histogram(position_z, 'Truth position Z [cm]', output_path, 'truth_position_z', y_name = yname, label=label, bins=20)#, doNorm=True)
-
-    generic_histogram(all_charge, 'PMT Charge', output_path, 'all_pmt_charge', y_name = yname, range=[0,10], label=label, bins=100)#, doNorm=True)
-    generic_histogram(all_time, 'PMT Time [ns]', output_path, 'all_pmt_time', y_name = yname, range=[500,1500], label=label, bins=100)#, doNorm=True)
-
-    generic_histogram(num_pmt, 'Number of PMTs', output_path, 'num_pmt', y_name = yname, label=label, range=[0,4000])#, bins=20)
-
-    if not moreVariables:
-        return 0
-
-    generic_histogram(mean_time, 'Mean Time', output_path, 'mean_time', y_name = yname, label=label, bins=20)
-    generic_histogram(mean_charge, 'Mean Charge', output_path, 'mean_charge', y_name = yname, label=label, bins=20)
-    generic_histogram(total_charge, 'Total Charge', output_path, 'total_charge', y_name = yname, label=label, bins=20)
-    generic_histogram(mean_x, 'Mean PMT X [cm]', output_path, 'mean_x', y_name = yname, label=label, bins=20)
-    generic_histogram(mean_y, 'Mean PMT Y [cm]', output_path, 'mean_y', y_name = yname, label=label, bins=20)
-    generic_histogram(mean_z, 'Mean PMT Z [cm]', output_path, 'mean_z', y_name = yname, label=label, bins=20)
-    generic_histogram(weighted_mean_x, 'Weighted Mean PMT X [cm]', output_path, 'weighted_mean_x', y_name = yname, label=label, bins=20)
-    generic_histogram(weighted_mean_y, 'Weighted Mean PMT Y [cm]', output_path, 'weighted_mean_y', y_name = yname, label=label, bins=20)
-    generic_histogram(weighted_mean_z, 'Weighted Mean PMT Z [cm]', output_path, 'weighted_mean_z', y_name = yname, label=label, bins=20)
-    generic_histogram(std_x, 'std dev PMT X [cm]', output_path, 'std_x', y_name = yname, label=label, bins=20)
-    generic_histogram(std_y, 'std dev PMT Y [cm]', output_path, 'std_y', y_name = yname, label=label, bins=20)
-    generic_histogram(std_z, 'std dev PMT Z [cm]', output_path, 'std_z', y_name = yname, label=label, bins=20)
-    '''
-
-#sample_lowest_min_energy(input_path=module_path+'plotting_paths.txt', text_file=True)
+    return truth_visible_energy, label
