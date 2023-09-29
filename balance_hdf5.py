@@ -71,7 +71,7 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
 
     # to be safe (or else, when they are seperate there seems to be +1 of one of our labels)
     # (now have basically split them off again, so need to redo this)
-    loop_len = min(len(truth_visible_energy[0]), len(truth_visible_energy[1]))
+    loop_len = max(len(truth_visible_energy[0]), len(truth_visible_energy[1])) # changed from min
 
     for i in range(loop_len):
         # deal with data from first label
@@ -111,7 +111,7 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
                 keys = h5fw.keys()
 
                 # open new file to save data to 
-                with h5py.File(output_path+f'/digi_combine_balanced4_{j}.hy', 'w') as new_h5fw:
+                with h5py.File(output_path+f'/digi_combine_balanced5_{j}.hy', 'w') as new_h5fw:
                     
                     # save data from selected indicies for each of the keys in original data
                     for k in tqdm(keys):
