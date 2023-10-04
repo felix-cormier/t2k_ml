@@ -29,10 +29,7 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False, over
         print(f'New path: {path}')
     
         with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
-            print(h5fw.keys())
-            temp_truth_visible_energy = [] 
-
-            temp_truth_labels = [] 
+            temp_truth_visible_energy, temp_truth_labels = [], []
 
             temp_label = convert_label(np.median(h5fw['labels']))
             temp_truth_labels = np.ravel(h5fw['labels'])
@@ -100,7 +97,7 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False, over
 
     # they seem equal now!
     print(f'number of events for label 0 = {len(new_indicies_to_save[0])}\n number of events for label 1 = {len(new_indicies_to_save[1])}')
-    '''
+    
     ## save the new hdf5 file (if optional argument is included)
     if output_path != None: 
 
@@ -113,17 +110,23 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False, over
             bool_array = np.zeros(len(truth_visible_energy[j]), dtype=bool)
             bool_array[new_indicies_to_save[j]] = True
 
-            # open original data file and 
-            with h5py.File(path+'/digi_combine.hy', mode='a') as h5fw: # should have opened with 'a' and not 'w'
-
-                if overwrite: # created dataset, not meant to overwrite?
+            if overwrite: 
+                with h5py.File(path+'/digi_combine.hy', mode='a') as h5fw: 
                     h5fw.create_dataset('keep_event', data=bool_array)
-                    # make sure the above works
 
-                #else:
-                # labels does not exist here? :(
+            else:
+                with h5py.File(path+'/digi_combine.hy', mode='r') as h5fw:
+                    keys = h5fw.keys()
+
+                    # open new file to save data to 
+                    with h5py.File(output_path+f'/digi_combine_balanced6_{j}.hy', 'w') as new_h5fw:
+                        
+                        # save data from selected indicies for each of the keys in original data
+                        for k in tqdm(keys):
+                            new_h5fw[k] = h5fw[k][new_indicies_to_save[j]]
+                    
                        
     return truth_visible_energy, label, min_bin_fill
-    '''
+    
 # output path note used anymore
-sample_lowest_min_energy(input_path='plotting_paths.txt', output_path='/fast_scratch_2/aferreira/t2k/ml/data/', text_file=True, overwrite=True)
+sample_lowest_min_energy(input_path='plotting_paths.txt', output_path='/fast_scratch_2/aferreira/t2k/ml/data/', text_file=True, overwrite=False)
