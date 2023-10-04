@@ -100,7 +100,7 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False, over
 
     # they seem equal now!
     print(f'number of events for label 0 = {len(new_indicies_to_save[0])}\n number of events for label 1 = {len(new_indicies_to_save[1])}')
-
+    '''
     ## save the new hdf5 file (if optional argument is included)
     if output_path != None: 
 
@@ -114,9 +114,9 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False, over
             bool_array[new_indicies_to_save[j]] = True
 
             # open original data file and 
-            with h5py.File(path+'/digi_combine.hy', mode='w') as h5fw:
+            with h5py.File(path+'/digi_combine.hy', mode='a') as h5fw: # should have opened with 'a' and not 'w'
 
-                if overwrite:
+                if overwrite: # created dataset, not meant to overwrite?
                     h5fw.create_dataset('keep_event', data=bool_array)
                     # make sure the above works
 
@@ -124,6 +124,6 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False, over
                 # labels does not exist here? :(
                        
     return truth_visible_energy, label, min_bin_fill
-
+    '''
 # output path note used anymore
 sample_lowest_min_energy(input_path='plotting_paths.txt', output_path='/fast_scratch_2/aferreira/t2k/ml/data/', text_file=True, overwrite=True)
