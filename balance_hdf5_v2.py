@@ -112,7 +112,7 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False, over
             bool_array = np.zeros(len(truth_visible_energy[j]), dtype=bool)
             bool_array[new_indicies_to_save[j]] = True
 
-            if overwrite: 
+            if overwrite: # not tested yet
                 with h5py.File(path+'/digi_combine.hy', mode='a') as h5fw: 
                     h5fw.create_dataset('keep_event', data=bool_array)
 
