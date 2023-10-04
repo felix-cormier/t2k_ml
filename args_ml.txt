@@ -1,3 +1,3 @@
 --doCombination
---input_combination_path=/fast_scratch_2/aferreira/t2k/ml/data/oct4_combine/
---output_combination_path=/fast_scratch_2/aferreira/t2k/ml/data/oct4_combine/
+--input_combination_path=/fast_scratch_2/aferreira/t2k/ml/data/oct5_combine/
+--output_combination_path=/fast_scratch_2/aferreira/t2k/ml/data/oct5_combine/
