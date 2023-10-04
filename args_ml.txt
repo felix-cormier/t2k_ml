@@ -1,3 +1,6 @@
---makeBalancedInputPlots
+--doCombination
+--input_combination_path=/fast_scratch_2/aferreira/t2k/ml/data/oct4_combine/
+--output_combination_path=/fast_scratch_2/aferreira/t2k/ml/data/oct4_combine/
+
 --input_plot_path=plotting_paths.txt
 --output_plot_path=/fast_scratch_2/aferreira/t2k/ml/input_plots/
