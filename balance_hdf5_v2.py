@@ -29,6 +29,7 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False, over
         print(f'New path: {path}')
     
         with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
+            print(h5fw.keys())
             temp_truth_visible_energy, temp_truth_labels = [], []
 
             temp_label = convert_label(np.median(h5fw['labels']))
