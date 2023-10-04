@@ -112,7 +112,7 @@ if args.makeVisualizations:
     make_visualizations(myfile, args.output_vis_path)
 
 if args.doCombination:
-    extra_string = 'combine'
+    extra_string = '' #'combine'
     combine_files(args.input_combination_path, args.output_combination_path, extra_string)
 
 if args.makeInputPlots:
