@@ -123,7 +123,10 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False, over
                         
                         # save data from selected indicies for each of the keys in original data
                         for k in tqdm(keys):
-                            new_h5fw[k] = h5fw[k][new_indicies_to_save[j]]
+                            new_h5fw[k] = h5fw[k]#[new_indicies_to_save[j]] - not useful option anymore
+
+                        new_h5fw['keep_event'] = bool_array
+                        
     
                        
     return truth_visible_energy, label, min_bin_fill
