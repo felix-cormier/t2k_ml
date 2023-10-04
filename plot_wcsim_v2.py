@@ -520,7 +520,7 @@ def plot_skdetsim_v2(input_path, output_path, text_file=False, moreVariables = F
         
         #with h5py.File(path+'/combine_combine.hy',mode='r') as h5fw:
         with h5py.File(path+'/digi_combine.hy', mode='r') as h5fw:
-            keys = h5fw.keys()
+            keys = h5fw.keys() # file only has keep event?
 
             for k in keys:
                 print(k)

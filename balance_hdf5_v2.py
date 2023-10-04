@@ -4,7 +4,7 @@ import numpy as np
 from plot_wcsim import get_cherenkov_threshold, convert_label
 import matplotlib.pyplot as plt
 
-def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
+def sample_lowest_min_energy(input_path, output_path=None, text_file=False, overwrite=False): # not overwriting yet
     """
     Args:
         input_path (str): Path to either .hy file or text file with multiple paths and names of .hy files
@@ -29,6 +29,7 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
         print(f'New path: {path}')
     
         with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
+            print(h5fw.keys())
             temp_truth_visible_energy = [] 
 
             temp_truth_labels = [] 
@@ -114,9 +115,15 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False):
 
             # open original data file and 
             with h5py.File(path+'/digi_combine.hy', mode='w') as h5fw:
-                h5fw['keep_event'] = bool_array
+
+                if overwrite:
+                    h5fw.create_dataset('keep_event', data=bool_array)
+                    # make sure the above works
+
+                #else:
+                # labels does not exist here? :(
                        
     return truth_visible_energy, label, min_bin_fill
 
-
-sample_lowest_min_energy(input_path='plotting_paths.txt', output_path='/fast_scratch_2/aferreira/t2k/ml/data/', text_file=True)
+# output path note used anymore
+sample_lowest_min_energy(input_path='plotting_paths.txt', output_path='/fast_scratch_2/aferreira/t2k/ml/data/', text_file=True, overwrite=True)
