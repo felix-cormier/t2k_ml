@@ -29,7 +29,6 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False, over
         print(f'New path: {path}')
     
         with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
-            print(h5fw.keys())
             temp_truth_visible_energy, temp_truth_labels = [], []
 
             temp_label = convert_label(np.median(h5fw['labels']))
@@ -71,7 +70,6 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False, over
     # to be safe (or else, when they are seperate there seems to be +1 of one of our labels)
     # (now have basically split them off again, so need to redo this)
     loop_len = max(len(truth_visible_energy[0]), len(truth_visible_energy[1])) # changed from min
-    print(len(truth_visible_energy[0]), len(truth_visible_energy[1]))
 
     for i in range(loop_len):
         # deal with data from first label
