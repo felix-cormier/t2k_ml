@@ -119,10 +119,11 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False, over
                     keys = h5fw.keys()
 
                     # open new file to save data to 
-                    with h5py.File(output_path+f'/digi_combine_balanced6_{j}.hy', 'w') as new_h5fw:
+                    with h5py.File(output_path+f'/digi_combine_balanced7_{j}.hy', 'w') as new_h5fw:
                         
                         # save data from selected indicies for each of the keys in original data
                         for k in tqdm(keys):
+                            ## THIS DOES NOT WORK NOW, need to revisit it ##
                             new_h5fw[k] = h5fw[k]#[new_indicies_to_save[j]] - not useful option anymore
 
                         new_h5fw['keep_event'] = bool_array
@@ -132,4 +133,4 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False, over
     return truth_visible_energy, label, min_bin_fill
     
 # output path note used anymore
-sample_lowest_min_energy(input_path='plotting_paths.txt', output_path='/fast_scratch_2/aferreira/t2k/ml/data/', text_file=True, overwrite=False)
+sample_lowest_min_energy(input_path='plotting_paths.txt', output_path='/fast_scratch_2/aferreira/t2k/ml/data/', text_file=True, overwrite=True)
