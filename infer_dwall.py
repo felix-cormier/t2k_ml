@@ -82,7 +82,7 @@ def plot_walls(input_path, output_dir, text_file=True):
             wcsim_options = wcsim_options.load_options(path, 'wc_options.pkl')
             print(f'Particle: {wcsim_options.particle}')
         
-        with h5py.File(path+'/combine_combine.hy',mode='r') as h5fw:
+        with h5py.File(path,mode='r') as h5fw:
             temp_num_pmt = []
             temp_wall = []
             temp_towall = []
