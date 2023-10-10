@@ -119,7 +119,7 @@ def sample_lowest_min_energy(input_path, output_path=None, text_file=False, over
                     keys = h5fw.keys()
 
                     # open new file to save data to 
-                    with h5py.File(output_path+f'/digi_combine_balanced7_{j}.hy', 'w') as new_h5fw:
+                    with h5py.File(output_path+f'/digi_combine_balanced_0dwallcut_{j}.hy', 'w') as new_h5fw:
                         
                         # save data from selected indicies for each of the keys in original data
                         for k in tqdm(keys):
