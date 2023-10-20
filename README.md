@@ -147,6 +147,26 @@ Where input plot path can be either a directory, or the path and name of a text 
 
 N.B. If you want to plot multiple different labels (e.g. electrons and muons) at the same time, this code expects to have these in separate .hy files. You will have to provide a text file with multiple paths and names of the files you want to plot. Thus give _input\_plot\_path_ variable a text file with the paths to the multiple files.
 
+Plotting may take lots of memory if you are plotting PMT variables (time and charge). If you're on compute canada you may need to run it on an interactive job to make sure plotting script doesn't get killed. You can launch an interactive job by e.g.
+
+```
+srun --account=rpp-blairt2k --mem-per-cpu=12G --nodes=1 --ntasks-per-node=2 --time=04:00:00 --pty bash -i
+```
+If you have a different sponsor account you will need to change the _--acount_ value. Once in the interactive job proceed as normal (You will need to run _setup.sh_. This particular line reserves 2 CPUs with 12GB of memory each for 4 hours, so modify as needed.
+
+
+#### Make flat energy distribution
+
+Re-sample the data to create a flat visible energy distribution. Specifically, this adds a new key called 'keep_event' which is used in code from the t2k_ml_training '--makeIndices' workflow.
+
+```
+--makeEnergyFlat
+--input_plot_path=[...]
+```
+
+Where input plot path can be either a directory, or the path and name of a text file which then contains multiple paths and names of files (preferably a combination .hy file). 
+
+
 #### Make Visualizations
 
 To make some visuals of some data events, and visuals of simulated particles, do
