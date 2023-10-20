@@ -1,2 +1,2 @@
---makeInputPlots
+--makeEnergyFlat
 --input_plot_path=data/plotting_paths.txt
