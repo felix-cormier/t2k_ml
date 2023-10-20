@@ -160,7 +160,7 @@ If you have a different sponsor account you will need to change the _--acount_ v
 Re-sample the data to create a flat visible energy distribution. Specifically, this adds a new key called 'keep_event' which is used in code from the t2k_ml_training '--makeIndices' workflow.
 
 ```
---makeFlatEnergy
+--makeEnergyFlat
 --input_plot_path=[...]
 ```
 
