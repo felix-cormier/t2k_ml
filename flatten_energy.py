@@ -68,7 +68,7 @@ def flatten_energy(input_path, output_path=None, text_file=False, overwrite=Fals
     min_bin_fill = np.inf
     for i in range(unique_labels):
         for j in range(len(n[i])):
-            temp_bin_fill = n[i][j]
+            temp_bin_fill = int(n[i][j])
             if temp_bin_fill < min_bin_fill:
                 min_bin_fill = temp_bin_fill
     print(f'the minimum bin fill at a bin size of {granularity} is {min_bin_fill}')
