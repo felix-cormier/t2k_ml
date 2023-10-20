@@ -1,12 +1,3 @@
---makeInputPlots
---input_combination_path=/scratch/fcormier/t2k/ml/output_wcsim/aug24_emu_lowE_CheThr_decayE_1M_1/
---output_combination_path=/scratch/fcormier/t2k/ml/output_wcsim/aug24_emu_lowE_CheThr_decayE_1M_1/
---input_plot_path=data/plotting_paths.txt
---output_plot_path=/scratch/fcormier/t2k/ml/plots/wcsim_plots/aug30_emu_skdetsim_smallFile_2/
---input_vis_file_path=/scratch/fcormier/t2k/ml/output_wcsim/jul31_muons_egammaErange_CheThr_decayE_600k_2/digi_combine.hy
---output_vis_path=/scratch/fcormier/t2k/ml/plots/wcsim_plots/jul31_muons_egammaErange_CheThr_decayE_600k_2/
---output_path=/scratch/fcormier/t2k/ml/output_wcsim/aug24_electrons_lowE_CheThr_decayE_1M_1/
---transformPath=/scratch/fcormier/t2k/ml/output_wcsim/test_lowEmuons_jul31/
---transformName=wcsim.root
---inputSKGeofile=data/geofile_skdetsim.txt
---outputSKGeofile=data/geofile_skdetsim.npy
+--doCombination
+--input_combination_path=/fast_scratch/WatChMaL/data/T2K/sep22_combined_2BugFixes_0dwallCut_1M_1_balanced2/
+--output_combination_path=/fast_scratch_2/aferreira/t2k/ml/data/oct20_combine_flatE/

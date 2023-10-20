@@ -31,6 +31,7 @@ parser.add_argument("--numJobs", help="Batch Generation: Number of jobs to submi
 parser.add_argument("--doSKGeofile", help="Convert SKDETSIM .txt geofile to numpy format", action="store_true")
 parser.add_argument("--inputSKGeofile", help="Convert SKDETSIM .txt geofile to numpy format")
 parser.add_argument("--outputSKGeofile", help="Convert SKDETSIM .txt geofile to numpy format")
+parser.add_argument("--makeEnergyFlat", help="Re-sample data to create a flat visible menergy distribution", action="store_true")
 args = parser.parse_args(['--transformPath','foo','@args_ml.txt',
                    '--output_path','foo','@args_ml.txt',
                    '--input_vis_file_path','foo','@args_ml.txt',
@@ -137,4 +138,9 @@ if args.dumpOptions:
         wcsim_options = wcsim_options.load_options(path, 'wc_options.pkl')
         print(f'Particle: {wcsim_options.particle}')
 
-
+if args.makeEnergyFlat:
+    from flatten_energy import flatten_energy
+    use_text_file=False
+    if ".txt" in args.input_plot_path:
+        use_text_file=True
+    flatten_energy(input_path=args.input_plot_path, text_file=use_text_file, overwrite=True)
