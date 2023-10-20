@@ -139,7 +139,7 @@ def flatten_energy(input_path, output_path=None, text_file=False, overwrite=Fals
                     # add in the new key
                     new_h5fw.create_dataset('keep_event', data=bool_array)
 
-            print(f'new HDF5 file with "keep_event" key saved to: {output_path}') 
+        print(f'new HDF5 file with "keep_event" key saved to: {output_path}') 
                         
     return truth_visible_energy, label, min_bin_fill
 
