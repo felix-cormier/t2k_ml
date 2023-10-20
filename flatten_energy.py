@@ -60,7 +60,7 @@ def flatten_energy(input_path, output_path=None, text_file=False, overwrite=Fals
     manual_bins = range(0, 1000+granularity, granularity)
     (n, bins, patches) = plt.hist(truth_visible_energy, label=label, bins=manual_bins)
 
-    unique_labels = unique_labels  # check this and use it later on
+    unique_labels = len(n)  # check this and use it later on
     print(f'{unique_labels} unique labels found') 
 
     # find minimim size of a bin
