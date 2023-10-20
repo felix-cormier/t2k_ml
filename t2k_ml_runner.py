@@ -31,7 +31,7 @@ parser.add_argument("--numJobs", help="Batch Generation: Number of jobs to submi
 parser.add_argument("--doSKGeofile", help="Convert SKDETSIM .txt geofile to numpy format", action="store_true")
 parser.add_argument("--inputSKGeofile", help="Convert SKDETSIM .txt geofile to numpy format")
 parser.add_argument("--outputSKGeofile", help="Convert SKDETSIM .txt geofile to numpy format")
-parser.add_argument("--makeEnergyFlat", help="Re-sample data to create a flat visible menergy distribution")
+parser.add_argument("--makeEnergyFlat", help="Re-sample data to create a flat visible menergy distribution", action="store_true")
 args = parser.parse_args(['--transformPath','foo','@args_ml.txt',
                    '--output_path','foo','@args_ml.txt',
                    '--input_vis_file_path','foo','@args_ml.txt',
