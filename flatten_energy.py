@@ -112,14 +112,17 @@ def flatten_energy(input_path, output_path=None, text_file=False, overwrite=Fals
 
         # if overwrite is True then add the 'keep_event' key to input file
         if overwrite:
-            with h5py.File(path+'/digi_combine.hy', mode='a') as h5fw: 
+            output_path = path + '/digi_combine.hy'
+            with h5py.File(output_path, mode='a') as h5fw: 
                 h5fw.create_dataset('keep_event', data=bool_array)
 
+            print(f'"keep_event" key added to original HDF5 file: {output_path}') 
+            
         # otherwise create copy of the input file and add the 'keep_event' key to the copy
         else:
-             # give default output file name if none are specified
+            # give default output file name if none are specified
             if output_path == None:
-                output_path = path.split('.hy')[0] + '_flatE.hy'
+                output_path = path + '/digi_combine_flatE.hy'
 
             # read in original file 
             with h5py.File(path+'/digi_combine.hy', mode='r') as h5fw:
@@ -134,11 +137,13 @@ def flatten_energy(input_path, output_path=None, text_file=False, overwrite=Fals
 
                     # add in the new key
                     new_h5fw.create_dataset('keep_event', data=bool_array)
+
+            print(f'new HDF5 file with "keep_event" key saved to: {output_path}') 
                         
     return truth_visible_energy, label, min_bin_fill
 
 # run the function only if program is run directly, not called on to import the function
 if __name__ == '__main__':
     truth_visible_energy, label, min_bin_fill = flatten_energy(input_path='plotting_paths.txt', 
-                                                                       output_path=None, 
-                                                                       text_file=True, overwrite=True)
+                                                                output_path=None, 
+                                                                text_file=True, overwrite=False)
