@@ -88,16 +88,16 @@ def convert_values(geofile,input):
 
 def convert_label(label):
     if label == 0:
-        return 'Gamma'
+        return 'Muon'
     if label == 1:
         return 'Electron'
     if label == 2:
-        return 'Muon'
+        return 'Pi+'
     else:
         return label
 
 def get_cherenkov_threshold(label):
-    threshold_dict = {0: 160., 1:0.8, 2: 0.}
+    threshold_dict = {0: 160., 1:0.8, 2:211.715}
     return threshold_dict[label]
 
 def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVariables = False):
@@ -233,8 +233,44 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVari
             
             max = h5fw['event_hits_index'].shape[0]
 
+            cheThr = list(map(get_cherenkov_threshold, np.ravel(h5fw['labels'])))
+            temp_truth_visible_energy = np.ravel(h5fw['energies']) - cheThr
+            temp_event_ids = (np.ravel(h5fw['event_ids']))
+            temp_rootfile = (np.ravel(h5fw['root_files']))
+            temp_position_x = (np.ravel(h5fw['positions'][:,:,0]))
+            '''
+            if "Electron" in temp_label:
+                #print(list(temp_event_ids[(temp_truth_visible_energy > 758.214) & (temp_truth_visible_energy < 758.216)]))
+                #print(list(temp_rootfile[(temp_truth_visible_energy > 758.214) & (temp_truth_visible_energy < 758.216)]))
+                print(len(temp_rootfile[(temp_truth_visible_energy > 758.214) & (temp_truth_visible_energy < 758.216)]))
+                print(temp_position_x[(temp_truth_visible_energy > 758.214) & (temp_truth_visible_energy < 758.216)])
+                temp_truth_visible_energy = temp_truth_visible_energy[(temp_truth_visible_energy > 758) & (temp_truth_visible_energy < 759)]
+            if "Muon" in temp_label:
+                #print(list(temp_event_ids[(temp_truth_visible_energy > 751.727) & (temp_truth_visible_energy < 751.729)]))
+                #print(list(temp_rootfile[(temp_truth_visible_energy > 751.727) & (temp_truth_visible_energy < 751.729)]))
+                print(len(temp_rootfile[(temp_truth_visible_energy > 751.727) & (temp_truth_visible_energy < 751.729)]))
+                print(temp_position_x[(temp_truth_visible_energy > 751.727) & (temp_truth_visible_energy < 751.729)])
+                temp_truth_visible_energy = temp_truth_visible_energy[(temp_truth_visible_energy > 751) & (temp_truth_visible_energy < 752)]
+
 
             #temp_primary_charged_range = np.ravel(np.sqrt( np.add( np.add( np.square( np.subtract(h5fw['primary_charged_start'][:,:,0], h5fw['primary_charged_end'][:,:,0])), np.square( np.subtract(h5fw['primary_charged_start'][:,:,1], h5fw['primary_charged_end'][:,:,1]))), np.square( np.subtract(h5fw['primary_charged_start'][:,:,2], h5fw['primary_charged_end'][:,:,2])))))
+            
+            inv_selection = (temp_direction_x > -1.) & (temp_direction_x < -0.75) & (temp_direction_y < 0.38) & (temp_direction_y > 0.36) & (temp_direction_z < -0.065) & (temp_direction_z > -0.15)
+
+            print(f'temp direction x -1: {temp_direction_x[inv_selection]}')
+            print(f'temp direction y -1: {temp_direction_y[inv_selection]}')
+            print(f'temp direction z -1: {temp_direction_z[inv_selection]}')
+            print(f'temp pos x -1: {temp_position_x[inv_selection]}')
+            print(f'temp pos y -1: {temp_position_y[inv_selection]}')
+            print(f'temp pos z -1: {temp_position_z[inv_selection]}')
+            print(f'temp energy -1: {temp_truth_energy[inv_selection]}')
+            print(f'temp rootfile -1: {temp_rootfile[inv_selection]}')
+            print(f'temp id -1: {temp_event_ids[inv_selection]}')
+            print(f'temp len -1: {len(temp_event_ids[inv_selection])}')
+            generic_histogram(temp_direction_x[inv_selection],'X direction', output_path, 'temp_x_dir_inv'+str(temp_label), y_name = 'Arb.', bins=20)
+            generic_histogram(temp_direction_y[inv_selection],'Y direction', output_path, 'temp_y_dir_inv'+str(temp_label), y_name = 'Arb.', bins=20)
+            generic_histogram(temp_direction_z[inv_selection],'Z direction', output_path, 'temp_z_dir_inv'+str(temp_label), y_name = 'Arb.', bins=20)
+            '''
             temp_primary_charged_range = np.ravel(h5fw['primary_charged_range'])
             temp_truth_energy = np.ravel(h5fw['energies'])
             temp_truth_energy_positron = np.ravel(h5fw['energies_positron'])
@@ -243,28 +279,23 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVari
             temp_epos_energy_sum = np.add(temp_truth_energy_electron, temp_truth_energy_positron)
             temp_eposTotalEDiff = np.divide(np.add(temp_truth_energy_electron, temp_truth_energy_positron), temp_truth_energy)
             temp_truth_labels = np.ravel(h5fw['labels'])
-            print(temp_truth_labels)
             wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions']), np.array(h5fw['directions'])))
             wall_vars = list(zip(*wall_vars))
             temp_wall = wall_vars[0]
             temp_towall = wall_vars[1]
-            cheThr = list(map(get_cherenkov_threshold, np.ravel(h5fw['labels'])))
-            temp_truth_visible_energy = np.ravel(h5fw['energies']) - cheThr
             temp_truth_veto = (np.ravel(h5fw['veto']))
 
             temp_decayE_exists = (np.ravel(h5fw['decay_electron_exists']))
-            print(np.unique(temp_decayE_exists, return_counts=True))
             temp_decayE_energy = (np.ravel(h5fw['decay_electron_energy'])[temp_decayE_exists==1])
             temp_decayE_time = (np.ravel(h5fw['decay_electron_time'])[temp_decayE_exists==1])
-            print(temp_decayE_time)
 
 
             temp_direction_x = (np.ravel(h5fw['directions'][:,:,0]))
             temp_direction_y = (np.ravel(h5fw['directions'][:,:,1]))
             temp_direction_z = (np.ravel(h5fw['directions'][:,:,2]))
-            temp_position_x = (np.ravel(h5fw['positions'][:,:,0]))
             temp_position_y = (np.ravel(h5fw['positions'][:,:,1]))
             temp_position_z = (np.ravel(h5fw['positions'][:,:,2]))
+
 
             temp_all_charge = np.ravel(h5fw['hit_charge'])
             temp_all_time = np.ravel(h5fw['hit_time'])
@@ -274,6 +305,8 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVari
 
             #Loop through all events in file
             for i,index in enumerate(h5fw['event_hits_index']):
+                if not moreVariables:
+                    continue
                 if i>=(len(h5fw['event_hits_index'])-1):
                     break
                 if h5fw['event_hits_index'][i]==h5fw['event_hits_index'][i+1]:
@@ -292,8 +325,6 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVari
                         print(float(h5fw['positions'][i][:,0]))                                        
 
 
-                    if not moreVariables:
-                        continue
 
                     print(i)
 
@@ -371,8 +402,8 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVari
     yname="Num. Events"
     generic_histogram(wall, 'Wall [cm]', output_path, 'wall', range=[0,2000], y_name = yname, label=label, bins=20, doNorm=True)
     generic_histogram(towall, 'Towall [cm]', output_path, 'towall', range = [0,5000], y_name = yname, label=label, bins=20, doNorm=True)
-    generic_histogram(truth_energy, 'Truth Energy [MeV]', output_path, 'truth_energy', y_name = yname, label=label, bins=20, doNorm=True)
-    generic_histogram(truth_visible_energy, 'Truth Visible Energy [MeV]', output_path, 'truth_visible_energy', range=[50,1000], y_name = yname, label=label, bins=20, doNorm=True)
+    generic_histogram(truth_energy, 'Truth Energy [MeV]', output_path, 'truth_energy', range=[50,1000], y_name = yname, label=label, bins=20, doNorm=True)
+    generic_histogram(truth_visible_energy, 'Truth Visible Energy [MeV]', output_path, 'truth_visible_energy', range=[0,1200], y_name = yname, label=label, bins=50, doNorm=True)
     generic_histogram(truth_veto, 'Truth veto', output_path, 'truth_veto', y_name = yname, label=label, bins=20, doNorm=True)
     generic_histogram(truth_labels, 'Truth label', output_path, 'truth_label', y_name = yname, label=label, bins=20, doNorm=True)
 
@@ -387,7 +418,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVari
     generic_histogram(all_charge, 'PMT Charge', output_path, 'all_pmt_charge', y_name = yname, range=[0,10], label=label, bins=100, doNorm=True)
     generic_histogram(all_time, 'PMT Time [ns]', output_path, 'all_pmt_time', y_name = yname, range=[500,1500], label=label, bins=100, doNorm=True)
 
-    generic_histogram(num_pmt, 'Number of PMTs', output_path, 'num_pmt', y_name = yname, label=label, range=[0,4000], bins=20)
+    generic_histogram(num_pmt, 'Number of PMTs', output_path, 'num_pmt', y_name = yname, label=label, range=[0,4000], bins=20, doNorm=True)
 
 
 

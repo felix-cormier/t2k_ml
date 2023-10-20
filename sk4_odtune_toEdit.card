@@ -104,7 +104,7 @@ C
 C seeds for random number generators; three values must be given
 C
 
-VECT-RAND  SEED  200004  0  0  0
+VECT-RAND  780811  200004  SEED  0  0
 
 C
 C If the energy of the particles is high,
@@ -147,7 +147,7 @@ C               = 2   randomly generated
 VECT-MVTX 2
 CVECT-VTX  0.0 0.0 0.0
 
-C VECT-WALL WALL_SET
+VECT-WALL WALL_SET
 
 C
 C VECT-MDIR    Control directions
@@ -157,7 +157,7 @@ VECT-MDIR 2
 CVECT-DIR -1. 0. 0.
 
 C VECT-PART    input particle ID
-VECT-PART PARTICLE
+VECT-PART    PARTICLE
 
 C VECT-MMOM    Control momentum MeV
 C               = 1   fixed momentum set by the 1st argument of 'VECT-MOM'

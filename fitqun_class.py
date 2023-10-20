@@ -15,9 +15,10 @@ class fitqun():
         self.indices = self.extract_rootfiles()
         #Match unique rootfile to their label
         self.labels = self.labels[self.indices]
+        self.zbs_files = np.empty(len(self.rootfiles), dtype=object)
         #Make sure the length of rootfiles and labels matches
         self.check_label_rootfile_match()
-        #Get where to look for .root files to run fitqun on
+        #Get where to look for .zbs files to run fitqun on
         self.get_fitqun_directories(fitqun_directories)
         self.get_complete_file_paths()
 
@@ -56,7 +57,6 @@ class fitqun():
         """Fetches file paths from supplied text file, and pre-pends it to the root file
         """
         for path in self.file_paths:
-            print(path)
             files_in_path = glob.glob(path+"*.zbs")
             files_in_path = np.char.split(files_in_path,'/')
             files_in_path = [x[-1] for x in files_in_path]
@@ -67,7 +67,7 @@ class fitqun():
             #temp = [f'{path}{i}' for i in list(np.array(self.rootfiles)[matching_indices])]
             for i in range(len(self.rootfiles)):
                 if matching_indices[i]:
-                    self.rootfiles[i] = path + self.rootfiles[i]+'.zbs'
+                    self.zbs_files[i] = path + self.rootfiles[i]+'.zbs'
 
     def get_number_from_rootfile(self, path):
        temp = path.split('/')[-1] 

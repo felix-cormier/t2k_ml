@@ -2,11 +2,12 @@ import re
 import shutil
 import os
 import pickle
+import math
 
 class SKDETSimOptions():
     """A class which can set, store, steer WCSim and its options
     """
-    def __init__(self, particle=11, energy=[0,1000], wall = 100, output_name='skdetsim', output_directory='/scratch/fcormier/t2k/ml/output_skdetsim/', num_events=500, batch=False, save_input_options=False, seed=0):
+    def __init__(self, particle=11, energy=[0.,1000.], wall = 100., output_name='skdetsim', output_directory='/scratch/fcormier/t2k/ml/output_skdetsim/', num_events=500, batch=False, save_input_options=False, seed=0):
         """_summary_
 
         Args:
@@ -35,11 +36,21 @@ class SKDETSimOptions():
         self.save_input_options=save_input_options
 
     def correct_energy(self):
-        """Corrects input energy with Cherenkov threshold per particle
+        """Corrects input energy with Cherenkov threshold per particle, then to momentum
+            Since SKDETSIM expects momentum input
         """
-        threshold_dict = {13:54.6, -13:54.6, 11:0.264, -11:0.264, 22:2*0.511+0.264}
+        threshold_dict = {13:160.1, -13:160.1, 11:0.81, -11:0.81, 22:2*0.511+0.8, 211:211.715}
+        mass_dict = {13:105.7, -13:105.7, 11:0.511, -11:0.511, 22:0, 211:139.584}
         self.energy[0] = self.energy[0] + threshold_dict[self.particle]
+        if math.pow(self.energy[0],2) > math.pow(mass_dict[self.particle],2):
+            self.energy[0] = math.sqrt(math.pow(self.energy[0],2) - math.pow(mass_dict[self.particle],2))
+        else:
+            self.energy[0] = 0
         self.energy[1] = self.energy[1] + threshold_dict[self.particle]
+        if math.pow(self.energy[1],2) > math.pow(mass_dict[self.particle],2):
+            self.energy[1] = math.sqrt(math.pow(self.energy[1],2) - math.pow(mass_dict[self.particle],2))
+        else:
+           self.energy[1] = 0 
 
     def dump_options(self):
         print(f'Particle: {self.particle}')

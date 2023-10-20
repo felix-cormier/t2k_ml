@@ -17,7 +17,7 @@ parser.add_argument("--dofiTQun", help="run fiTQun", action="store_true")
 parser.add_argument("--doSKDETSim", help="run SKDETSim", action="store_true")
 parser.add_argument("--skdetsim", help="run SKDETSim", action="store_true")
 parser.add_argument("--doTransform", help="transform WCSim root file to numpy", action="store_true")
-parser.add_argument("--skdetsim", help="Use if transforming skdetsim file (will be wcsim if left off)", action="store_true")
+#parser.add_argument("--skdetsim", help="Use if transforming skdetsim file (will be wcsim if left off)", action="store_true")
 parser.add_argument("--doBatch", help="use the batch system", action="store_true")
 parser.add_argument("--doCombination", help="use the batch system", action="store_true")
 parser.add_argument("--makeVisualizations", help="make 3D plots of events", action="store_true")
@@ -65,9 +65,11 @@ if args.doBatch and args.dofiTQun and args.doTransform:
         except FileExistsError as error:
             print("path " + str(args.output_fitqun_path) +" already exists")
     fitqun_settings = fitqun(args.input_fitqun_path, args.output_fitqun_path, args.fitqun_directories)
-    for i, (file, label) in enumerate(zip(fitqun_settings.rootfiles, fitqun_settings.labels)):
+    for i, (file, label) in enumerate(zip(fitqun_settings.zbs_files, fitqun_settings.labels)):
+        if file is None:
+            continue
         temp_number = fitqun_settings.get_number_from_rootfile(file)
-        talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=4096M --nodes=1 --ntasks-per-node=1 --time=02:00:00 --export=ALL,ARG1='+str(file)+',ARG2='+str(args.output_fitqun_path)+',ARG3='+str(temp_number)+',ARG4=' + str(label)+' fitqun_job.sh')
+        talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=4096M --nodes=1 --ntasks-per-node=1 --time=03:00:00 --export=ALL,ARG1='+str(file)+',ARG2='+str(args.output_fitqun_path)+',ARG3='+str(temp_number)+',ARG4=' + str(label)+' fitqun_job.sh')
         subprocess.call(talk, shell=True)
         #print([m.start() for m in re.finditer('\\n', str(subprocess.check_output(["squeue", "-u", "fcormier"])))])
         if i%50==0:
@@ -136,8 +138,8 @@ elif args.doSKDETSim and args.doTransform and args.doBatch and args.output_path 
     print("Submitting SKDETSim jobs")
     num_jobs = int(args.numJobs)
     events_per_job = int(args.eventsPerJob)
-    #particle 11 (e-), 13 (mu-), 22 (gamma)
-    skdetsim_options = SKDETSimOptions(output_directory=args.output_path, save_input_options=False,  energy=[100,1200,'MeV'], particle=13)
+    #particle 11 (e-), 13 (mu-), 22 (gamma), 211 (pion+)
+    skdetsim_options = SKDETSimOptions(output_directory=args.output_path, save_input_options=False,  energy=[0.,1000.,'MeV'], particle=211, wall=0.)
     skdetsim_options.set_output_directory()
     skdetsim_options.save_options(args.output_path,'sk_options.pkl')
     print(skdetsim_options.particle)
@@ -145,13 +147,14 @@ elif args.doSKDETSim and args.doTransform and args.doBatch and args.output_path 
     for i in range(num_jobs):
         talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=4G --nodes=1 --ntasks-per-node=1 --time=00:30:00 --export=ALL,ARG1='+str(events_per_job)+',ARG2='+str(args.output_path)+' skdetsim_job.sh')
         subprocess.call(talk, shell=True)
+        print(f'job: {i}/{num_jobs} ({(i/num_jobs)*100:.2f}%)')
         #print([m.start() for m in re.finditer('\\n', str(subprocess.check_output(["squeue", "-u", "fcormier"])))])
         if i%50==0:
-            num_jobs = str(subprocess.check_output(["squeue", "-u", "fcormier"])).count('\\n')
-            while num_jobs > 950:
+            current_num_jobs = str(subprocess.check_output(["squeue", "-u", "fcormier"])).count('\\n')
+            while current_num_jobs > 950:
                 time.sleep(10)
-                num_jobs = str(subprocess.check_output(["squeue", "-u", "fcormier"])).count('\\n')
-                print(f'Num Jobs: {num_jobs}, waiting until < 950')
+                current_num_jobs = str(subprocess.check_output(["squeue", "-u", "fcormier"])).count('\\n')
+                print(f'Num Jobs: {current_num_jobs}, waiting until < 950')
 
 
 elif args.doWCSim:
@@ -194,7 +197,7 @@ if args.makeVisualizations:
     make_visualizations(myfile, args.output_vis_path)
 
 if args.doCombination:
-    extra_string = 'combine'
+    extra_string = 'digi'
     combine_files(args.input_combination_path, args.output_combination_path, extra_string)
 
 if args.makeInputPlots:

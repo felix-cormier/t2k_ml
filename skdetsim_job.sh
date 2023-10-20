@@ -44,6 +44,7 @@ python transform_batch.py "$SLURM_TMPDIR/t2k_ml/data/" $SLURM_JOBID 1
 echo "finished transform"
 cp data/*.hy $ARG2
 cp data/*.zbs $ARG2
+#cp data/*.root $ARG2
 cp *.card $ARG2
 cd $SLURM_TMPDIR
 rm -rf t2k_ml/
