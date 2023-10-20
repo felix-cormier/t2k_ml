@@ -44,7 +44,8 @@ args = parser.parse_args(['--transformPath','foo','@args_ml.txt',
                    '--numJobs','foo','@args_ml.txt',
                    '--inputSKGeofile','foo','@args_ml.txt',
                    '--outputSKGeofile','foo','@args_ml.txt',
-                   '--transformName','foo','@args_ml.txt'])
+                   '--transformName','foo','@args_ml.txt', 
+                   '--makeEnergyFlat','foo','@args_ml.txt'])
 
 if args.doSKGeofile:
     print("Converting SKDETSIM geofile to numpy format")
