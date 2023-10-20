@@ -143,4 +143,4 @@ if args.makeEnergyFlat:
     use_text_file=False
     if ".txt" in args.input_plot_path:
         use_text_file=True
-    flatten_energy(input_path=args.input_plot_path, text_file=use_text_file, overwrite=True)
+    flatten_energy(input_path=args.input_plot_path, text_file=use_text_file, overwrite=False)
