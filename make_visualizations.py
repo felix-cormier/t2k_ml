@@ -91,8 +91,8 @@ def vis_pmt_charge(x,y,z,strength, x_label, y_label, z_label, strength_label, ou
     ax.set_box_aspect([np.ptp(i) for i in [x,y,z]])
     cbar = fig.colorbar(p, ax=ax)
     cbar.set_label(strength_label)
-    plt.title(f'num_pmts = {num_pmts}\ntowall = {round(towall,2)}')
-    plt.savefig(output_path+'/'+num_pmts+'_'+output_name+'.png', format='png', transparent=False)
+    plt.title(f'num_pmts = {num_pmts}\ntowall = {round(towall,2)}\nnum_entries={len(x_label)}')
+    plt.savefig(output_path+'/'+output_name+'.png', format='png', transparent=False)
     # from generic_3D_plot(
 
 def make_visualizations_lowWall(h5_file, output_path):
