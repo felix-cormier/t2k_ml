@@ -81,7 +81,7 @@ def make_visualizations(h5_file, output_path):
     generic_3D_plot(x_pos,y_pos,z_pos, np.ones(len(x_pos)), 'X [cm]', 'Y [cm]', 'Z [cm]', 'Arbitrary', output_path, 'truth_position')
     #generic_3D_plot(x_stop_pos,y_stop_pos,z_stop_pos, np.ones(len(x_stop_pos)), 'Stop X [cm]', 'Stop Y [cm]', 'Stop Z [cm]', 'Arbitrary', output_path, 'truth_stop_position')
 
-def vis_pmt_charge(x,y,z,strength, x_label, y_label, z_label, strength_label, output_path, output_name):
+def vis_pmt_charge(x,y,z,strength, x_label, y_label, z_label, strength_label, output_path, output_name, num_pmts):
     fig = plt.figure()
     ax = plt.axes(projection='3d')
     ax.set_xlabel(x_label)
@@ -91,7 +91,7 @@ def vis_pmt_charge(x,y,z,strength, x_label, y_label, z_label, strength_label, ou
     ax.set_box_aspect([np.ptp(i) for i in [x,y,z]])
     cbar = fig.colorbar(p, ax=ax)
     cbar.set_label(strength_label)
-    plt.savefig(output_path+'/'+output_name+'.png', format='png', transparent=False)
+    plt.savefig(output_path+'/'+num_pmts+'_'+output_name+'.png', format='png', transparent=False)
     # from generic_3D_plot(
 
 def make_visualizations_lowWall(h5_file, output_path):
@@ -124,45 +124,16 @@ def make_visualizations_lowWall(h5_file, output_path):
 
     for i,index in enumerate(h5_file['event_hits_index']):
 
-        if temp_num_pmt[i] > 1000 and towall[i] < 20: 
+        if temp_num_pmt[i] > 2000 and towall[i] < 20: 
         # none found in this if h5_file['event_hits_index'][i] > 3000 and towall[i] < 10 and  wall[i] < 10: # need to calcualte these correctly? save in new file?
             # SAVE THE WALL INFO ON THE PLOT
-            print('found one, plotting....')
-            if True: # i < max-1:
-                #x_pos.append(float(h5_file['positions'][i][:,0])) 
-                #y_pos.append(float(h5_file['positions'][i][:,1])) 
-                #z_pos.append(float(h5_file['positions'][i][:,2])) 
-                #x_stop_pos.append(float(h5_file['stop_positions'][i][:,0])) 
-                #y_stop_pos.append(float(h5_file['stop_positions'][i][:,1])) 
-                #z_stop_pos.append(float(h5_file['stop_positions'][i][:,2])) 
-                # ask what line below here means
-                #if decision(ratio) and (h5_file['event_hits_index'][i+1]- h5_file['event_hits_index'][i])> 0: # towall is in dir its going, dwall is distance to nearest wall
-                if True:
-                    #print(i)
-                    print(h5_file['labels'][i])
-                    charges = h5_file['hit_charge'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]
-                    pmt_positions = np.array(convert_values(geofile,h5_file['hit_pmt'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
-                    x = pmt_positions[:,0]
-                    y = pmt_positions[:,1]
-                    z = pmt_positions[:,2]
+            print('found one, plotting...')
+            charges = h5_file['hit_charge'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]
+            pmt_positions = np.array(convert_values(geofile,h5_file['hit_pmt'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
+            x = pmt_positions[:,0]
+            y = pmt_positions[:,1]
+            z = pmt_positions[:,2]
 
-                    if h5_file['decay_electron_exists'][i] and h5_file['decay_electron_energy'][i] >30:
-                        print("DECAY ELECTRON!")
-                        output_name = 'decay_electron_time_'+str(i)
-                        generic_histogram(h5_file['hit_time'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]], "PMT Time [ns]", output_path, output_name, bins=20, label = f"e time: {h5_file['decay_electron_time'][i]}")
-
-
-                    output_name = 'digi_500MeV_vis_'+str(i) # should save more than one here
-                    print('saving to ', output_name)
-                    vis_pmt_charge(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name)
-    
-    generic_2D_plot(x_pos,y_pos,[-1800,1800], 100, 'X [cm]', [-1800,1800], 100, 'Y [cm]', '', output_path, 'radial', save_plot=True)
-    generic_2D_plot(x_pos,z_pos,[-1800,1800], 100, 'X [cm]', [-1800,1800], 100, 'Z [cm]', '', output_path, 'long_x', save_plot=True)
-    generic_2D_plot(y_pos,z_pos,[-1800,1800], 100, 'Y [cm]', [-1800,1800], 100, 'Z [cm]', '', output_path, 'long_y', save_plot=True)
-
-    generic_2D_plot(x_stop_pos,y_stop_pos,[-3000,3000], 100, 'X [cm]', [-3000,3000], 100, 'Y [cm]', '', output_path, 'radial', save_plot=True)
-    generic_2D_plot(x_stop_pos,z_stop_pos,[-3000,3000], 100, 'X [cm]', [-3000,3000], 100, 'Z [cm]', '', output_path, 'long_x', save_plot=True)
-    generic_2D_plot(y_stop_pos,z_stop_pos,[-3000,3000], 100, 'Y [cm]', [-3000,3000], 100, 'Z [cm]', '', output_path, 'long_y', save_plot=True)
-
-    generic_3D_plot(x_pos,y_pos,z_pos, np.ones(len(x_pos)), 'X [cm]', 'Y [cm]', 'Z [cm]', 'Arbitrary', output_path, 'truth_position')
-    #generic_3D_plot(x_stop_pos,y_stop_pos,z_stop_pos, np.ones(len(x_stop_pos)), 'Stop X [cm]', 'Stop Y [cm]', 'Stop Z [cm]', 'Arbitrary', output_path, 'truth_stop_position')
+            output_name = 'digi_500MeV_vis_'+str(i) # should save more than one here
+            print('saving to ', output_name)
+            vis_pmt_charge(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name, temp_num_pmt[i])
