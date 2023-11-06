@@ -123,7 +123,7 @@ def make_visualizations_lowWall(h5_file, output_path):
                 #x_stop_pos.append(float(h5_file['stop_positions'][i][:,0])) 
                 #y_stop_pos.append(float(h5_file['stop_positions'][i][:,1])) 
                 #z_stop_pos.append(float(h5_file['stop_positions'][i][:,2])) 
-                if decision(ratio) and (h5_file['event_hits_index'][i+1]- h5_file['event_hits_index'][i])> 0:
+                if decision(ratio) and (h5_file['event_hits_index'][i+1]- h5_file['event_hits_index'][i])> 0: # towall is in dir its going, dwall is distance to nearest wall
                     print(i)
                     print(h5_file['labels'][i])
                     charges = h5_file['hit_charge'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]
@@ -138,7 +138,8 @@ def make_visualizations_lowWall(h5_file, output_path):
                         generic_histogram(h5_file['hit_time'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]], "PMT Time [ns]", output_path, output_name, bins=20, label = f"e time: {h5_file['decay_electron_time'][i]}")
 
 
-                    output_name = 'digi_500MeV_vis_'+str(i) # this never saves?????????? looks like it should exist tho
+                    output_name = 'digi_500MeV_vis_'+str(i) # should save more than one here
+                    print('saving to ', output_name)
                     generic_3D_plot(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name)
     
     generic_2D_plot(x_pos,y_pos,[-1800,1800], 100, 'X [cm]', [-1800,1800], 100, 'Y [cm]', '', output_path, 'radial', save_plot=True)

@@ -209,7 +209,7 @@ def plot_walls_pmts(input_path, output_dir, text_file=True):
                 #temp_primary_charged_range = np.ravel(np.sqrt( np.add( np.add( np.square( np.subtract(h5fw['primary_charged_start'][:,:,0], h5fw['primary_charged_end'][:,:,0])), np.square( np.subtract(h5fw['primary_charged_start'][:,:,1], h5fw['primary_charged_end'][:,:,1]))), np.square( np.subtract(h5fw['primary_charged_start'][:,:,2], h5fw['primary_charged_end'][:,:,2])))))
                 temp_truth_labels = np.ravel(h5fw['labels'])
                 print(temp_truth_labels)
-                wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions']), np.array(h5fw['directions'])))
+                wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions']), np.array(h5fw['directions']))) # need to check it goes here and saves with different names
                 wall_vars = list(zip(*wall_vars))
                 temp_wall = wall_vars[0]
                 temp_towall = wall_vars[1]
