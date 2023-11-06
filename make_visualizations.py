@@ -123,7 +123,7 @@ def make_visualizations_lowWall(h5_file, output_path):
     towall = wall_vars[1]
     temp_num_pmt = np.subtract(np.ravel(h5_file['event_hits_index']), np.insert(np.delete(np.ravel(h5_file['event_hits_index']), -1),0,0))
 
-    for i,index in enumerate(h5_file['event_hits_index'][len(h5_file)//2:]):
+    for i in rane(len(h5_file)//2, len(h5_file)):
 
         if temp_num_pmt[i] > 2000 and towall[i] < 20: 
         # none found in this if h5_file['event_hits_index'][i] > 3000 and towall[i] < 10 and  wall[i] < 10: # need to calcualte these correctly? save in new file?
