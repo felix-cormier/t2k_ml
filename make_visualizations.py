@@ -108,11 +108,14 @@ def make_visualizations_lowWall(h5_file, output_path):
     wall_vars = list(zip(*wall_vars))
     wall = wall_vars[0]
     towall = wall_vars[1]
-    
+    temp_num_pmt = np.subtract(np.ravel(h5_file['event_hits_index']), np.insert(np.delete(np.ravel(h5_file['event_hits_index']), -1),0,0))
+
     for i,index in enumerate(h5_file['event_hits_index']):
 
-        if h5_file['event_hits_index'][i] > 3000 and wall[i] < 10 and towall[i] < 10:  # need to calcualte these correctly? save in new file?
+        if temp_num_pmt[i] > 1000 and towall[i] < 20: 
+        # none found in this if h5_file['event_hits_index'][i] > 3000 and towall[i] < 10 and  wall[i] < 10: # need to calcualte these correctly? save in new file?
             # SAVE THE WALL INFO ON THE PLOT
+            print('found one, plotting....')
             if i < max-1:
                 #x_pos.append(float(h5_file['positions'][i][:,0])) 
                 #y_pos.append(float(h5_file['positions'][i][:,1])) 
@@ -135,7 +138,7 @@ def make_visualizations_lowWall(h5_file, output_path):
                         generic_histogram(h5_file['hit_time'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]], "PMT Time [ns]", output_path, output_name, bins=20, label = f"e time: {h5_file['decay_electron_time'][i]}")
 
 
-                    output_name = 'digi_500MeV_vis_'+str(i)
+                    output_name = 'digi_500MeV_vis_'+str(i) # this never saves?????????? looks like it should exist tho
                     generic_3D_plot(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name)
     
     generic_2D_plot(x_pos,y_pos,[-1800,1800], 100, 'X [cm]', [-1800,1800], 100, 'Y [cm]', '', output_path, 'radial', save_plot=True)

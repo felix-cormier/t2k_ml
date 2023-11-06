@@ -65,7 +65,7 @@ def plot_walls(input_path, output_dir, text_file=True):
                 wall_vars = list(zip(*wall_vars))
                 temp_wall = wall_vars[0]
                 temp_towall = wall_vars[1]
-                #TODO:Check that this works
+                #TODO:Check that this works (this may not work?)
                 temp_num_pmt = np.subtract(np.ravel(h5fw['event_hits_index']), np.insert(np.delete(np.ravel(h5fw['event_hits_index']), -1),0,0))
 
             wall.append(temp_wall)
