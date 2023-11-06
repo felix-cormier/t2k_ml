@@ -104,14 +104,14 @@ def make_visualizations_lowWall(h5_file, output_path):
     z_stop_pos=[]
 
 
+    wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5_file['positions']), np.array(h5_file['directions'])))
+    wall_vars = list(zip(*wall_vars))
+    wall = wall_vars[0]
+    towall = wall_vars[1]
+    
     for i,index in enumerate(h5_file['event_hits_index']):
 
-        wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5_file['positions'][i]), np.array(h5_file['directions'][i])))
-        wall_vars = list(zip(*wall_vars))
-        wall = wall_vars[0]
-        towall = wall_vars[1]
-
-        if h5_file['event_hits_index'][i] > 3000 and wall < 10 and towall < 10:  # need to calcualte these correctly? save in new file?
+        if h5_file['event_hits_index'][i] > 3000 and wall[i] < 10 and towall[i] < 10:  # need to calcualte these correctly? save in new file?
             # SAVE THE WALL INFO ON THE PLOT
             if i < max-1:
                 #x_pos.append(float(h5_file['positions'][i][:,0])) 
