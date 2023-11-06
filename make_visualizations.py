@@ -116,7 +116,7 @@ def make_visualizations_lowWall(h5_file, output_path):
         # none found in this if h5_file['event_hits_index'][i] > 3000 and towall[i] < 10 and  wall[i] < 10: # need to calcualte these correctly? save in new file?
             # SAVE THE WALL INFO ON THE PLOT
             print('found one, plotting....')
-            if i < max-1:
+            if True: # i < max-1:
                 #x_pos.append(float(h5_file['positions'][i][:,0])) 
                 #y_pos.append(float(h5_file['positions'][i][:,1])) 
                 #z_pos.append(float(h5_file['positions'][i][:,2])) 
