@@ -1,7 +1,7 @@
 from generics_python.make_plots import generic_histogram, generic_3D_plot, generic_2D_plot
 import random
 import numpy as np
-
+import matplotlib.pyplot as plt
 from plot_wcsim import calculate_wcsim_wall_variables, load_geofile, convert_values, convert_label, get_cherenkov_threshold
 
 def decision(probability):
@@ -81,6 +81,18 @@ def make_visualizations(h5_file, output_path):
     generic_3D_plot(x_pos,y_pos,z_pos, np.ones(len(x_pos)), 'X [cm]', 'Y [cm]', 'Z [cm]', 'Arbitrary', output_path, 'truth_position')
     #generic_3D_plot(x_stop_pos,y_stop_pos,z_stop_pos, np.ones(len(x_stop_pos)), 'Stop X [cm]', 'Stop Y [cm]', 'Stop Z [cm]', 'Arbitrary', output_path, 'truth_stop_position')
 
+def vis_pmt_charge(x,y,z,strength, x_label, y_label, z_label, strength_label, output_path, output_name):
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    ax.set_zlabel(z_label)
+    p = ax.scatter3D(x, y, z, c=strength, cmap='plasma', s=2)
+    ax.set_box_aspect([np.ptp(i) for i in [x,y,z]])
+    cbar = fig.colorbar(p, ax=ax)
+    cbar.set_label(strength_label)
+    plt.savefig(output_path+'/'+output_name+'.png', format='png', transparent=False)
+    # from generic_3D_plot(
 
 def make_visualizations_lowWall(h5_file, output_path):
     """
@@ -123,8 +135,10 @@ def make_visualizations_lowWall(h5_file, output_path):
                 #x_stop_pos.append(float(h5_file['stop_positions'][i][:,0])) 
                 #y_stop_pos.append(float(h5_file['stop_positions'][i][:,1])) 
                 #z_stop_pos.append(float(h5_file['stop_positions'][i][:,2])) 
-                if decision(ratio) and (h5_file['event_hits_index'][i+1]- h5_file['event_hits_index'][i])> 0: # towall is in dir its going, dwall is distance to nearest wall
-                    print(i)
+                # ask what line below here means
+                #if decision(ratio) and (h5_file['event_hits_index'][i+1]- h5_file['event_hits_index'][i])> 0: # towall is in dir its going, dwall is distance to nearest wall
+                if True:
+                    #print(i)
                     print(h5_file['labels'][i])
                     charges = h5_file['hit_charge'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]
                     pmt_positions = np.array(convert_values(geofile,h5_file['hit_pmt'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
@@ -140,7 +154,7 @@ def make_visualizations_lowWall(h5_file, output_path):
 
                     output_name = 'digi_500MeV_vis_'+str(i) # should save more than one here
                     print('saving to ', output_name)
-                    generic_3D_plot(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name)
+                    vis_pmt_charge(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name)
     
     generic_2D_plot(x_pos,y_pos,[-1800,1800], 100, 'X [cm]', [-1800,1800], 100, 'Y [cm]', '', output_path, 'radial', save_plot=True)
     generic_2D_plot(x_pos,z_pos,[-1800,1800], 100, 'X [cm]', [-1800,1800], 100, 'Z [cm]', '', output_path, 'long_x', save_plot=True)
