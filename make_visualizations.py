@@ -2,6 +2,8 @@ from generics_python.make_plots import generic_histogram, generic_3D_plot, gener
 import random
 import numpy as np
 
+from plot_wcsim import calculate_wcsim_wall_variables, load_geofile, convert_values, convert_label, get_cherenkov_threshold
+
 def decision(probability):
     return random.random() < probability
 
@@ -67,6 +69,74 @@ def make_visualizations(h5_file, output_path):
 
                 output_name = 'digi_500MeV_vis_'+str(i)
                 generic_3D_plot(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name)
+    
+    generic_2D_plot(x_pos,y_pos,[-1800,1800], 100, 'X [cm]', [-1800,1800], 100, 'Y [cm]', '', output_path, 'radial', save_plot=True)
+    generic_2D_plot(x_pos,z_pos,[-1800,1800], 100, 'X [cm]', [-1800,1800], 100, 'Z [cm]', '', output_path, 'long_x', save_plot=True)
+    generic_2D_plot(y_pos,z_pos,[-1800,1800], 100, 'Y [cm]', [-1800,1800], 100, 'Z [cm]', '', output_path, 'long_y', save_plot=True)
+
+    generic_2D_plot(x_stop_pos,y_stop_pos,[-3000,3000], 100, 'X [cm]', [-3000,3000], 100, 'Y [cm]', '', output_path, 'radial', save_plot=True)
+    generic_2D_plot(x_stop_pos,z_stop_pos,[-3000,3000], 100, 'X [cm]', [-3000,3000], 100, 'Z [cm]', '', output_path, 'long_x', save_plot=True)
+    generic_2D_plot(y_stop_pos,z_stop_pos,[-3000,3000], 100, 'Y [cm]', [-3000,3000], 100, 'Z [cm]', '', output_path, 'long_y', save_plot=True)
+
+    generic_3D_plot(x_pos,y_pos,z_pos, np.ones(len(x_pos)), 'X [cm]', 'Y [cm]', 'Z [cm]', 'Arbitrary', output_path, 'truth_position')
+    #generic_3D_plot(x_stop_pos,y_stop_pos,z_stop_pos, np.ones(len(x_stop_pos)), 'Stop X [cm]', 'Stop Y [cm]', 'Stop Z [cm]', 'Arbitrary', output_path, 'truth_stop_position')
+
+
+def make_visualizations_lowWall(h5_file, output_path):
+    """
+    """
+    geofile = load_geofile('data/geofile.npz')
+    print("Keys: %s" % h5_file.keys())
+    print(h5_file['event_hits_index'].shape)
+    #How many event displays to make
+    num_visualization = 50
+
+    max = h5_file['event_hits_index'].shape[0]
+
+    ratio = num_visualization/max
+    random.seed(0)
+
+    x_pos=(np.ravel(h5_file['positions'][:,:,0]))
+    y_pos=(np.ravel(h5_file['positions'][:,:,1]))
+    z_pos=(np.ravel(h5_file['positions'][:,:,2]))
+    x_stop_pos=[]
+    y_stop_pos=[]
+    z_stop_pos=[]
+
+
+    for i,index in enumerate(h5_file['event_hits_index']):
+
+        wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5_file['positions'][i]), np.array(h5_file['directions'][i])))
+        wall_vars = list(zip(*wall_vars))
+        wall = wall_vars[0]
+        towall = wall_vars[1]
+
+        if h5_file['event_hits_index'][i] > 3000 and wall < 10 and towall < 10:  # need to calcualte these correctly? save in new file?
+            # SAVE THE WALL INFO ON THE PLOT
+            if i < max-1:
+                #x_pos.append(float(h5_file['positions'][i][:,0])) 
+                #y_pos.append(float(h5_file['positions'][i][:,1])) 
+                #z_pos.append(float(h5_file['positions'][i][:,2])) 
+                #x_stop_pos.append(float(h5_file['stop_positions'][i][:,0])) 
+                #y_stop_pos.append(float(h5_file['stop_positions'][i][:,1])) 
+                #z_stop_pos.append(float(h5_file['stop_positions'][i][:,2])) 
+                if decision(ratio) and (h5_file['event_hits_index'][i+1]- h5_file['event_hits_index'][i])> 0:
+                    print(i)
+                    print(h5_file['labels'][i])
+                    charges = h5_file['hit_charge'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]
+                    pmt_positions = np.array(convert_values(geofile,h5_file['hit_pmt'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
+                    x = pmt_positions[:,0]
+                    y = pmt_positions[:,1]
+                    z = pmt_positions[:,2]
+
+                    if h5_file['decay_electron_exists'][i] and h5_file['decay_electron_energy'][i] >30:
+                        print("DECAY ELECTRON!")
+                        output_name = 'decay_electron_time_'+str(i)
+                        generic_histogram(h5_file['hit_time'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]], "PMT Time [ns]", output_path, output_name, bins=20, label = f"e time: {h5_file['decay_electron_time'][i]}")
+
+
+                    output_name = 'digi_500MeV_vis_'+str(i)
+                    generic_3D_plot(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name)
     
     generic_2D_plot(x_pos,y_pos,[-1800,1800], 100, 'X [cm]', [-1800,1800], 100, 'Y [cm]', '', output_path, 'radial', save_plot=True)
     generic_2D_plot(x_pos,z_pos,[-1800,1800], 100, 'X [cm]', [-1800,1800], 100, 'Z [cm]', '', output_path, 'long_x', save_plot=True)
