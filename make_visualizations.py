@@ -81,7 +81,7 @@ def make_visualizations(h5_file, output_path):
     generic_3D_plot(x_pos,y_pos,z_pos, np.ones(len(x_pos)), 'X [cm]', 'Y [cm]', 'Z [cm]', 'Arbitrary', output_path, 'truth_position')
     #generic_3D_plot(x_stop_pos,y_stop_pos,z_stop_pos, np.ones(len(x_stop_pos)), 'Stop X [cm]', 'Stop Y [cm]', 'Stop Z [cm]', 'Arbitrary', output_path, 'truth_stop_position')
 
-def vis_pmt_charge(x,y,z,strength, x_label, y_label, z_label, strength_label, output_path, output_name, num_pmts):
+def vis_pmt_charge(x,y,z,strength, x_label, y_label, z_label, strength_label, output_path, output_name, num_pmts, towall):
     fig = plt.figure()
     ax = plt.axes(projection='3d')
     ax.set_xlabel(x_label)
@@ -91,6 +91,7 @@ def vis_pmt_charge(x,y,z,strength, x_label, y_label, z_label, strength_label, ou
     ax.set_box_aspect([np.ptp(i) for i in [x,y,z]])
     cbar = fig.colorbar(p, ax=ax)
     cbar.set_label(strength_label)
+    plt.title(f'num_pmts = {num_pmts}\ntowall = {round(towall,2)}')
     plt.savefig(output_path+'/'+num_pmts+'_'+output_name+'.png', format='png', transparent=False)
     # from generic_3D_plot(
 
@@ -122,7 +123,7 @@ def make_visualizations_lowWall(h5_file, output_path):
     towall = wall_vars[1]
     temp_num_pmt = np.subtract(np.ravel(h5_file['event_hits_index']), np.insert(np.delete(np.ravel(h5_file['event_hits_index']), -1),0,0))
 
-    for i,index in enumerate(h5_file['event_hits_index']):
+    for i,index in enumerate(h5_file['event_hits_index'][len(h5_file)//2:]):
 
         if temp_num_pmt[i] > 2000 and towall[i] < 20: 
         # none found in this if h5_file['event_hits_index'][i] > 3000 and towall[i] < 10 and  wall[i] < 10: # need to calcualte these correctly? save in new file?
@@ -136,4 +137,4 @@ def make_visualizations_lowWall(h5_file, output_path):
 
             output_name = 'digi_500MeV_vis_'+str(i) # should save more than one here
             print('saving to ', output_name)
-            vis_pmt_charge(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name, temp_num_pmt[i])
+            vis_pmt_charge(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name, temp_num_pmt[i], towall[i])
