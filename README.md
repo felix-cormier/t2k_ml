@@ -145,6 +145,18 @@ You can plot some of the variables from a WCSim transformed .hy file. To do this
 
 Where input plot path can be either a directory, or the path and name of a text file which then contains multiple paths and names of files (preferably a combination .hy file). The output path is where the plots generated will be stored. 
 
+You can now also give one path in _input\_plot\_path_ variable which contains _combine\_combine.hy_, the code will automatically find that there is _combine\_combine.hy_ (as long as there isn't also _digi\_combine.hy_), and separate out the different labels
+You can also give an index file using
+
+```
+--useIndexFile
+--index_file_path=[...]
+```
+
+Where the index files is made from the _t2k\_ml\_training_ repo, and it includes all indices in train, val and test. Made so we can test the indices file workign as intended.
+
+
+
 N.B. If you want to plot multiple different labels (e.g. electrons and muons) at the same time, this code expects to have these in separate .hy files. You will have to provide a text file with multiple paths and names of the files you want to plot. Thus give _input\_plot\_path_ variable a text file with the paths to the multiple files.
 
 Plotting may take lots of memory if you are plotting PMT variables (time and charge). If you're on compute canada you may need to run it on an interactive job to make sure plotting script doesn't get killed. You can launch an interactive job by e.g.

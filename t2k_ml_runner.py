@@ -22,12 +22,14 @@ parser.add_argument("--doBatch", help="use the batch system", action="store_true
 parser.add_argument("--doCombination", help="use the batch system", action="store_true")
 parser.add_argument("--makeVisualizations", help="make 3D plots of events", action="store_true")
 parser.add_argument("--makeInputPlots", help="make 3D plots of events", action="store_true")
+parser.add_argument("--useIndexFile", help="use index file to select events when making input plots", action="store_true")
 parser.add_argument("--dumpOptions", help="make 3D plots of events", action="store_true")
 parser.add_argument("--transformPath", help="path to files to transform")
 parser.add_argument("--transformName", help="Name of files to transform")
 parser.add_argument("--output_path", help="Path to output for batch jobs")
 parser.add_argument("--input_vis_file_path", help="Where to output visualizations")
 parser.add_argument("--input_plot_path", help="Directory where to get .hy files from which to make plots")
+parser.add_argument("--index_file_path", help="Directory where to get index file")
 parser.add_argument("--output_vis_path", help="Where to output visualizations")
 parser.add_argument("--output_plot_path", help="Where to output plots")
 parser.add_argument("--input_combination_path", help="Path to directory to combine .hy files")
@@ -198,7 +200,7 @@ if args.makeVisualizations:
     make_visualizations(myfile, args.output_vis_path)
 
 if args.doCombination:
-    extra_string = 'digi'
+    extra_string = 'fitqun'
     combine_files(args.input_combination_path, args.output_combination_path, extra_string)
 
 if args.makeInputPlots:
@@ -209,10 +211,16 @@ if args.makeInputPlots:
     if ".txt" in args.input_plot_path:
         use_text_file=True
     else:
-        wcsim_options = wcsim_options.load_options(args.input_plot_path, 'sk_options.pkl')
+        try:
+            wcsim_options = wcsim_options.load_options(args.input_plot_path, 'sk_options.pkl')
+        except FileNotFoundError:
+            print(f"NO sk_options.pkl in {args.input_plot_path}")
     wcsim_options.output_directory = args.output_plot_path
     wcsim_options.set_output_directory()
-    plot_wcsim(args.input_plot_path, args.output_plot_path, wcsim_options, text_file=use_text_file, moreVariables=False)
+    if args.useIndexFile:
+        plot_wcsim(args.input_plot_path, args.output_plot_path, wcsim_options, index_file_path=args.index_file_path, text_file=use_text_file, moreVariables=False)
+    else:
+        plot_wcsim(args.input_plot_path, args.output_plot_path, wcsim_options, text_file=use_text_file, moreVariables=False)
 
 if args.dumpOptions:
     text_file = open(args.input_plot_path, "r")

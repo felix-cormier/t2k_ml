@@ -1,2 +1,3 @@
 /scratch/fcormier/t2k/ml/output_skdetsim/sep22_electrons_2BugFixes_0dwallCut_1M_1/
 /scratch/fcormier/t2k/ml/output_skdetsim/sep22_muons_2BugFixes_0dwallCut_1M_1/
+/scratch/fcormier/t2k/ml/output_skdetsim/oct6_posPions_0dwallCut_1/
