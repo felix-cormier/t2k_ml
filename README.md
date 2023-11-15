@@ -65,6 +65,53 @@ It is possible that large files will use more memory than allocated. If so, the 
 
 The file _t2k\_ml\_runner.py_ is the steering script for everything that can be done using this repo. It parses _args\_ml.txt_ for arguments on what to run and what directories to look into for input/output data. Possible arguments will be outlined in their respective sections.
 
+
+#### Running fiTQun
+
+To run fiTQun, add the option to _args\_ml.txt_:
+
+```
+--dofiTQun
+--input_fitqun_path=[...]
+--output_fitqun_path=[...]
+```
+
+where _input\_fitqun\_path_ is the path to a SKDETSIM rootfile you want to run fitqun over, and _output\_fitqun\_path_ is where you want to output the fitqun rootfile.
+
+If you want to transform the fitqun rootfile to a .h5 file add option (can be done together with dofiTQun:
+
+```
+--doTransform
+```
+
+Finally if you want to run fitqun and transform over a alrge amonut of files from a training run, add the option: 
+
+```
+--doBatch
+```
+
+For the batch job run, _input\_fitqun\_path_ should point to a directory with a _labels.npy_ and _rootfiles.npy_ file output from a training run. 
+
+Output fiTQun variables in the .h5 file:
+
+1-Ring fits
+--------------------------------------------------------------------------------
+```
+e_1rnll 	                Electron hypothesis negative log likelihood 
+mu_1rnll 	                Muon hypothesis negative log likelihood
+pi_1rnll 	                Pion (Pi+) hypothesis negative log likelihood
+e_1rmom 	                Electron hypothesis momentum [MeV]
+mu_1rmom 	                Muon hypothesis momentum [MeV]
+pi_1rmom 	                Pion (Pi+) hypothesis momentum [MeV]
+e_1rpos[3]  	        	Electron hypothesis vertex position (3D, x=0, y=1, z=2)
+mu_1rpos[3] 	                Muon hypothesis vertex position (3D, x=0, y=1, z=2)
+pi_1rpos[3]		 	Pion (Pi+) hypothesis vertex position (3D, x=0, y=1, z=2)
+e_1rdir[3]  	        	Electron hypothesis primary particle direction (3D, x=0, y=1, z=2)
+mu_1rdir[3] 	                Muon hypothesis primary particle direction (3D, x=0, y=1, z=2)
+pi_1rdir[3]			Pion (Pi+) hypothesis primary particle direction (3D, x=0, y=1, z=2)
+```
+
+
 #### Running WCSim locally
 
 WCSim simulates a particle and runs it through a Water Cherenkov detector. To keep track of what is being simulated it uses a class called WCSimOptions, which is initialized in _t2k\_ml\_runner.py_. You can change the simulation settings there (e.g. simulate electron (_e-_), muons (_mu-_) or photon (_gamma_)). There are other options in _wcsim\_options.py_, such as output directory. To run this, first one must be in the WCSim singularity container. Run
