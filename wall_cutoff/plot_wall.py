@@ -75,7 +75,7 @@ def plot_wall(input_path, output_dir=None, text_file=True, save_plots=True):
             towall = wall_vars[1]
             #FIXED CALC
             num_pmt = np.subtract(np.ravel(h5fw['event_hits_index']), np.insert(np.delete(np.ravel(h5fw['event_hits_index']), -1),0,0))
-            num_pmt = np.roll(temp_num_pmt,shift=-1) 
+            num_pmt = np.roll(num_pmt,shift=-1) 
 
     if save_plots == True:
         if output_dir == None:
