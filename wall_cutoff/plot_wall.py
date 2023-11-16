@@ -66,12 +66,13 @@ def plot_wall(input_path, output_dir=None, text_file=True, save_plots=True):
                 temp_towall = wall_vars[1]
                 #FIXED CALC
                 temp_num_pmt = np.subtract(np.ravel(h5fw['event_hits_index']), np.insert(np.delete(np.ravel(h5fw['event_hits_index']), -1),0,0))
-                temp_num_pmt = np.roll(temp_num_pmt,shift=-1)
+                temp_num_pmt = np.roll(temp_num_pmt,shift=-1) 
 
             wall.append(temp_wall)
             towall.append(temp_towall)
             num_pmt.append(temp_num_pmt)
             label.append(temp_label)
+            print(temp_label)
 
     else:
         print(f'Getting data from: {str(input_path)}')
