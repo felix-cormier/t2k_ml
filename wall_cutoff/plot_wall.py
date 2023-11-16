@@ -1,7 +1,7 @@
 import h5py
 import numpy as np
 import os
-from plot_wcsim import calculate_wcsim_wall_variables, convert_label
+from ..plot_wcsim import calculate_wcsim_wall_variables, convert_label
 import matplotlib.pyplot as plt
 
 def plot_wall(input_path, output_dir=None, text_file=True, save_plots=True):
