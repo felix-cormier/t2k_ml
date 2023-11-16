@@ -157,7 +157,6 @@ def plot_wall(input_path, output_dir=None, text_file=True, save_plots=True):
 
 # run the function
 #wall, towall, num_pmt, label = plot_walls(input_path='plotting_paths.txt', output_dir='/fast_scratch_2/aferreira/t2k/ml/analysis_plots/')
-'''
 
 def plot_walls_pmts(input_path, output_dir, text_file=True):
     """Plots wall and towall vs num_pmts
