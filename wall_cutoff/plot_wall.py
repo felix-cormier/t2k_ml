@@ -7,7 +7,7 @@ from plot_wcsim import calculate_wcsim_wall_variables, convert_label
 import matplotlib.pyplot as plt
 
 def plot_wall(input_path, output_dir=None, text_file=True, save_plots=True):
-    """Plots wall and towall vs num_pmts
+    """Plots wall and towall vs num_pmts. Best to use in notebook wall_cutoff_exploration.ipynbd2   W2D
 
     Args:
         input_path (str): Path to either .hy file or text file with multiple paths and names of .hy files
@@ -56,12 +56,8 @@ def plot_wall(input_path, output_dir=None, text_file=True, save_plots=True):
                     if "m" in temp_label:
                         temp_label = "Muons"
                 else:
-                    temp_label = convert_label(np.median(h5fw['labels']))
+                    temp_label = convert_label(np.median(h5fw['labels'])) # this vs temp truth labels?
                 
-                max = h5fw['event_hits_index'].shape[0]
-
-
-                #temp_primary_charged_range = np.ravel(np.sqrt( np.add( np.add( np.square( np.subtract(h5fw['primary_charged_start'][:,:,0], h5fw['primary_charged_end'][:,:,0])), np.square( np.subtract(h5fw['primary_charged_start'][:,:,1], h5fw['primary_charged_end'][:,:,1]))), np.square( np.subtract(h5fw['primary_charged_start'][:,:,2], h5fw['primary_charged_end'][:,:,2])))))
                 temp_truth_labels = np.ravel(h5fw['labels'])
                 print(temp_truth_labels)
                 wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions']), np.array(h5fw['directions'])))
