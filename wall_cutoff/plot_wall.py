@@ -7,7 +7,8 @@ from plot_wcsim import calculate_wcsim_wall_variables, convert_label
 import matplotlib.pyplot as plt
 
 def plot_wall(input_path, output_dir=None, text_file=True, save_plots=True):
-    """Plots wall and towall vs num_pmts. Best to use in notebook wall_cutoff_exploration.ipynbd2   W2D
+    """Plots wall and towall vs num_pmts. Best to use in notebook wall_cutoff_exploration.ipynbd2   
+       More of a one-time use thing so it hasn't been thoroughly tested.
 
     Args:
         input_path (str): Path to either .hy file or text file with multiple paths and names of .hy files
@@ -43,23 +44,7 @@ def plot_wall(input_path, output_dir=None, text_file=True, save_plots=True):
             
             #with h5py.File(path+'/combine_combine.hy',mode='r') as h5fw:
             with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
-                temp_num_pmt = []
-                temp_wall = []
-                temp_towall = []
-                temp_truth_labels = [] 
-
-                #Get label from options, if not, take median of labels in file
-                if options_exists:
-                    temp_label = wcsim_options.particle[0]
-                    if "e" in temp_label:
-                        temp_label = "Electrons"
-                    if "m" in temp_label:
-                        temp_label = "Muons"
-                else:
-                    temp_label = convert_label(np.median(h5fw['labels'])) # this vs temp truth labels?
-                
-                temp_truth_labels = np.ravel(h5fw['labels'])
-                print(temp_truth_labels)
+                temp_label = convert_label(np.median(h5fw['labels']))
                 wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions']), np.array(h5fw['directions'])))
                 wall_vars = list(zip(*wall_vars))
                 temp_wall = wall_vars[0]
@@ -72,7 +57,6 @@ def plot_wall(input_path, output_dir=None, text_file=True, save_plots=True):
             towall.append(temp_towall)
             num_pmt.append(temp_num_pmt)
             label.append(temp_label)
-            print(temp_label)
 
     else:
         print(f'Getting data from: {str(input_path)}')
@@ -84,30 +68,14 @@ def plot_wall(input_path, output_dir=None, text_file=True, save_plots=True):
             print(f'Particle: {wcsim_options.particle}')
         
         with h5py.File(path,mode='r') as h5fw:
-            temp_num_pmt = []
-            temp_wall = []
-            temp_towall = []
-            temp_truth_labels = [] 
-
-            #Get label from options, if not, take median of labels in file
-            if options_exists:
-                temp_label = wcsim_options.particle[0]
-                if "e" in temp_label:
-                    temp_label = "Electrons"
-                if "m" in temp_label:
-                    temp_label = "Muons"
-            else:
-                temp_label = convert_label(np.median(h5fw['labels']))
-            
-            #temp_primary_charged_range = np.ravel(np.sqrt( np.add( np.add( np.square( np.subtract(h5fw['primary_charged_start'][:,:,0], h5fw['primary_charged_end'][:,:,0])), np.square( np.subtract(h5fw['primary_charged_start'][:,:,1], h5fw['primary_charged_end'][:,:,1]))), np.square( np.subtract(h5fw['primary_charged_start'][:,:,2], h5fw['primary_charged_end'][:,:,2])))))
-            truth_labels = np.ravel(h5fw['labels'])
-            print(truth_labels)
+            label = convert_label(np.median(h5fw['labels']))
             wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions']), np.array(h5fw['directions'])))
             wall_vars = list(zip(*wall_vars))
             wall = wall_vars[0]
             towall = wall_vars[1]
-            #TODO:Check that this works
+            #FIXED CALC
             num_pmt = np.subtract(np.ravel(h5fw['event_hits_index']), np.insert(np.delete(np.ravel(h5fw['event_hits_index']), -1),0,0))
+            num_pmt = np.roll(temp_num_pmt,shift=-1) 
 
     if save_plots == True:
         if output_dir == None:
@@ -122,41 +90,32 @@ def plot_wall(input_path, output_dir=None, text_file=True, save_plots=True):
         fig2 = plt.figure()
         ax2 = fig2.gca()
 
-        # test
-        #print(len(wall), len(towall), len(num_pmt), len(label))
-
         # make scatter plot of wall and towall vs num_pmts for electrons and muons
-        for wall_i, towall_i, num_pmt_i, label_i in zip(wall, towall, num_pmt, label):
-            ax1.scatter(wall_i, num_pmt_i, alpha=0.1, label=label_i, s=1)
-            ax2.scatter(towall_i, num_pmt_i, alpha=0.1, label=label_i, s=1)
+        ax1.scatter(wall, num_pmt, alpha=0.1, s=0.01, label=label)
+        ax2.scatter(towall, num_pmt, alpha=0.1, s=0.01, label=label)
 
+        # make the 2m cutoff line go up to 4000
+        y_max = 4000
+        nominal_cutoff = 100
 
-        #print(num_pmt)
-        #print(len(num_pmt[0])) #--> why does max on here not work?
-        #print(len(num_pmt))
-        # harcoded value jsut used for now
-        y_max = 175000
-        
         # add labels and stuff to make plots more understandable
-        ax1.vlines(200, ymin=0, ymax=y_max, linestyles='--', label='2 m')
+        ax1.vlines(nominal_cutoff, ymin=0, ymax=y_max, linestyles='--', label=f'{nominal_cutoff/100} m', color='blue', alpha=0.5)
         ax1.set_xlabel('Wall [cm]')
         ax1.set_ylabel('Number of PMTs')
-        ax1.legend()
+        ax1.legend(loc='upper right')
 
-        ax2.vlines(200, ymin=0, ymax=y_max, linestyles='--', label='2 m')
+        ax2.vlines(nominal_cutoff, ymin=0, ymax=y_max, linestyles='--', label=f'{nominal_cutoff/100} m', color='blue', alpha=0.5)
         ax2.set_xlabel('Towall [cm]')
         ax2.set_ylabel('Number of PMTs')
-        ax2.legend()
-            
+        ax2.legend(loc='upper right')
+        ax2.set_xlim(-80,6000) # some anomolous points way too far out exist
+
         # save plots
         fig2.savefig(output_dir+'towall_v_pmts.png')
         fig1.savefig(output_dir+'wall_v_pmts.png')
 
     return wall, towall, num_pmt, label
 
-
-# run the function
-#wall, towall, num_pmt, label = plot_walls(input_path='plotting_paths.txt', output_dir='/fast_scratch_2/aferreira/t2k/ml/analysis_plots/')
 
 def plot_walls_pmts(input_path, output_dir, text_file=True):
     """Plots wall and towall vs num_pmts
