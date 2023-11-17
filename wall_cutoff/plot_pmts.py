@@ -45,7 +45,7 @@ def plot_vs_walls(input_path, output_dir=None, text_file=True, save_plots=False)
             
             #with h5py.File(path+'/combine_combine.hy',mode='r') as h5fw:
             with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
-                temp_label = h5fw['labels']
+                temp_label = list(h5fw['labels'])
                 print('new label', label)
                 wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions']), np.array(h5fw['directions'])))
                 wall_vars = list(zip(*wall_vars))
@@ -70,7 +70,7 @@ def plot_vs_walls(input_path, output_dir=None, text_file=True, save_plots=False)
             print(f'Particle: {wcsim_options.particle}')
         
         with h5py.File(path,mode='r') as h5fw:
-            label = h5fw['labels']
+            label = list(h5fw['labels'])
             print('new label 1', label)
             wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions']), np.array(h5fw['directions'])))
             wall_vars = list(zip(*wall_vars))
@@ -94,8 +94,8 @@ def plot_vs_walls(input_path, output_dir=None, text_file=True, save_plots=False)
         ax2 = fig2.gca()
 
         # make scatter plot of wall and towall vs num_pmts for electrons and muons
-        ax1.scatter(wall, num_pmt, alpha=0.1, s=0.01, label=label)
-        ax2.scatter(towall, num_pmt, alpha=0.1, s=0.01, label=label)
+        ax1.scatter(wall, num_pmt, alpha=0.1, s=0.01)
+        ax2.scatter(towall, num_pmt, alpha=0.1, s=0.01)
 
         # make the 2m cutoff line go up to 4000
         y_max = 4000
