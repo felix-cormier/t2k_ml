@@ -3,7 +3,7 @@ import random
 import numpy as np
 import h5py as h5
 import os
-import tqdm
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 from plot_wcsim import calculate_wcsim_wall_variables, load_geofile, convert_values, convert_label, get_cherenkov_threshold
 
@@ -132,9 +132,10 @@ def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,
     temp_num_pmt = int(num_pmt[0])
     temp_towall = round(float(towall[0]),2)
     print(temp_num_pmt, temp_towall)
+    print(len(h5_file))
     
     plotted = 0
-    for i in tqdm(range(0, len(h5_file))):
+    for i in tqdm(range(len(h5_file))):
         temp_num_pmt = int(num_pmt[i])
         temp_towall = round(float(towall[i]),2)
         # stuff doesn't get below this statement
