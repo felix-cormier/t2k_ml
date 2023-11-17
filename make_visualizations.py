@@ -128,6 +128,9 @@ def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,
     for i in range(0, len(h5_file)):
         temp_num_pmt = num_pmt[i]
         temp_towall = towall[i]
+        if i == 0:
+            print(temp_towall)
+            print(temp_num_pmt)
         if pmt_bounds[0] < temp_num_pmt < pmt_bounds[1] and towall_bounds[0] < temp_towall < towall_bounds[1]:
             plotted +=1 
             charges = h5_file['hit_charge'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]
@@ -145,8 +148,8 @@ def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,
                 p = ax.scatter3D(x, y, z, c=charges, cmap='plasma', s=2)
                 ax.set_box_aspect([np.ptp(i) for i in [x,y,z]])
                 cbar = fig.colorbar(p, ax=ax)
-                cbar.set_label('PMT charge')
-                plt.title(f'num_pmts = {temp_num_pmt}\ntowall = {round(temp_towall,2)}\nnum_entries={len(x)}')
+                cbar.set_label('PMT charge')                       # why is this a tuple? round(temp_towall,2)
+                plt.title(f'num_pmts = {temp_num_pmt}\ntowall = {temp_towall}\nnum_entries={len(x)}')
                 plt.show()
 
             if save_plots == True:
