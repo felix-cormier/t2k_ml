@@ -42,11 +42,9 @@ def plot_vs_walls(input_path, output_dir=None, text_file=True, save_plots=False)
                 print(f'Loading options from: {path}wc_options.pkl')
                 wcsim_options = wcsim_options.load_options(path, 'wc_options.pkl')
                 print(f'Particle: {wcsim_options.particle}')
-            
-            #with h5py.File(path+'/combine_combine.hy',mode='r') as h5fw:
+
             with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
                 temp_label = list(h5fw['labels'])
-                print('new label', label)
                 wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions']), np.array(h5fw['directions'])))
                 wall_vars = list(zip(*wall_vars))
                 temp_wall = wall_vars[0]
@@ -71,7 +69,6 @@ def plot_vs_walls(input_path, output_dir=None, text_file=True, save_plots=False)
         
         with h5py.File(path,mode='r') as h5fw:
             label = list(h5fw['labels'])
-            print('new label 1', label)
             wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions']), np.array(h5fw['directions'])))
             wall_vars = list(zip(*wall_vars))
             wall = wall_vars[0]
@@ -118,7 +115,3 @@ def plot_vs_walls(input_path, output_dir=None, text_file=True, save_plots=False)
         fig1.savefig(output_dir+'wall_v_pmts.png')
 
     return wall, towall, num_pmt, label
-
-
-def plot_indiv_event():
-    return None

@@ -95,46 +95,46 @@ def vis_pmt_charge(x,y,z,strength, x_label, y_label, z_label, strength_label, ou
     plt.savefig(output_path+'/'+output_name+'.png', format='png', transparent=False)
     # from generic_3D_plot(
 
-def make_visualizations_lowWall(h5_file, output_path):
+def make_visualizations_specific(h5_file, output_path, towall_bounds=(0,20), pmt_bounds=(2000, np.inf), num_plots=10, save_plots=False, show_plots=False):
     """
     """
     geofile = load_geofile('data/geofile.npz')
     print("Keys: %s" % h5_file.keys())
     print(h5_file['event_hits_index'].shape)
-    #How many event displays to make
-    num_visualization = 50
-
-    max = h5_file['event_hits_index'].shape[0]
-
-    ratio = num_visualization/max
-    random.seed(0)
-
-    x_pos=(np.ravel(h5_file['positions'][:,:,0]))
-    y_pos=(np.ravel(h5_file['positions'][:,:,1]))
-    z_pos=(np.ravel(h5_file['positions'][:,:,2]))
-    x_stop_pos=[]
-    y_stop_pos=[]
-    z_stop_pos=[]
-
 
     wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5_file['positions']), np.array(h5_file['directions'])))
     wall_vars = list(zip(*wall_vars))
-    wall = wall_vars[0]
     towall = wall_vars[1]
-    temp_num_pmt = np.subtract(np.ravel(h5_file['event_hits_index']), np.insert(np.delete(np.ravel(h5_file['event_hits_index']), -1),0,0))
+    num_pmt = np.subtract(np.ravel(h5_file['event_hits_index']), np.insert(np.delete(np.ravel(h5_file['event_hits_index']), -1),0,0))
 
-    for i in rane(len(h5_file)//2, len(h5_file)):
-
-        if temp_num_pmt[i] > 2000 and towall[i] < 20: 
-        # none found in this if h5_file['event_hits_index'][i] > 3000 and towall[i] < 10 and  wall[i] < 10: # need to calcualte these correctly? save in new file?
-            # SAVE THE WALL INFO ON THE PLOT
-            print('found one, plotting...')
+    for i in range(0, len(h5_file)):
+        temp_num_pmt = num_pmt[i]
+        temp_towall = towall[i]
+        if pmt_bounds[0] < temp_num_pmt < pmt_bounds[1] and towall_bounds[0] < temp_towall < towall_bounds[1]:
+            plotted +=1 
             charges = h5_file['hit_charge'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]
             pmt_positions = np.array(convert_values(geofile,h5_file['hit_pmt'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
             x = pmt_positions[:,0]
             y = pmt_positions[:,1]
             z = pmt_positions[:,2]
 
-            output_name = 'digi_500MeV_vis_'+str(i) # should save more than one here
-            print('saving to ', output_name)
-            vis_pmt_charge(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name, temp_num_pmt[i], towall[i])
+            if show_plots == True:
+                fig = plt.figure()
+                ax = plt.axes(projection='3d')
+                ax.set_xlabel('X [cm]')
+                ax.set_ylabel('Y [cm]')
+                ax.set_zlabel('Z [cm]')
+                p = ax.scatter3D(x, y, z, c=charges, cmap='plasma', s=2)
+                ax.set_box_aspect([np.ptp(i) for i in [x,y,z]])
+                cbar = fig.colorbar(p, ax=ax)
+                cbar.set_label('PMT charge')
+                plt.title(f'num_pmts = {num_pmt}\ntowall = {round(towall,2)}\nnum_entries={len(x)}')
+                plt.show()
+
+            if save_plots == True:
+                output_name = f'digi_500MeV_vis_{i}' 
+                print('saving to ', output_name)
+                vis_pmt_charge(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name, num_pmt[i], towall[i])
+                
+        if plotted >= num_plots:
+            break
