@@ -3,6 +3,7 @@ import random
 import numpy as np
 import h5py as h5
 import os
+import tqdm
 import matplotlib.pyplot as plt
 from plot_wcsim import calculate_wcsim_wall_variables, load_geofile, convert_values, convert_label, get_cherenkov_threshold
 
@@ -114,52 +115,60 @@ def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,
     Returns:
         None
     """
+    print(pmt_bounds[0], pmt_bounds[1])
+    print(towall_bounds[0], towall_bounds[1])
+
     h5_file = h5.File(input_path,'r')
     geofile = load_geofile(os.getcwd()+'/../data/geofile.npz') # had to add this since I was getting path issues
-    print("HDF5 File Keys: %s" % h5_file.keys())
+    print("HDF5 file loaded with keys: %s" % h5_file.keys())
 
     wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5_file['positions']), np.array(h5_file['directions'])))
     wall_vars = list(zip(*wall_vars))
     towall = wall_vars[1]
     num_pmt = np.subtract(np.ravel(h5_file['event_hits_index']), np.insert(np.delete(np.ravel(h5_file['event_hits_index']), -1),0,0))
     num_pmt = np.roll(num_pmt,shift=-1) 
+    print("Entire file calculations done")
 
+    temp_num_pmt = int(num_pmt[0])
+    temp_towall = round(float(towall[0]),2)
+    print(temp_num_pmt, temp_towall)
+    
     plotted = 0
-    for i in range(0, len(h5_file)):
+    for i in tqdm(range(0, len(h5_file))):
         temp_num_pmt = int(num_pmt[i])
         temp_towall = round(float(towall[i]),2)
-        if pmt_bounds[0] < temp_num_pmt and temp_num_pmt < pmt_bounds[1]:
-            if towall_bounds[0] < temp_towall and temp_towall < towall_bounds[1]:
-                plotted +=1 
-                print(f'{plotted}/{num_plots} plotted')
-                charges = h5_file['hit_charge'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]
-                pmt_positions = np.array(convert_values(geofile,h5_file['hit_pmt'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
-                x = pmt_positions[:,0]
-                y = pmt_positions[:,1]
-                z = pmt_positions[:,2]
+        # stuff doesn't get below this statement
+        if pmt_bounds[0] < temp_num_pmt < pmt_bounds[1] and towall_bounds[0] < temp_towall < towall_bounds[1]:
+            plotted +=1 
+            print(f'{plotted}/{num_plots} plotted')
+            charges = h5_file['hit_charge'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]
+            pmt_positions = np.array(convert_values(geofile,h5_file['hit_pmt'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
+            x = pmt_positions[:,0]
+            y = pmt_positions[:,1]
+            z = pmt_positions[:,2]
 
-                if show_plots == True:
-                    fig = plt.figure()
-                    ax = plt.axes(projection='3d')
-                    ax.set_xlabel('X [cm]')
-                    ax.set_ylabel('Y [cm]')
-                    ax.set_zlabel('Z [cm]')
-                    p = ax.scatter3D(x, y, z, c=charges, cmap='plasma', s=2)
-                    ax.set_box_aspect([np.ptp(i) for i in [x,y,z]])
-                    cbar = fig.colorbar(p, ax=ax)
-                    cbar.set_label('PMT charge')
-                    plt.title(f'num_pmts = {temp_num_pmt}\ntowall = {temp_towall}')
-                    plt.show()
+            if show_plots == True:
+                fig = plt.figure()
+                ax = plt.axes(projection='3d')
+                ax.set_xlabel('X [cm]')
+                ax.set_ylabel('Y [cm]')
+                ax.set_zlabel('Z [cm]')
+                p = ax.scatter3D(x, y, z, c=charges, cmap='plasma', s=2)
+                ax.set_box_aspect([np.ptp(i) for i in [x,y,z]])
+                cbar = fig.colorbar(p, ax=ax)
+                cbar.set_label('PMT charge')
+                plt.title(f'num_pmts = {temp_num_pmt}\ntowall = {temp_towall}')
+                plt.show()
 
-                if save_plots == True:
-                    if output_path == None:
-                        output_path_lst = input_path.split('/')
-                        output_path_lst.pop()
-                        output_path = "".join(output_path_lst)
+            if save_plots == True:
+                if output_path == None:
+                    output_path_lst = input_path.split('/')
+                    output_path_lst.pop()
+                    output_path = "".join(output_path_lst)
 
-                    output_name = f'digi_500MeV_vis_{i}' 
-                    print('saving to ', output_name)
-                    vis_pmt_charge(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name, num_pmt[i], towall[i])
-                    
+                output_name = f'digi_500MeV_vis_{i}' 
+                print('saving to ', output_name)
+                vis_pmt_charge(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name, num_pmt[i], towall[i])
+                
         if plotted >= num_plots:
             break
