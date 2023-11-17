@@ -126,41 +126,40 @@ def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,
 
     plotted = 0
     for i in range(0, len(h5_file)):
-        temp_num_pmt = num_pmt[i]
-        temp_towall = towall[i]
-        if i == 0:
-            print(temp_towall)
-            print(temp_num_pmt)
-        if pmt_bounds[0] < temp_num_pmt < pmt_bounds[1] and towall_bounds[0] < temp_towall < towall_bounds[1]:
-            plotted +=1 
-            charges = h5_file['hit_charge'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]
-            pmt_positions = np.array(convert_values(geofile,h5_file['hit_pmt'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
-            x = pmt_positions[:,0]
-            y = pmt_positions[:,1]
-            z = pmt_positions[:,2]
+        temp_num_pmt = int(num_pmt[i])
+        temp_towall = round(float(towall[i]),2)
+        if pmt_bounds[0] < temp_num_pmt and temp_num_pmt < pmt_bounds[1] 
+            if towall_bounds[0] < temp_towall and temp_towall < towall_bounds[1]:
+                plotted +=1 
+                print(f'{plotted}/{num_plots} plotted')
+                charges = h5_file['hit_charge'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]
+                pmt_positions = np.array(convert_values(geofile,h5_file['hit_pmt'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
+                x = pmt_positions[:,0]
+                y = pmt_positions[:,1]
+                z = pmt_positions[:,2]
 
-            if show_plots == True:
-                fig = plt.figure()
-                ax = plt.axes(projection='3d')
-                ax.set_xlabel('X [cm]')
-                ax.set_ylabel('Y [cm]')
-                ax.set_zlabel('Z [cm]')
-                p = ax.scatter3D(x, y, z, c=charges, cmap='plasma', s=2)
-                ax.set_box_aspect([np.ptp(i) for i in [x,y,z]])
-                cbar = fig.colorbar(p, ax=ax)
-                cbar.set_label('PMT charge')                       # why is this a tuple? round(temp_towall,2)
-                plt.title(f'num_pmts = {temp_num_pmt}\ntowall = {temp_towall}\nnum_entries={len(x)}')
-                plt.show()
+                if show_plots == True:
+                    fig = plt.figure()
+                    ax = plt.axes(projection='3d')
+                    ax.set_xlabel('X [cm]')
+                    ax.set_ylabel('Y [cm]')
+                    ax.set_zlabel('Z [cm]')
+                    p = ax.scatter3D(x, y, z, c=charges, cmap='plasma', s=2)
+                    ax.set_box_aspect([np.ptp(i) for i in [x,y,z]])
+                    cbar = fig.colorbar(p, ax=ax)
+                    cbar.set_label('PMT charge')
+                    plt.title(f'num_pmts = {temp_num_pmt}\ntowall = {temp_towall}')
+                    plt.show()
 
-            if save_plots == True:
-                if output_path == None:
-                    output_path_lst = input_path.split('/')
-                    output_path_lst.pop()
-                    output_path = "".join(output_path_lst)
+                if save_plots == True:
+                    if output_path == None:
+                        output_path_lst = input_path.split('/')
+                        output_path_lst.pop()
+                        output_path = "".join(output_path_lst)
 
-                output_name = f'digi_500MeV_vis_{i}' 
-                print('saving to ', output_name)
-                vis_pmt_charge(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name, num_pmt[i], towall[i])
-                
+                    output_name = f'digi_500MeV_vis_{i}' 
+                    print('saving to ', output_name)
+                    vis_pmt_charge(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name, num_pmt[i], towall[i])
+                    
         if plotted >= num_plots:
             break
