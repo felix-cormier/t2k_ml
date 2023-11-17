@@ -99,8 +99,8 @@ def vis_pmt_charge(x,y,z,strength, x_label, y_label, z_label, strength_label, ou
 
 def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,20), pmt_bounds=(2000, np.inf), num_plots=10, save_plots=False, show_plots=False):
     """
-    Do something very similar how make_visualizations() calls vis_pmt_charge() but 
-    only do so for events that are within specified towall and num PMT bounds. 
+    Do something very similar how make_visualizations() calls vis_pmt_charge() and 
+    but only do so for events that are within specified towall and num PMT bounds. 
     
     Args: 
         input_path (str): HDF5 file where data is stored. Something like combine_combine.hy.
@@ -123,7 +123,7 @@ def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,
     towall = wall_vars[1]
     num_pmt = np.subtract(np.ravel(h5_file['event_hits_index']), np.insert(np.delete(np.ravel(h5_file['event_hits_index']), -1),0,0))
     num_pmt = np.roll(num_pmt,shift=-1) 
-    
+
     plotted = 0
     for i in range(0, len(h5_file)):
         temp_num_pmt = num_pmt[i]
@@ -146,7 +146,7 @@ def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,
                 ax.set_box_aspect([np.ptp(i) for i in [x,y,z]])
                 cbar = fig.colorbar(p, ax=ax)
                 cbar.set_label('PMT charge')
-                plt.title(f'num_pmts = {num_pmt}\ntowall = {round(towall,2)}\nnum_entries={len(x)}')
+                plt.title(f'num_pmts = {temp_num_pmt}\ntowall = {round(temp_towall,2)}\nnum_entries={len(x)}')
                 plt.show()
 
             if save_plots == True:
