@@ -118,7 +118,7 @@ def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,
     import sys
     print(sys.path)
     h5_file = h5.File(input_path,'r')
-    geofile = load_geofile('/../data/geofile.npz')
+    geofile = load_geofile(os.getcwd()+'/../data/geofile.npz') # had to add this since I was getting path issues
     print("Keys: %s" % h5_file.keys())
     print(h5_file['event_hits_index'].shape)
 
