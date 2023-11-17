@@ -113,6 +113,8 @@ def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,
     Returns:
         None
     """
+    import os
+    print(os.getcwd())
     import sys
     print(sys.path)
     h5_file = h5.File(input_path,'r')
