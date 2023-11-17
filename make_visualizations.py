@@ -135,7 +135,7 @@ def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,
     print(len(h5_file))
     
     plotted = 0
-    for i in tqdm(range(len(h5_file))):
+    for i in tqdm(range(len(towall))): # for some reason len(h5_file) = 22
         temp_num_pmt = int(num_pmt[i])
         temp_towall = round(float(towall[i]),2)
         # stuff doesn't get below this statement
