@@ -115,9 +115,6 @@ def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,
     Returns:
         None
     """
-    print(pmt_bounds[0], pmt_bounds[1])
-    print(towall_bounds[0], towall_bounds[1])
-
     h5_file = h5.File(input_path,'r')
     geofile = load_geofile(os.getcwd()+'/../data/geofile.npz') # had to add this since I was getting path issues
     print("HDF5 file loaded with keys: %s" % h5_file.keys())
@@ -131,9 +128,6 @@ def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,
 
     temp_num_pmt = int(num_pmt[0])
     temp_towall = round(float(towall[0]),2)
-    print(temp_num_pmt, temp_towall)
-    print(len(h5_file))
-    
     plotted = 0
     for i in tqdm(range(len(towall))): # for some reason len(h5_file) = 22
         temp_num_pmt = int(num_pmt[i])
@@ -172,4 +166,5 @@ def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,
                 vis_pmt_charge(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name, num_pmt[i], towall[i])
                 
         if plotted >= num_plots:
+            print('plotted all requested plots.')
             break
