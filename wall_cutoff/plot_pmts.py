@@ -7,7 +7,7 @@ from plot_wcsim import calculate_wcsim_wall_variables
 import matplotlib.pyplot as plt
 
 def plot_vs_walls(input_path, output_dir=None, text_file=True, save_plots=False):
-    """Plots wall and towall vs num_pmts. Best to use in notebook wall_cutoff_exploration.ipynbd2   
+    """Plots wall and towall vs num_pmts. Best to use in notebook wall_cutoff_exploration.ipynb   
        More of a one-time use thing so it hasn't been thoroughly tested.
 
     Args:

@@ -93,11 +93,26 @@ def vis_pmt_charge(x,y,z,strength, x_label, y_label, z_label, strength_label, ou
     cbar.set_label(strength_label)
     plt.title(f'num_pmts = {num_pmts}\ntowall = {round(towall,2)}\nnum_entries={len(x_label)}')
     plt.savefig(output_path+'/'+output_name+'.png', format='png', transparent=False)
-    # from generic_3D_plot(
 
-def make_visualizations_specific(h5_file, output_path, towall_bounds=(0,20), pmt_bounds=(2000, np.inf), num_plots=10, save_plots=False, show_plots=False):
+
+def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,20), pmt_bounds=(2000, np.inf), num_plots=10, save_plots=False, show_plots=False):
     """
+    Do something very similar how make_visualizations() calls vis_pmt_charge() but 
+    only do so for events that are within specified towall and num PMT bounds. 
+    
+    Args: 
+        input_path (str): HDF5 file where data is stored. Something like combine_combine.hy.
+        output_path (str, optional): Path to save plots to.  
+        towall_bounds (tuple, optional): Bounds on towall. Defaults to (0,20). 
+        pmt_bounds (tuple, optional): Bounds on num_pmt. Defaults to (2000, np.inf). 
+        num_plots (int, optional): How many plots to output. Defaults to 10.
+        save_plots (bool, optional): If plots should be saved. Defaults to False. 
+        show_plots (bool, optional): If plots should be showed in real-time. Defaults to False. 
+
+    Returns:
+        None
     """
+    h5_file = h5.File(input_path,'r')
     geofile = load_geofile('data/geofile.npz')
     print("Keys: %s" % h5_file.keys())
     print(h5_file['event_hits_index'].shape)
@@ -107,6 +122,7 @@ def make_visualizations_specific(h5_file, output_path, towall_bounds=(0,20), pmt
     towall = wall_vars[1]
     num_pmt = np.subtract(np.ravel(h5_file['event_hits_index']), np.insert(np.delete(np.ravel(h5_file['event_hits_index']), -1),0,0))
 
+    plotted = 0
     for i in range(0, len(h5_file)):
         temp_num_pmt = num_pmt[i]
         temp_towall = towall[i]
@@ -132,6 +148,11 @@ def make_visualizations_specific(h5_file, output_path, towall_bounds=(0,20), pmt
                 plt.show()
 
             if save_plots == True:
+                if output_path == None:
+                    output_path_lst = input_path.split('/')
+                    output_path_lst.pop()
+                    output_path = "".join(output_path_lst)
+
                 output_name = f'digi_500MeV_vis_{i}' 
                 print('saving to ', output_name)
                 vis_pmt_charge(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name, num_pmt[i], towall[i])
