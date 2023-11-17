@@ -98,7 +98,8 @@ def vis_pmt_charge(x,y,z,strength, x_label, y_label, z_label, strength_label, ou
     plt.savefig(output_path+'/'+output_name+'.png', format='png', transparent=False)
 
 
-def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,20), pmt_bounds=(2000, np.inf), num_plots=10, save_plots=False, show_plots=False):
+def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,20), pmt_bounds=(2000, np.inf), \
+                                                             num_plots=10, save_plots=False, show_plots=False):
     """
     Do something very similar how make_visualizations() calls vis_pmt_charge() and 
     but only do so for events that are within specified towall and num PMT bounds. 
@@ -116,13 +117,14 @@ def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,
         None
     """
     h5_file = h5.File(input_path,'r')
-    geofile = load_geofile(os.getcwd()+'/../data/geofile.npz') # had to add this since I was getting path issues
+    geofile = load_geofile(os.getcwd()+'/../data/geofile_skdetsim.npz') # had to add this since I was getting path issues
     print("HDF5 file loaded with keys: %s" % h5_file.keys())
 
     wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5_file['positions']), np.array(h5_file['directions'])))
     wall_vars = list(zip(*wall_vars))
     towall = wall_vars[1]
-    num_pmt = np.subtract(np.ravel(h5_file['event_hits_index']), np.insert(np.delete(np.ravel(h5_file['event_hits_index']), -1),0,0))
+    num_pmt = np.subtract(np.ravel(h5_file['event_hits_index']), \
+                            np.insert(np.delete(np.ravel(h5_file['event_hits_index']), -1),0,0))
     num_pmt = np.roll(num_pmt,shift=-1) 
     print("Entire file calculations done")
 
@@ -137,7 +139,8 @@ def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,
             plotted +=1 
             print(f'{plotted}/{num_plots} plotted')
             charges = h5_file['hit_charge'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]
-            pmt_positions = np.array(convert_values(geofile,h5_file['hit_pmt'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
+            pmt_positions = np.array(convert_values(geofile, \
+                            h5_file['hit_pmt'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
             x = pmt_positions[:,0]
             y = pmt_positions[:,1]
             z = pmt_positions[:,2]
@@ -153,7 +156,7 @@ def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,
                 cbar = fig.colorbar(p, ax=ax)
                 cbar.set_label('PMT charge')
                 plt.title(f'num_pmts = {temp_num_pmt}\ntowall = {temp_towall}')
-                plt.show()
+                plt.show() # may want to make these 3D interactive plots
 
             if save_plots == True:
                 if output_path == None:
@@ -163,7 +166,8 @@ def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,
 
                 output_name = f'digi_500MeV_vis_{i}' 
                 print('saving to ', output_name)
-                vis_pmt_charge(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name, num_pmt[i], towall[i])
+                vis_pmt_charge(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', \
+                                        output_path, output_name, num_pmt[i], towall[i])
                 
         if plotted >= num_plots:
             print('plotted all requested plots.')
