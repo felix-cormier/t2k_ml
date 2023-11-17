@@ -4,6 +4,8 @@ import glob
 import os
 import math
 
+import gc
+
 from generics_python.make_plots import generic_histogram, generic_2D_plot
 
 def calculate_wcsim_wall_variables(position, direction):
@@ -97,10 +99,10 @@ def convert_label(label):
         return label
 
 def get_cherenkov_threshold(label):
-    threshold_dict = {0: 160., 1:0.8, 2: 0.}
+    threshold_dict = {0: 160., 1:0.8, 2:211.715}
     return threshold_dict[label]
 
-def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVariables = False):
+def plot_wcsim(input_path, output_path, wcsim_options, index_file_path=None, text_file=False, moreVariables = False):
     """Plots PMT and event variables
 
     Args:
@@ -112,7 +114,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVari
     """
 
     num_files=1
-    geofile = load_geofile('data/geofile.npz')
+    geofile = load_geofile('data/geofile_skdetsim.npz')
     file_paths=input_path
     #Behaviour different depending on format of input (single or multiple files)
     if text_file:
@@ -135,7 +137,7 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVari
     std_y = []
     std_z = []
     num_pmt = []
-    label = []
+    legend_label = []
     wall = []
     towall = []
     
@@ -166,6 +168,13 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVari
     truth_labels = []
     eposTotalEDiff = []
 
+    print(index_file_path)
+    indices_to_use=None
+    if index_file_path is not None:
+        index_file = np.load(index_file_path)
+        indices_to_use = np.concatenate((index_file['test_idxs'], index_file['train_idxs'], index_file['val_idxs']))
+        print(indices_to_use)
+
     #Loop through all .hy files
     file_paths = file_paths if text_file else [file_paths]
     for j, path in enumerate(file_paths):
@@ -176,220 +185,52 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVari
             print(f'Loading options from: {path}wc_options.pkl')
             wcsim_options = wcsim_options.load_options(path, 'wc_options.pkl')
             print(f'Particle: {wcsim_options.particle}')
-        with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
 
-            #Temporary list of variables for each event
-            temp_mean_charge = []
-            temp_total_charge = []
-            temp_mean_time = []
-            temp_mean_x = []
-            temp_mean_y = []
-            temp_mean_z = []
-            temp_weighted_mean_x = []
-            temp_weighted_mean_y = []
-            temp_weighted_mean_z = []
-            temp_std_x = []
-            temp_std_y = []
-            temp_std_z = []
-            temp_num_pmt = []
-            temp_wall = []
-            temp_towall = []
 
-            temp_decayE_exists = []
-            temp_decayE_energy = []
-            temp_decayE_time = []
-            
-            temp_direction_x = []
-            temp_direction_y = []
-            temp_direction_z = []
-            temp_position_x = []
-            temp_position_y = []
-            temp_position_z = []
+        if os.path.exists(path+'/digi_combine.hy'): 
+            file = path+'/digi_combine.hy'
+            print("Found digi_combine.hy")
+        elif os.path.exists(path+'/combine_combine.hy'): 
+            file = path+'/combine_combine.hy'
+            print("Found combine_combine.hy")
+        else:
+            print(f"NO FILE IN PATH {path}")
+            return 0
 
-            temp_truth_energy = [] 
-            temp_truth_energy_electron = [] 
-            temp_truth_energy_positron = [] 
-            temp_epos_energy_difference = []
-            temp_epos_energy_sum = []
-            temp_truth_visible_energy = [] 
-            temp_truth_veto = [] 
-            temp_truth_labels = [] 
-            temp_primary_charged_range = []
-
-            temp_all_charge = []
-            temp_all_time = []
-
-            temp_eposTotalEDiff = []
-
-            #Get label from options, if not, take median of labels in file
-            if options_exists:
-                temp_label = wcsim_options.particle[0]
-                if "e" in temp_label:
-                    temp_label = "Electrons"
-                if "m" in temp_label:
-                    temp_label = "Muons"
+        with h5py.File(file,mode='r') as h5fw:
+            file_labels = np.unique(np.ravel(h5fw['labels']))
+            if len(file_paths) == 1 and len(file_labels) > 1:
+                print(f'Dealing with one file')
+                for label in file_labels:
+                    print(label)
+                    fill_vars(h5fw, wcsim_options, moreVariables, geofile, file_paths, mean_charge, total_charge, mean_time, mean_x, mean_y, mean_z, weighted_mean_x, weighted_mean_y, weighted_mean_z, std_x, std_y, std_z, num_pmt, wall, towall, decayE_exists, decayE_energy, decayE_time, direction_x, direction_y, direction_z, position_x, position_y, position_z, all_charge, all_time, primary_charged_range, truth_energy, truth_energy_electron, truth_energy_positron, epos_energy_difference, epos_energy_sum, truth_visible_energy, truth_veto, truth_labels, eposTotalEDiff, path, options_exists, legend_label, indices_to_use, label=label)
+                    gc.collect()
             else:
-                temp_label = convert_label(np.median(h5fw['labels']))
-            
-            max = h5fw['event_hits_index'].shape[0]
-
-
-            #temp_primary_charged_range = np.ravel(np.sqrt( np.add( np.add( np.square( np.subtract(h5fw['primary_charged_start'][:,:,0], h5fw['primary_charged_end'][:,:,0])), np.square( np.subtract(h5fw['primary_charged_start'][:,:,1], h5fw['primary_charged_end'][:,:,1]))), np.square( np.subtract(h5fw['primary_charged_start'][:,:,2], h5fw['primary_charged_end'][:,:,2])))))
-            temp_primary_charged_range = np.ravel(h5fw['primary_charged_range'])
-            temp_truth_energy = np.ravel(h5fw['energies'])
-            temp_truth_energy_positron = np.ravel(h5fw['energies_positron'])
-            temp_truth_energy_electron = np.ravel(h5fw['energies_electron'])
-            temp_epos_energy_difference = np.divide(np.subtract(temp_truth_energy_electron, temp_truth_energy_positron), temp_truth_energy)
-            temp_epos_energy_sum = np.add(temp_truth_energy_electron, temp_truth_energy_positron)
-            temp_eposTotalEDiff = np.divide(np.add(temp_truth_energy_electron, temp_truth_energy_positron), temp_truth_energy)
-            temp_truth_labels = np.ravel(h5fw['labels'])
-            print(temp_truth_labels)
-            wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions']), np.array(h5fw['directions'])))
-            wall_vars = list(zip(*wall_vars))
-            temp_wall = wall_vars[0]
-            temp_towall = wall_vars[1]
-            cheThr = list(map(get_cherenkov_threshold, np.ravel(h5fw['labels'])))
-            temp_truth_visible_energy = np.ravel(h5fw['energies']) - cheThr
-            temp_truth_veto = (np.ravel(h5fw['veto']))
-
-            '''
-            temp_decayE_exists = (np.ravel(h5fw['decay_electron_exists']))
-            print(np.unique(temp_decayE_exists, return_counts=True))
-            temp_decayE_energy = (np.ravel(h5fw['decay_electron_energy'])[temp_decayE_exists==1])
-            temp_decayE_time = (np.ravel(h5fw['decay_electron_time'])[temp_decayE_exists==1])
-            print(temp_decayE_time)
-            '''
-
-
-            temp_direction_x = (np.ravel(h5fw['directions'][:,:,0]))
-            temp_direction_y = (np.ravel(h5fw['directions'][:,:,1]))
-            temp_direction_z = (np.ravel(h5fw['directions'][:,:,2]))
-            temp_position_x = (np.ravel(h5fw['positions'][:,:,0]))
-            temp_position_y = (np.ravel(h5fw['positions'][:,:,1]))
-            temp_position_z = (np.ravel(h5fw['positions'][:,:,2]))
-
-            temp_all_charge = np.ravel(h5fw['hit_charge'])
-            temp_all_time = np.ravel(h5fw['hit_time'])
-
-            #TODO:Check that this works
-            temp_num_pmt = np.subtract(np.ravel(h5fw['event_hits_index']), np.insert(np.delete(np.ravel(h5fw['event_hits_index']), -1),0,0))
-
-            #Loop through all events in file
-            for i,index in enumerate(h5fw['event_hits_index']):
-                if i>=(len(h5fw['event_hits_index'])-1):
-                    break
-                if h5fw['event_hits_index'][i]==h5fw['event_hits_index'][i+1]:
-                    continue
-                if i < max-1:
-
-                    '''
-                    if ( abs(float(h5fw['positions'][i][:,2])) >  1000 or math.sqrt(float(h5fw['positions'][i][:,0])**2 + float(h5fw['positions'][i][:,1])**2) > 1000):
-                        continue
-                    '''
-
-                    #temp_truth_energy.append(float(h5fw['energies'][i]))
-
-                    #temp_truth_labels.append(float(h5fw['labels'][i]))
-                    if ((abs(float(h5fw['positions'][i][:,0])) + abs(float(h5fw['positions'][i][:,1]))+ abs(float(h5fw['positions'][i][:,2]))) < 1.0):
-                        print(float(h5fw['positions'][i][:,0]))                                        
-
-
-                    if not moreVariables:
-                        continue
-
-                    print(i)
-
-                    pmt_positions = np.array(convert_values(geofile,h5fw['hit_pmt'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
-
-                    temp_mean_charge.append(np.mean(h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
-                    temp_total_charge.append(np.sum(h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
-                    temp_mean_time.append(np.mean(h5fw['hit_time'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
-                    temp_mean_x.append(np.mean(pmt_positions[:,0]))
-                    temp_mean_y.append(np.mean(pmt_positions[:,1]))
-                    temp_mean_z.append(np.mean(pmt_positions[:,2]))
-                    if np.sum(h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]) > 0:
-                        temp_weighted_mean_x.append(np.average(pmt_positions[:,0],weights=h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
-                        temp_weighted_mean_y.append(np.average(pmt_positions[:,1],weights=h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
-                        temp_weighted_mean_z.append(np.average(pmt_positions[:,2],weights=h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
-                    temp_std_x.append(np.std(pmt_positions[:,0]))
-                    temp_std_y.append(np.std(pmt_positions[:,1]))
-                    temp_std_z.append(np.std(pmt_positions[:,2]))
-                    '''
-                    n_pmt = h5fw['event_hits_index'][i+1] - h5fw['event_hits_index'][i]
-                    tot_charge = np.sum(h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]])
-                    if n_pmt < 300 and tot_charge < 500: 
-                        print(i)
-                        print(f'num pmt: {n_pmt}, total charge: {tot_charge}')
-                        event_label = float(h5fw['labels'][i])
-                        print(f'label: {event_label}')
-                    '''
-
-            
-        mean_charge.append(temp_mean_charge)
-        total_charge.append(temp_total_charge)
-        wall.append(temp_wall)
-        towall.append(temp_towall)
-        mean_time.append(temp_mean_time)
-        mean_x.append(temp_mean_x)
-        mean_y.append(temp_mean_y)
-        mean_z.append(temp_mean_z)
-        weighted_mean_x.append(temp_weighted_mean_x)
-        weighted_mean_y.append(temp_weighted_mean_y)
-        weighted_mean_z.append(temp_weighted_mean_z)
-        std_x.append(temp_std_x)
-        std_y.append(temp_std_y)
-        std_z.append(temp_std_z)
-        num_pmt.append(temp_num_pmt)
-        truth_energy.append(temp_truth_energy)
-        truth_energy_electron.append(temp_truth_energy_electron)
-        truth_energy_positron.append(temp_truth_energy_positron)
-        epos_energy_difference.append(temp_epos_energy_difference)
-        epos_energy_sum.append(temp_epos_energy_sum)
-        truth_visible_energy.append(temp_truth_visible_energy)
-        truth_veto.append(temp_truth_veto)
-        truth_labels.append(temp_truth_labels)
-        label.append(temp_label)
-
-        decayE_exists.append(temp_decayE_exists)
-        decayE_energy.append(temp_decayE_energy)
-        decayE_time.append(temp_decayE_time)
-
-        eposTotalEDiff.append(temp_eposTotalEDiff)
-
-        primary_charged_range.append(temp_primary_charged_range)
-
-        direction_x.append(temp_direction_x)
-        direction_y.append(temp_direction_y)
-        direction_z.append(temp_direction_z)
-        position_x.append(temp_position_x)
-        position_y.append(temp_position_y)
-        position_z.append(temp_position_z)
-
-        all_charge.append(temp_all_charge)
-        all_time.append(temp_all_time)
+                fill_vars(h5fw, wcsim_options, moreVariables, geofile, file_paths, mean_charge, total_charge, mean_time, mean_x, mean_y, mean_z, weighted_mean_x, weighted_mean_y, weighted_mean_z, std_x, std_y, std_z, num_pmt, wall, towall, decayE_exists, decayE_energy, decayE_time, direction_x, direction_y, direction_z, position_x, position_y, position_z, all_charge, all_time, primary_charged_range, truth_energy, truth_energy_electron, truth_energy_positron, epos_energy_difference, epos_energy_sum, truth_visible_energy, truth_veto, truth_labels, eposTotalEDiff, path, options_exists, legend_label, indices_to_use, label=None)
+                gc.collect()
 
 
     #Plot all
     yname="Num. Events"
-    generic_histogram(wall, 'Wall [cm]', output_path, 'wall', range=[0,2000], y_name = yname, label=label, bins=20, doNorm=True)
-    generic_histogram(towall, 'Towall [cm]', output_path, 'towall', range = [0,5000], y_name = yname, label=label, bins=20, doNorm=True)
-    generic_histogram(truth_energy, 'Truth Energy [MeV]', output_path, 'truth_energy', y_name = yname, label=label, bins=20, doNorm=True)
-    generic_histogram(truth_visible_energy, 'Truth Visible Energy [MeV]', output_path, 'truth_visible_energy', range=[50,1000], y_name = yname, label=label, bins=20, doNorm=True)
-    generic_histogram(truth_veto, 'Truth veto', output_path, 'truth_veto', y_name = yname, label=label, bins=20, doNorm=True)
-    generic_histogram(truth_labels, 'Truth label', output_path, 'truth_label', y_name = yname, label=label, bins=20, doNorm=True)
+    generic_histogram(wall, 'Wall [cm]', output_path, 'wall', range=[0,2000], y_name = yname, label=legend_label, bins=20, doNorm=True)
+    generic_histogram(towall, 'Towall [cm]', output_path, 'towall', range = [0,5000], y_name = yname, label=legend_label, bins=20, doNorm=True)
+    generic_histogram(truth_energy, 'Truth Energy [MeV]', output_path, 'truth_energy', range=[50,1000], y_name = yname, label=legend_label, bins=20, doNorm=True)
+    generic_histogram(truth_visible_energy, 'Truth Visible Energy [MeV]', output_path, 'truth_visible_energy', range=[0,1200], y_name = yname, label=legend_label, bins=50, doNorm=True)
+    generic_histogram(truth_veto, 'Truth veto', output_path, 'truth_veto', y_name = yname, label=legend_label, bins=20, doNorm=True)
+    generic_histogram(truth_labels, 'Truth label', output_path, 'truth_label', y_name = yname, label=legend_label, bins=20, doNorm=True)
 
-    generic_histogram(direction_x, 'Truth Direction X', output_path, 'truth_direction_x', y_name = yname, label=label, bins=20, doNorm=True)
-    generic_histogram(direction_y, 'Truth Direction Y', output_path, 'truth_direction_y', y_name = yname, label=label, bins=20, doNorm=True)
-    generic_histogram(direction_z, 'Truth Direction Z', output_path, 'truth_direction_z', y_name = yname, label=label, bins=20, doNorm=True)
+    generic_histogram(direction_x, 'Truth Direction X', output_path, 'truth_direction_x', y_name = yname, label=legend_label, bins=20, doNorm=True)
+    generic_histogram(direction_y, 'Truth Direction Y', output_path, 'truth_direction_y', y_name = yname, label=legend_label, bins=20, doNorm=True)
+    generic_histogram(direction_z, 'Truth Direction Z', output_path, 'truth_direction_z', y_name = yname, label=legend_label, bins=20, doNorm=True)
 
-    generic_histogram(position_x, 'Truth position X [cm]', output_path, 'truth_position_x', y_name = yname, label=label, bins=20, doNorm=True)
-    generic_histogram(position_y, 'Truth position Y [cm]', output_path, 'truth_position_y', y_name = yname, label=label, bins=20, doNorm=True)
-    generic_histogram(position_z, 'Truth position Z [cm]', output_path, 'truth_position_z', y_name = yname, label=label, bins=20, doNorm=True)
+    generic_histogram(position_x, 'Truth position X [cm]', output_path, 'truth_position_x', y_name = yname, label=legend_label, bins=20, doNorm=True)
+    generic_histogram(position_y, 'Truth position Y [cm]', output_path, 'truth_position_y', y_name = yname, label=legend_label, bins=20, doNorm=True)
+    generic_histogram(position_z, 'Truth position Z [cm]', output_path, 'truth_position_z', y_name = yname, label=legend_label, bins=20, doNorm=True)
 
-    generic_histogram(all_charge, 'PMT Charge', output_path, 'all_pmt_charge', y_name = yname, range=[0,10], label=label, bins=100, doNorm=True)
-    generic_histogram(all_time, 'PMT Time [ns]', output_path, 'all_pmt_time', y_name = yname, range=[500,1500], label=label, bins=100, doNorm=True)
+    generic_histogram(all_charge, 'PMT Charge', output_path, 'all_pmt_charge', y_name = yname, range=[0,10], label=legend_label, bins=100, doNorm=True)
+    generic_histogram(all_time, 'PMT Time [ns]', output_path, 'all_pmt_time', y_name = yname, range=[500,1500], label=legend_label, bins=100, doNorm=True)
 
-    generic_histogram(num_pmt, 'Number of PMTs', output_path, 'num_pmt', y_name = yname, label=label, range=[0,4000], bins=20)
+    generic_histogram(num_pmt, 'Number of PMTs', output_path, 'num_pmt', y_name = yname, label=legend_label, range=[0,4000], bins=20, doNorm=True)
 
 
 
@@ -436,4 +277,243 @@ def plot_wcsim(input_path, output_path, wcsim_options, text_file=False, moreVari
     generic_histogram(std_x, 'std dev PMT X [cm]', output_path, 'std_x', y_name = yname, label=label, bins=20)
     generic_histogram(std_y, 'std dev PMT Y [cm]', output_path, 'std_y', y_name = yname, label=label, bins=20)
     generic_histogram(std_z, 'std dev PMT Z [cm]', output_path, 'std_z', y_name = yname, label=label, bins=20)
+
+def fill_vars(h5fw, wcsim_options, moreVariables, geofile, file_paths, mean_charge, total_charge, mean_time, mean_x, mean_y, mean_z, weighted_mean_x, weighted_mean_y, weighted_mean_z, std_x, std_y, std_z, num_pmt, wall, towall, decayE_exists, decayE_energy, decayE_time, direction_x, direction_y, direction_z, position_x, position_y, position_z, all_charge, all_time, primary_charged_range, truth_energy, truth_energy_electron, truth_energy_positron, epos_energy_difference, epos_energy_sum, truth_visible_energy, truth_veto, truth_labels, eposTotalEDiff, path, options_exists, legend_label, indices_to_use, label=None):
+    #Temporary list of variables for each event
+    temp_mean_charge = []
+    temp_total_charge = []
+    temp_mean_time = []
+    temp_mean_x = []
+    temp_mean_y = []
+    temp_mean_z = []
+    temp_weighted_mean_x = []
+    temp_weighted_mean_y = []
+    temp_weighted_mean_z = []
+    temp_std_x = []
+    temp_std_y = []
+    temp_std_z = []
+    temp_num_pmt = []
+    temp_wall = []
+    temp_towall = []
+
+    temp_decayE_exists = []
+    temp_decayE_energy = []
+    temp_decayE_time = []
+        
+    temp_direction_x = []
+    temp_direction_y = []
+    temp_direction_z = []
+    temp_position_x = []
+    temp_position_y = []
+    temp_position_z = []
+
+    temp_truth_energy = [] 
+    temp_truth_energy_electron = [] 
+    temp_truth_energy_positron = [] 
+    temp_epos_energy_difference = []
+    temp_epos_energy_sum = []
+    temp_truth_visible_energy = [] 
+    temp_truth_veto = [] 
+    temp_truth_labels = [] 
+    temp_primary_charged_range = []
+
+    temp_all_charge = []
+    temp_all_time = []
+
+    temp_eposTotalEDiff = []
+
+    temp_legend_label = []
+
+    keep_events = np.ravel(h5fw['keep_event']) 
+    temp_truth_labels = np.ravel(h5fw['labels'])
+
+
+    if indices_to_use is not None:
+        keep_events = np.zeros(len(keep_events), dtype=bool)
+        keep_events[indices_to_use] = True
+    if label is not None:
+        keep_events = np.logical_and(keep_events,temp_truth_labels==label)
+        temp_label=convert_label(label)
+        print(f'temp label:{temp_label}')
+    #Get label from options, if not, take median of labels in file
+    elif options_exists:
+        temp_label = wcsim_options.particle[0]
+        if "e" in temp_label:
+            temp_label = "Electrons"
+        if "m" in temp_label:
+            temp_label = "Muons"
+    else:
+        temp_label = convert_label(np.median(np.ravel(h5fw['labels'])))
+
+    temp_truth_labels = temp_truth_labels[keep_events]
+
+    #TODO:Check that this works
+    temp_num_pmt = np.subtract(np.ravel(h5fw['event_hits_index']), np.insert(np.delete(np.ravel(h5fw['event_hits_index']), -1),0,0))
+    temp_num_pmt = np.roll(temp_num_pmt,shift=-1)
+    temp_num_pmt = temp_num_pmt[keep_events]
+        
+    '''
+        if "Electron" in temp_label:
+            #print(list(temp_event_ids[(temp_truth_visible_energy > 758.214) & (temp_truth_visible_energy < 758.216)]))
+            #print(list(temp_rootfile[(temp_truth_visible_energy > 758.214) & (temp_truth_visible_energy < 758.216)]))
+            print(len(temp_rootfile[(temp_truth_visible_energy > 758.214) & (temp_truth_visible_energy < 758.216)]))
+            print(temp_position_x[(temp_truth_visible_energy > 758.214) & (temp_truth_visible_energy < 758.216)])
+            temp_truth_visible_energy = temp_truth_visible_energy[(temp_truth_visible_energy > 758) & (temp_truth_visible_energy < 759)]
+        if "Muon" in temp_label:
+            #print(list(temp_event_ids[(temp_truth_visible_energy > 751.727) & (temp_truth_visible_energy < 751.729)]))
+            #print(list(temp_rootfile[(temp_truth_visible_energy > 751.727) & (temp_truth_visible_energy < 751.729)]))
+            print(len(temp_rootfile[(temp_truth_visible_energy > 751.727) & (temp_truth_visible_energy < 751.729)]))
+            print(temp_position_x[(temp_truth_visible_energy > 751.727) & (temp_truth_visible_energy < 751.729)])
+            temp_truth_visible_energy = temp_truth_visible_energy[(temp_truth_visible_energy > 751) & (temp_truth_visible_energy < 752)]
+        #temp_primary_charged_range = np.ravel(np.sqrt( np.add( np.add( np.square( np.subtract(h5fw['primary_charged_start'][:,:,0], h5fw['primary_charged_end'][:,:,0])), np.square( np.subtract(h5fw['primary_charged_start'][:,:,1], h5fw['primary_charged_end'][:,:,1]))), np.square( np.subtract(h5fw['primary_charged_start'][:,:,2], h5fw['primary_charged_end'][:,:,2])))))
+        inv_selection = (temp_direction_x > -1.) & (temp_direction_x < -0.75) & (temp_direction_y < 0.38) & (temp_direction_y > 0.36) & (temp_direction_z < -0.065) & (temp_direction_z > -0.15)
+        print(f'temp direction x -1: {temp_direction_x[inv_selection]}')
+        print(f'temp direction y -1: {temp_direction_y[inv_selection]}')
+        print(f'temp direction z -1: {temp_direction_z[inv_selection]}')
+        print(f'temp pos x -1: {temp_position_x[inv_selection]}')
+        print(f'temp pos y -1: {temp_position_y[inv_selection]}')
+        print(f'temp pos z -1: {temp_position_z[inv_selection]}')
+        print(f'temp energy -1: {temp_truth_energy[inv_selection]}')
+        print(f'temp rootfile -1: {temp_rootfile[inv_selection]}')
+        print(f'temp id -1: {temp_event_ids[inv_selection]}')
+        print(f'temp len -1: {len(temp_event_ids[inv_selection])}')
+        generic_histogram(temp_direction_x[inv_selection],'X direction', output_path, 'temp_x_dir_inv'+str(temp_label), y_name = 'Arb.', bins=20)
+        generic_histogram(temp_direction_y[inv_selection],'Y direction', output_path, 'temp_y_dir_inv'+str(temp_label), y_name = 'Arb.', bins=20)
+        generic_histogram(temp_direction_z[inv_selection],'Z direction', output_path, 'temp_z_dir_inv'+str(temp_label), y_name = 'Arb.', bins=20)
+        '''
+
+
+    temp_primary_charged_range = np.ravel(h5fw['primary_charged_range'])
+    temp_truth_energy = np.ravel(h5fw['energies'])[keep_events]
+    temp_truth_energy_positron = np.ravel(h5fw['energies_positron'])
+    temp_truth_energy_electron = np.ravel(h5fw['energies_electron'])
+    #temp_epos_energy_difference = np.divide(np.subtract(temp_truth_energy_electron, temp_truth_energy_positron), temp_truth_energy)
+    #temp_epos_energy_sum = np.add(temp_truth_energy_electron, temp_truth_energy_positron)
+    #temp_eposTotalEDiff = np.divide(np.add(temp_truth_energy_electron, temp_truth_energy_positron), temp_truth_energy)
+    wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions'])[keep_events], np.array(h5fw['directions'])[keep_events]))
+    wall_vars = list(zip(*wall_vars))
+    temp_wall = wall_vars[0]
+    temp_towall = wall_vars[1]
+    temp_truth_veto = (np.ravel(h5fw['veto']))
+
+    max = h5fw['event_hits_index'].shape[0]
+
+    cheThr = list(map(get_cherenkov_threshold, np.ravel(h5fw['labels'])[keep_events]))
+    temp_truth_visible_energy = temp_truth_energy - cheThr
+    temp_event_ids = (np.ravel(h5fw['event_ids'])[keep_events])
+    temp_rootfile = (np.ravel(h5fw['root_files'])[keep_events])
+
+    '''
+        temp_decayE_exists = (np.ravel(h5fw['decay_electron_exists']))
+        temp_decayE_energy = (np.ravel(h5fw['decay_electron_energy'])[temp_decayE_exists==1])
+        temp_decayE_time = (np.ravel(h5fw['decay_electron_time'])[temp_decayE_exists==1])
+        print(temp_decayE_time)
+        '''
+
+
+    temp_direction_x = (np.ravel(h5fw['directions'][:,:,0])[keep_events])
+    temp_direction_y = (np.ravel(h5fw['directions'][:,:,1])[keep_events])
+    temp_direction_z = (np.ravel(h5fw['directions'][:,:,2])[keep_events])
+    temp_position_x = (np.ravel(h5fw['positions'][:,:,0])[keep_events])
+    temp_position_y = (np.ravel(h5fw['positions'][:,:,1])[keep_events])
+    temp_position_z = (np.ravel(h5fw['positions'][:,:,2])[keep_events])
+
+
+    #temp_all_charge = np.ravel(h5fw['hit_charge'])
+    #temp_all_time = np.ravel(h5fw['hit_time'])
+
+
+        #Loop through all events in file
+    for i,index in enumerate(h5fw['event_hits_index']):
+        if not moreVariables:
+            continue
+        if i>=(len(h5fw['event_hits_index'])-1):
+            break
+        if h5fw['event_hits_index'][i]==h5fw['event_hits_index'][i+1]:
+            continue
+        if i < max-1:
+            '''
+                if ( abs(float(h5fw['positions'][i][:,2])) >  1000 or math.sqrt(float(h5fw['positions'][i][:,0])**2 + float(h5fw['positions'][i][:,1])**2) > 1000):
+                    continue
+                '''
+
+                #temp_truth_energy.append(float(h5fw['energies'][i]))
+
+                #temp_truth_labels.append(float(h5fw['labels'][i]))
+            if ((abs(float(h5fw['positions'][i][:,0])) + abs(float(h5fw['positions'][i][:,1]))+ abs(float(h5fw['positions'][i][:,2]))) < 1.0):
+                print(float(h5fw['positions'][i][:,0]))                                        
+
+
+
+            print(i)
+
+            pmt_positions = np.array(convert_values(geofile,h5fw['hit_pmt'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
+
+            temp_mean_charge.append(np.mean(h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
+            temp_total_charge.append(np.sum(h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
+            temp_mean_time.append(np.mean(h5fw['hit_time'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
+            temp_mean_x.append(np.mean(pmt_positions[:,0]))
+            temp_mean_y.append(np.mean(pmt_positions[:,1]))
+            temp_mean_z.append(np.mean(pmt_positions[:,2]))
+            if np.sum(h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]) > 0:
+                temp_weighted_mean_x.append(np.average(pmt_positions[:,0],weights=h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
+                temp_weighted_mean_y.append(np.average(pmt_positions[:,1],weights=h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
+                temp_weighted_mean_z.append(np.average(pmt_positions[:,2],weights=h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]]))
+            temp_std_x.append(np.std(pmt_positions[:,0]))
+            temp_std_y.append(np.std(pmt_positions[:,1]))
+            temp_std_z.append(np.std(pmt_positions[:,2]))
+            '''
+                n_pmt = h5fw['event_hits_index'][i+1] - h5fw['event_hits_index'][i]
+                tot_charge = np.sum(h5fw['hit_charge'][h5fw['event_hits_index'][i]:h5fw['event_hits_index'][i+1]])
+                if n_pmt < 300 and tot_charge < 500: 
+                    print(i)
+                    print(f'num pmt: {n_pmt}, total charge: {tot_charge}')
+                    event_label = float(h5fw['labels'][i])
+                    print(f'label: {event_label}')
+                '''
+
+        
+    mean_charge.append(temp_mean_charge)
+    total_charge.append(temp_total_charge)
+    wall.append(temp_wall)
+    towall.append(temp_towall)
+    mean_time.append(temp_mean_time)
+    mean_x.append(temp_mean_x)
+    mean_y.append(temp_mean_y)
+    mean_z.append(temp_mean_z)
+    weighted_mean_x.append(temp_weighted_mean_x)
+    weighted_mean_y.append(temp_weighted_mean_y)
+    weighted_mean_z.append(temp_weighted_mean_z)
+    std_x.append(temp_std_x)
+    std_y.append(temp_std_y)
+    std_z.append(temp_std_z)
+    num_pmt.append(temp_num_pmt)
+    truth_energy.append(temp_truth_energy)
+    truth_energy_electron.append(temp_truth_energy_electron)
+    truth_energy_positron.append(temp_truth_energy_positron)
+    epos_energy_difference.append(temp_epos_energy_difference)
+    epos_energy_sum.append(temp_epos_energy_sum)
+    truth_visible_energy.append(temp_truth_visible_energy)
+    truth_veto.append(temp_truth_veto)
+    truth_labels.append(temp_truth_labels)
+
+    decayE_exists.append(temp_decayE_exists)
+    decayE_energy.append(temp_decayE_energy)
+    decayE_time.append(temp_decayE_time)
+
+    eposTotalEDiff.append(temp_eposTotalEDiff)
+
+    primary_charged_range.append(temp_primary_charged_range)
+
+    direction_x.append(temp_direction_x)
+    direction_y.append(temp_direction_y)
+    direction_z.append(temp_direction_z)
+    position_x.append(temp_position_x)
+    position_y.append(temp_position_y)
+    position_z.append(temp_position_z)
+
+    all_charge.append(temp_all_charge)
+    all_time.append(temp_all_time)
+
+    legend_label.append(temp_label)
 

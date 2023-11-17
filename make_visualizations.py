@@ -23,7 +23,7 @@ def make_visualizations(h5_file, output_path):
         h5_file (_type_): File to draw events from
         output_path (_type_): Where to save the plots
     """
-    geofile = load_geofile('data/geofile.npz')
+    geofile = load_geofile('data/geofile_skdetsim.npz')
     print("Keys: %s" % h5_file.keys())
     print(h5_file['event_hits_index'].shape)
     #How many event displays to make
@@ -75,6 +75,7 @@ def make_visualizations(h5_file, output_path):
     generic_2D_plot(x_stop_pos,y_stop_pos,[-3000,3000], 100, 'X [cm]', [-3000,3000], 100, 'Y [cm]', '', output_path, 'radial', save_plot=True)
     generic_2D_plot(x_stop_pos,z_stop_pos,[-3000,3000], 100, 'X [cm]', [-3000,3000], 100, 'Z [cm]', '', output_path, 'long_x', save_plot=True)
     generic_2D_plot(y_stop_pos,z_stop_pos,[-3000,3000], 100, 'Y [cm]', [-3000,3000], 100, 'Z [cm]', '', output_path, 'long_y', save_plot=True)
+
 
     generic_3D_plot(x_pos,y_pos,z_pos, np.ones(len(x_pos)), 'X [cm]', 'Y [cm]', 'Z [cm]', 'Arbitrary', output_path, 'truth_position')
     #generic_3D_plot(x_stop_pos,y_stop_pos,z_stop_pos, np.ones(len(x_stop_pos)), 'Stop X [cm]', 'Stop Y [cm]', 'Stop Z [cm]', 'Arbitrary', output_path, 'truth_stop_position')
