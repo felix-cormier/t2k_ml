@@ -1,6 +1,7 @@
 from generics_python.make_plots import generic_histogram, generic_3D_plot, generic_2D_plot
 import random
 import numpy as np
+import h5py as h5
 import matplotlib.pyplot as plt
 from plot_wcsim import calculate_wcsim_wall_variables, load_geofile, convert_values, convert_label, get_cherenkov_threshold
 
