@@ -18,7 +18,6 @@ def plot_vs_walls(input_path, output_dir=None, text_file=True, save_plots=False)
 
     Returns: 
         wall, towall, num_pmt, label
-
     """
     #Initialize lists of variables
     num_pmt = []
