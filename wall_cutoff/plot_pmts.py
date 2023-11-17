@@ -3,7 +3,7 @@ import numpy as np
 import os
 import sys
 sys.path.insert(0, '..')
-from plot_wcsim import calculate_wcsim_wall_variables, convert_label
+from plot_wcsim import calculate_wcsim_wall_variables
 import matplotlib.pyplot as plt
 
 def plot_vs_walls(input_path, output_dir=None, text_file=True, save_plots=False):
@@ -16,11 +16,8 @@ def plot_vs_walls(input_path, output_dir=None, text_file=True, save_plots=False)
         text_file (bool, optional): If the input is in text file or string to single .hy file. Defaults to False.
         save_plots (bool, optional): If plots should be saved. Defaults to False.
 
-    Returns:
-        wall
-        towall
-        num_pmt
-        label
+    Returns: 
+        wall, towall, num_pmt, label
 
     """
     #Initialize lists of variables
@@ -49,6 +46,7 @@ def plot_vs_walls(input_path, output_dir=None, text_file=True, save_plots=False)
             #with h5py.File(path+'/combine_combine.hy',mode='r') as h5fw:
             with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
                 temp_label = h5fw['labels']
+                print('new label', label)
                 wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions']), np.array(h5fw['directions'])))
                 wall_vars = list(zip(*wall_vars))
                 temp_wall = wall_vars[0]
@@ -73,6 +71,7 @@ def plot_vs_walls(input_path, output_dir=None, text_file=True, save_plots=False)
         
         with h5py.File(path,mode='r') as h5fw:
             label = h5fw['labels']
+            print('new label 1', label)
             wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions']), np.array(h5fw['directions'])))
             wall_vars = list(zip(*wall_vars))
             wall = wall_vars[0]
