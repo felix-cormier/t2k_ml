@@ -2,6 +2,7 @@ from generics_python.make_plots import generic_histogram, generic_3D_plot, gener
 import random
 import numpy as np
 import h5py as h5
+import os
 import matplotlib.pyplot as plt
 from plot_wcsim import calculate_wcsim_wall_variables, load_geofile, convert_values, convert_label, get_cherenkov_threshold
 
@@ -113,20 +114,16 @@ def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,
     Returns:
         None
     """
-    import os
-    print(os.getcwd())
-    import sys
-    print(sys.path)
     h5_file = h5.File(input_path,'r')
     geofile = load_geofile(os.getcwd()+'/../data/geofile.npz') # had to add this since I was getting path issues
-    print("Keys: %s" % h5_file.keys())
-    print(h5_file['event_hits_index'].shape)
+    print("HDF5 File Keys: %s" % h5_file.keys())
 
     wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5_file['positions']), np.array(h5_file['directions'])))
     wall_vars = list(zip(*wall_vars))
     towall = wall_vars[1]
     num_pmt = np.subtract(np.ravel(h5_file['event_hits_index']), np.insert(np.delete(np.ravel(h5_file['event_hits_index']), -1),0,0))
-
+    num_pmt = np.roll(num_pmt,shift=-1) 
+    
     plotted = 0
     for i in range(0, len(h5_file)):
         temp_num_pmt = num_pmt[i]
