@@ -118,3 +118,7 @@ def plot_vs_walls(input_path, output_dir=None, text_file=True, save_plots=False)
         fig1.savefig(output_dir+'wall_v_pmts.png')
 
     return wall, towall, num_pmt, label
+
+
+def plot_indiv_event():
+    return None
