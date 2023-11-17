@@ -128,7 +128,7 @@ def make_visualizations_specific(input_path, output_path=None, towall_bounds=(0,
     for i in range(0, len(h5_file)):
         temp_num_pmt = int(num_pmt[i])
         temp_towall = round(float(towall[i]),2)
-        if pmt_bounds[0] < temp_num_pmt and temp_num_pmt < pmt_bounds[1] 
+        if pmt_bounds[0] < temp_num_pmt and temp_num_pmt < pmt_bounds[1]:
             if towall_bounds[0] < temp_towall and temp_towall < towall_bounds[1]:
                 plotted +=1 
                 print(f'{plotted}/{num_plots} plotted')
