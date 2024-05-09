@@ -59,11 +59,6 @@ def make_visualizations(h5_file, output_path):
                 x = pmt_positions[:,0]
                 y = pmt_positions[:,1]
                 z = pmt_positions[:,2]
-                '''
-                if i==5755:
-                    print(f'{i}!!!!!!!')
-                    print(h5_file['root_files'][i])
-                    print(h5_file['event_ids'][i])
 
                 if h5_file['decay_electron_exists'][i] and h5_file['decay_electron_energy'][i] >30:
                     print("DECAY ELECTRON!")
