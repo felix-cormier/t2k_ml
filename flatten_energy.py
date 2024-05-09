@@ -57,7 +57,7 @@ def flatten_energy(input_path, output_path=None, text_file=False, overwrite=Fals
 
     # create histogram bins and fill them with truth_visible_energy values
     granularity = 10 # MeV/bin
-    manual_bins = range(0, 1000+granularity, granularity)
+    manual_bins = range(0, 1500+granularity, granularity)
     (n, bins, patches) = plt.hist(truth_visible_energy, label=label, bins=manual_bins)
 
     # just tested for 2 labels

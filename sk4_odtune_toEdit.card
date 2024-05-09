@@ -262,6 +262,8 @@ DS-WRTBANK   FALSE   FALSE   FALSE     FALSE   TRUE  TRUE  TRUE   TRUE    FALSE
 C Flash ADC Bank Control
 DS-WRTFADCBNK FALSE
 
+SAVESECONDARIES TRUE
+
 C - Spe response parameters for old od-tubes (gaussian+plateau)
 DS-GAINPLATEAU 0.9
 DS-GAINFACT 0.72

@@ -142,13 +142,13 @@ elif args.doSKDETSim and args.doTransform and args.doBatch and args.output_path 
     num_jobs = int(args.numJobs)
     events_per_job = int(args.eventsPerJob)
     #particle 11 (e-), 13 (mu-), 22 (gamma), 211 (pion+)
-    skdetsim_options = SKDETSimOptions(output_directory=args.output_path, save_input_options=False,  energy=[0.,1000.,'MeV'], particle=211, wall=0.)
+    skdetsim_options = SKDETSimOptions(output_directory=args.output_path, save_input_options=False,  energy=[0.,1500.,'MeV'], particle=13, wall=0.)
     skdetsim_options.set_output_directory()
     skdetsim_options.save_options(args.output_path,'sk_options.pkl')
     print(skdetsim_options.particle)
 
     for i in range(num_jobs):
-        talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=4G --nodes=1 --ntasks-per-node=1 --time=00:30:00 --export=ALL,ARG1='+str(events_per_job)+',ARG2='+str(args.output_path)+' skdetsim_job.sh')
+        talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=4G --nodes=1 --ntasks-per-node=1 --time=00:59:00 --export=ALL,ARG1='+str(events_per_job)+',ARG2='+str(args.output_path)+' skdetsim_job.sh')
         subprocess.call(talk, shell=True)
         print(f'job: {i}/{num_jobs} ({(i/num_jobs)*100:.2f}%)')
         #print([m.start() for m in re.finditer('\\n', str(subprocess.check_output(["squeue", "-u", "fcormier"])))])
@@ -200,8 +200,17 @@ if args.makeVisualizations:
     make_visualizations(myfile, args.output_vis_path)
 
 if args.doCombination:
-    extra_string = 'fitqun'
-    combine_files(args.input_combination_path, args.output_combination_path, extra_string)
+    extra_string = 'digi'
+    use_text_file=False
+    file_paths=None
+    if ".txt" in args.input_combination_path:
+        use_text_file=True
+        extra_string = 'multi'
+        text_file = open(args.input_combination_path, "r")
+        file_paths = text_file.readlines()
+        print(file_paths)
+        num_files = len(file_paths)
+    combine_files(args.input_combination_path, args.output_combination_path, extra_string, specific_files=file_paths)
 
 if args.makeInputPlots:
 
