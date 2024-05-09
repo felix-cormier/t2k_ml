@@ -54,6 +54,7 @@ def make_visualizations(h5_file, output_path):
                 print(i)
                 print(h5_file['labels'][i])
                 charges = h5_file['hit_charge'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]
+                times = h5_file['hit_time'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]
                 pmt_positions = np.array(convert_values(geofile,h5_file['hit_pmt'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]]))
                 x = pmt_positions[:,0]
                 y = pmt_positions[:,1]
@@ -63,10 +64,13 @@ def make_visualizations(h5_file, output_path):
                     print("DECAY ELECTRON!")
                     output_name = 'decay_electron_time_'+str(i)
                     generic_histogram(h5_file['hit_time'][h5_file['event_hits_index'][i]:h5_file['event_hits_index'][i+1]], "PMT Time [ns]", output_path, output_name, bins=20, label = f"e time: {h5_file['decay_electron_time'][i]}")
+                '''
 
 
-                output_name = 'digi_500MeV_vis_'+str(i)
+                output_name = 'digi_500MeV_vis_charge'+str(i)
                 generic_3D_plot(x,y,z, charges, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT charge', output_path, output_name)
+                output_name = 'digi_500MeV_vis_time'+str(i)
+                generic_3D_plot(x,y,z, times, 'X [cm]', 'Y [cm]', 'Z [cm]', 'PMT time [ns]', output_path, output_name)
     
     generic_2D_plot(x_pos,y_pos,[-1800,1800], 100, 'X [cm]', [-1800,1800], 100, 'Y [cm]', '', output_path, 'radial', save_plot=True)
     generic_2D_plot(x_pos,z_pos,[-1800,1800], 100, 'X [cm]', [-1800,1800], 100, 'Z [cm]', '', output_path, 'long_x', save_plot=True)

@@ -193,6 +193,9 @@ def plot_wcsim(input_path, output_path, wcsim_options, index_file_path=None, tex
         elif os.path.exists(path+'/combine_combine.hy'): 
             file = path+'/combine_combine.hy'
             print("Found combine_combine.hy")
+        elif os.path.exists(path+'/multi_combine.hy'): 
+            file = path+'/multi_combine.hy'
+            print("Found multi_combine.hy")
         else:
             print(f"NO FILE IN PATH {path}")
             return 0
@@ -212,6 +215,12 @@ def plot_wcsim(input_path, output_path, wcsim_options, index_file_path=None, tex
 
     #Plot all
     yname="Num. Events"
+    print(f"Num PMT: {len(num_pmt)}, {num_pmt}")
+    print(f"VE: {len(truth_visible_energy)}, {truth_visible_energy}")
+    generic_2D_plot(num_pmt[0],truth_visible_energy[0],[0,4000], 100, "Num. PMTs", [50,1000], 50, "Truth Visible Energy [MeV]", legend_label, output_path, "numPMT_ve")
+    generic_2D_plot(num_pmt[0],truth_visible_energy[0],[0,300], 50, "Num. PMTs", [0,50], 50, "Truth Visible Energy [MeV]", legend_label, output_path, "numPMT_ve_zoom")
+    generic_2D_plot(num_pmt[0],towall[0],[0,4000], 100, "Num. PMTs", [0,2000], 100, "Towall [cm]", legend_label, output_path, "numPMT_towall")
+    generic_2D_plot(num_pmt[0],towall[0],[0,300], 50, "Num. PMTs", [0,200], 50, "Towall [cm]", legend_label, output_path, "numPMT_towall_zoom")
     generic_histogram(wall, 'Wall [cm]', output_path, 'wall', range=[0,2000], y_name = yname, label=legend_label, bins=20, doNorm=True)
     generic_histogram(towall, 'Towall [cm]', output_path, 'towall', range = [0,5000], y_name = yname, label=legend_label, bins=20, doNorm=True)
     generic_histogram(truth_energy, 'Truth Energy [MeV]', output_path, 'truth_energy', range=[50,1000], y_name = yname, label=legend_label, bins=20, doNorm=True)
@@ -227,10 +236,11 @@ def plot_wcsim(input_path, output_path, wcsim_options, index_file_path=None, tex
     generic_histogram(position_y, 'Truth position Y [cm]', output_path, 'truth_position_y', y_name = yname, label=legend_label, bins=20, doNorm=True)
     generic_histogram(position_z, 'Truth position Z [cm]', output_path, 'truth_position_z', y_name = yname, label=legend_label, bins=20, doNorm=True)
 
-    generic_histogram(all_charge, 'PMT Charge', output_path, 'all_pmt_charge', y_name = yname, range=[0,10], label=legend_label, bins=100, doNorm=True)
-    generic_histogram(all_time, 'PMT Time [ns]', output_path, 'all_pmt_time', y_name = yname, range=[500,1500], label=legend_label, bins=100, doNorm=True)
+    generic_histogram(all_charge, 'PMT Charge', output_path, 'all_pmt_charge', y_name = yname, range=[0,30], label=legend_label, bins=300, doNorm=True)
+    generic_histogram(all_time, 'PMT Time [ns]', output_path, 'all_pmt_time', y_name = yname, range=[0,2000], label=legend_label, bins=200, doNorm=True)
 
     generic_histogram(num_pmt, 'Number of PMTs', output_path, 'num_pmt', y_name = yname, label=legend_label, range=[0,4000], bins=20, doNorm=True)
+    generic_histogram(total_charge, 'Total Charge', output_path, 'total_charge', y_name = yname, label=legend_label, range=[0,20000], bins=40, doNorm=True)
 
 
 
@@ -267,7 +277,6 @@ def plot_wcsim(input_path, output_path, wcsim_options, index_file_path=None, tex
 
     generic_histogram(mean_time, 'Mean Time', output_path, 'mean_time', y_name = yname, label=label, bins=20)
     generic_histogram(mean_charge, 'Mean Charge', output_path, 'mean_charge', y_name = yname, label=label, bins=20)
-    generic_histogram(total_charge, 'Total Charge', output_path, 'total_charge', y_name = yname, label=label, bins=20)
     generic_histogram(mean_x, 'Mean PMT X [cm]', output_path, 'mean_x', y_name = yname, label=label, bins=20)
     generic_histogram(mean_y, 'Mean PMT Y [cm]', output_path, 'mean_y', y_name = yname, label=label, bins=20)
     generic_histogram(mean_z, 'Mean PMT Z [cm]', output_path, 'mean_z', y_name = yname, label=label, bins=20)
@@ -325,9 +334,11 @@ def fill_vars(h5fw, wcsim_options, moreVariables, geofile, file_paths, mean_char
     temp_legend_label = []
 
     keep_events = np.ravel(h5fw['keep_event']) 
+    #keep_events = np.ravel(h5fw['labels'])==2 
     temp_truth_labels = np.ravel(h5fw['labels'])
 
 
+    print("Starting keep events")
     if indices_to_use is not None:
         keep_events = np.zeros(len(keep_events), dtype=bool)
         keep_events[indices_to_use] = True
@@ -351,6 +362,7 @@ def fill_vars(h5fw, wcsim_options, moreVariables, geofile, file_paths, mean_char
     temp_num_pmt = np.subtract(np.ravel(h5fw['event_hits_index']), np.insert(np.delete(np.ravel(h5fw['event_hits_index']), -1),0,0))
     temp_num_pmt = np.roll(temp_num_pmt,shift=-1)
     temp_num_pmt = temp_num_pmt[keep_events]
+    temp_total_charge = np.array([part.sum() for part in np.split(h5fw['hit_charge'], np.cumsum(temp_num_pmt))[:-1]])
         
     '''
         if "Electron" in temp_label:
@@ -383,15 +395,18 @@ def fill_vars(h5fw, wcsim_options, moreVariables, geofile, file_paths, mean_char
         '''
 
 
-    temp_primary_charged_range = np.ravel(h5fw['primary_charged_range'])
+    #temp_primary_charged_range = np.ravel(h5fw['primary_charged_range'])
     temp_truth_energy = np.ravel(h5fw['energies'])[keep_events]
-    temp_truth_energy_positron = np.ravel(h5fw['energies_positron'])
-    temp_truth_energy_electron = np.ravel(h5fw['energies_electron'])
+    #temp_truth_energy_positron = np.ravel(h5fw['energies_positron'])
+    #temp_truth_energy_electron = np.ravel(h5fw['energies_electron'])
     #temp_epos_energy_difference = np.divide(np.subtract(temp_truth_energy_electron, temp_truth_energy_positron), temp_truth_energy)
     #temp_epos_energy_sum = np.add(temp_truth_energy_electron, temp_truth_energy_positron)
     #temp_eposTotalEDiff = np.divide(np.add(temp_truth_energy_electron, temp_truth_energy_positron), temp_truth_energy)
-    wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions'])[keep_events], np.array(h5fw['directions'])[keep_events]))
-    wall_vars = list(zip(*wall_vars))
+    print("Starting wall vars")
+    #wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions'])[keep_events], np.array(h5fw['directions'])[keep_events]))
+    #wall_vars = list(zip(*wall_vars))
+    wall_vars = [np.zeros(temp_truth_energy.shape[0]),np.zeros(temp_truth_energy.shape[0])]
+    print("Finished wall vars")
     temp_wall = wall_vars[0]
     temp_towall = wall_vars[1]
     temp_truth_veto = (np.ravel(h5fw['veto']))
@@ -419,11 +434,13 @@ def fill_vars(h5fw, wcsim_options, moreVariables, geofile, file_paths, mean_char
     temp_position_z = (np.ravel(h5fw['positions'][:,:,2])[keep_events])
 
 
+    print("Starting charge")
     #temp_all_charge = np.ravel(h5fw['hit_charge'])
+    print("Starting time")
     #temp_all_time = np.ravel(h5fw['hit_time'])
 
 
-        #Loop through all events in file
+    #Loop through all events in file
     for i,index in enumerate(h5fw['event_hits_index']):
         if not moreVariables:
             continue
