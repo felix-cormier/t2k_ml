@@ -1,0 +1,11 @@
+/scratch/fcormier/t2k/ml/output_skdetsim/dec18_muons_dwallM50_combine_1/multi_combine.hy
+/scratch/fcormier/t2k/ml/output_skdetsim/jan6_muons_dwallM50_1/digi_combine.hy
+/scratch/fcormier/t2k/ml/output_skdetsim/jan6_muons_dwallM50_2/digi_combine.hy
+/scratch/fcormier/t2k/ml/output_skdetsim/jan6_muons_dwallM50_3/digi_combine.hy
+/scratch/fcormier/t2k/ml/output_skdetsim/jan6_muons_dwallM50_4/digi_combine.hy
+/scratch/fcormier/t2k/ml/output_skdetsim/jan6_muons_dwallM50_5/digi_combine.hy
+/scratch/fcormier/t2k/ml/output_skdetsim/jan6_muons_dwallM50_6/digi_combine.hy
+/scratch/fcormier/t2k/ml/output_skdetsim/jan6_muons_dwallM50_7/digi_combine.hy
+/scratch/fcormier/t2k/ml/output_skdetsim/jan6_muons_dwallM50_8/digi_combine.hy
+/scratch/fcormier/t2k/ml/output_skdetsim/jan6_muons_dwallM50_9/digi_combine.hy
+/scratch/fcormier/t2k/ml/output_skdetsim/jan6_muons_dwallM50_10/digi_combine.hy

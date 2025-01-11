@@ -1,3 +1,2 @@
-/scratch/fcormier/t2k/ml/output_skdetsim/apr3_electrons_1500MeV_2M_1/
-/scratch/fcormier/t2k/ml/output_skdetsim/apr3_muons_1500MeV_2M_1/
-/scratch/fcormier/t2k/ml/output_skdetsim/apr3_piPlus_1500MeV_2M_1/
+/scratch/fcormier/sk/stopmu/MC/
+/scratch/fcormier/sk/stopmu/data/hy/

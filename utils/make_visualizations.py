@@ -60,6 +60,7 @@ def make_visualizations(h5_file, output_path):
                 y = pmt_positions[:,1]
                 z = pmt_positions[:,2]
 
+                '''
                 if h5_file['decay_electron_exists'][i] and h5_file['decay_electron_energy'][i] >30:
                     print("DECAY ELECTRON!")
                     output_name = 'decay_electron_time_'+str(i)

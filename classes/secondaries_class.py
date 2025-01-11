@@ -1,26 +1,31 @@
 import numpy as np
 import glob
 
+from classes.skdetsim_options import SKDETSimOptions
+
+def get_filename_no_type(fullpath):
+    filename = np.char.split(fullpath,'/')
+    filename = filename.tolist()
+    filename = np.char.split(filename[-1],'.')
+    filename = filename.tolist()
+    filename = filename[0]
+    return filename
+
+def convert_pdg_to_ml_label(pdg):
+    if pdg==11:
+        return 1
+    if pdg==13:
+        return 0
+    if pdg==211:
+        return 2
 
 
-class fitqun():
-    """Class to handle fitqun results
+class secondaries():
+    """Class to handle secondaries results
     """
-    def __init__(self, input_path, output_path, fitqun_directories) -> None:
-        #Load rootfiles form input path
-        self.rootfiles = np.load(input_path+'rootfiles.npy')
-        #Load labels form input path
-        self.labels = np.load(input_path+'labels.npy')
-        #Extracts unique rootfiles
-        self.indices = self.extract_rootfiles()
-        #Match unique rootfile to their label
-        self.labels = self.labels[self.indices]
-        self.zbs_files = np.empty(len(self.rootfiles), dtype=object)
-        #Make sure the length of rootfiles and labels matches
-        self.check_label_rootfile_match()
-        #Get where to look for .zbs files to run fitqun on
-        self.get_fitqun_directories(fitqun_directories)
-        self.get_complete_file_paths()
+    def __init__(self, input_path, output_path) -> None:
+        self.rootfiles = glob.glob(input_path+"*.root")
+        #self.extract_rootfiles()
 
     def extract_rootfiles(self):
         """Extracts the name (not path) of rootfile from list of bytes provided post-training
@@ -74,6 +79,8 @@ class fitqun():
        temp = temp.split('_')[-1] 
        temp = temp.split('.')[0] 
        return temp
+
+
 
 
         

@@ -6,6 +6,7 @@ cp -r ../t2k_ml/ $SLURM_TMPDIR
 cd $SLURM_TMPDIR/t2k_ml/
 cp $ARG2/sk_options.pkl .
 mkdir data/
+cp $ARG1 data/
 ls -hltr
 pwd
 
@@ -21,10 +22,10 @@ export PATH
 source /home/fcormier/ml_root_3p10/bin/activate
 
 source /project/rpp-blairt2k/fcormier/skdetsim_szoldosVersion/setup.sh
-bash $SLURM_TMPDIR/t2k_ml/skdetsim_run.sh
+bash $SLURM_TMPDIR/t2k_ml/job_scripts/zbsTransform_run.sh
 #bash "/home/fcormier/t2k/t2k_ml_base/t2k_ml/singularity_run.sh"
 #python wcsim_batch.py $ARG1 $ARG2
-echo "finished skdetsim"
+echo "finished zbs2root"
 
 export LD_LIBRARY_PATH=$old_LDPATH
 export PATH=$old_PATH
@@ -40,10 +41,9 @@ source /home/fcormier/ml_root_3p10/bin/activate
 ls -l data/
 
 
-python transform_batch.py "$SLURM_TMPDIR/t2k_ml/data/" $SLURM_JOBID 1
+python job_scripts/transform_batch.py $ARG1  
 echo "finished transform"
 cp data/*.hy $ARG2
-cp data/*.zbs $ARG2
 #cp data/*.root $ARG2
 cp *.card $ARG2
 cd $SLURM_TMPDIR
