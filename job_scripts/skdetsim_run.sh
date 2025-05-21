@@ -7,4 +7,7 @@ then
 fi
 export PATH
 
-python skdetsim_batch.py $ARG1 "$SLURM_TMPDIR/t2k_ml/data/" $SLURM_JOBID
+jobString="${SLURM_JOBID}${SLURM_ARRAY_TASKID}"
+echo $jobString
+
+python job_scripts/skdetsim_batch.py $ARG1 "$SLURM_TMPDIR/t2k_ml/data/" $jobString

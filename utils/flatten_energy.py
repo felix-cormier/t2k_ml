@@ -1,7 +1,7 @@
 import h5py
 from tqdm import tqdm
 import numpy as np
-from plot_wcsim import get_cherenkov_threshold, convert_label
+from utils.plot_wcsim import get_cherenkov_threshold, convert_label
 import matplotlib.pyplot as plt
 
 # can make this more general to flatten along any key given if thats helpful
@@ -115,7 +115,12 @@ def flatten_energy(input_path, output_path=None, text_file=False, overwrite=Fals
         if overwrite:
             output_path = path + '/multi_combine.hy'
             with h5py.File(output_path, mode='a') as h5fw: 
-                h5fw.create_dataset('keep_event', data=bool_array)
+                try:
+                    h5fw.create_dataset('keep_event', data=bool_array)
+                #If already exists, delete then write again
+                except ValueError:
+                    del h5fw['keep_event']
+                    h5fw.create_dataset('keep_event', data=bool_array)
 
             print(f'"keep_event" key added to original HDF5 file: {output_path}') 
             

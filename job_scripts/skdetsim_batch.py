@@ -1,5 +1,7 @@
-from skdetsim_options import SKDETSimOptions
 import sys
+sys.path.append(f"{sys.path[0]}/../")
+print(sys.path)
+from classes.skdetsim_options import SKDETSimOptions
 
 import numpy as np
     
@@ -17,7 +19,7 @@ if __name__ == '__main__':
     skdetsim_options.seed_3 = rng.integers(low=0, high=10000000)
     skdetsim_options.num_events = num_events
     skdetsim_options.output_directory = output_directory
-    skdetsim_options.output_name ='data/skdetsim_'+job_id+'.root' 
+    skdetsim_options.output_name =sys.path[0]+'/../data/skdetsim_'+job_id+'.root' 
     skdetsim_options.batch = True
-    skdetsim_options.set_options(filename='sk4_odtune_toEdit.card')
+    skdetsim_options.set_options(filename=sys.path[0]+'/../data/sk4_odtune_toEdit.card')
     skdetsim_options.run_local_skdetsim()

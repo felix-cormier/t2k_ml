@@ -3,19 +3,18 @@ import subprocess
 import time
 import os
 
-from classes.wcsim_options import WCSimOptions
-from classes.secondaries_class import secondaries
-from classes.skdetsim_options import SKDETSimOptions
-from DataTools.root_utils.merge_h5 import combine_files
-from classes.fitqun_class import fitqun
 
 import glob
 
 import h5py
 import numpy as np
 
-from secondaries.combine_secondaries import combine_secondaries
-from job_scripts.secondaries_batch import transform_secondaries
+from DataTools.root_utils.merge_h5 import combine_files
+from classes.fitqun_class import fitqun
+
+from classes.wcsim_options import WCSimOptions
+from classes.skdetsim_options import SKDETSimOptions
+
 
 parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
 parser.add_argument("--doWCSim", help="run WCSim", action="store_true")
@@ -26,6 +25,7 @@ parser.add_argument("--skdetsim", help="run SKDETSim", action="store_true")
 parser.add_argument("--doTransform", help="transform WCSim root file to numpy", action="store_true")
 #parser.add_argument("--skdetsim", help="Use if transforming skdetsim file (will be wcsim if left off)", action="store_true")
 parser.add_argument("--doBatch", help="use the batch system", action="store_true")
+parser.add_argument("--decayE", help="Get decay E variables", action="store_true")
 parser.add_argument("--doSecondaries", help="combine secondaries", action="store_true")
 parser.add_argument("--doCombination", help="use the batch system", action="store_true")
 parser.add_argument("--doZBS2ROOT", help="only do .zbs to root conversion", action="store_true")
@@ -105,10 +105,16 @@ if args.doBatch and args.dofiTQun and args.doTransform:
                 num_jobs = str(subprocess.check_output(["squeue", "-u", "fcormier"])).count('\\n')
                 print(f'Num Jobs: {num_jobs}, waiting until < 950')
 if args.doSecondaries and args.doTransform:
+    from classes.secondaries_class import secondaries
+    from secondaries.combine_secondaries import combine_secondaries
+    from job_scripts.secondaries_batch import transform_secondaries
     secondaries_settings = secondaries(args.input_secondaries_path, args.output_secondaries_path)
     transform_secondaries(args.input_secondaries_path, args.output_secondaries_path, secondaries_settings.get_number_from_rootfile(args.input_secondaries_path))
 
 elif args.doBatch and args.doSecondaries and args.doTransform:
+    from classes.secondaries_class import secondaries
+    from secondaries.combine_secondaries import combine_secondaries
+    from job_scripts.secondaries_batch import transform_secondaries
     #Making output directory if it doesn't exist already
     if not(os.path.exists(args.output_secondaries_path) and os.path.isdir(args.output_secondaries_path)):
         try:
@@ -196,7 +202,7 @@ elif args.doSKGeofile:
 
     np.savez('data/geofile_skdetsim',position=positions, orientation=orientations)
 
-
+#Untested now 21/05/2025.
 elif args.doWCSim and args.doTransform and args.doBatch and args.output_path is not None:
     print("Submitting WCSim jobs")
     num_jobs = int(args.numJobs)
@@ -211,27 +217,26 @@ elif args.doWCSim and args.doTransform and args.doBatch and args.output_path is 
         talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=2G --nodes=1 --ntasks-per-node=1 --time=01:00:00 --export=ALL,ARG1='+str(events_per_job)+',ARG2='+str(args.output_path)+' wcsim_job.sh')
         subprocess.call(talk, shell=True)
 
+#Makes a job array of SKDETSim simulations, then transforms each to hdf5
 elif args.doSKDETSim and args.doTransform and args.doBatch and args.output_path is not None:
     print("Submitting SKDETSim jobs")
     num_jobs = int(args.numJobs)
     events_per_job = int(args.eventsPerJob)
     #particle 11 (e-), 13 (mu-), 22 (gamma), 211 (pion+)
-    skdetsim_options = SKDETSimOptions(output_directory=args.output_path, save_input_options=False,  energy=[0.,2000.,'MeV'], particle=13, wall=-50.)
+    skdetsim_options = SKDETSimOptions(output_directory=args.output_path, save_input_options=False,  energy=[0.,2000.,'MeV'], particle=13, wall=0.)
     skdetsim_options.set_output_directory()
     skdetsim_options.save_options(args.output_path,'sk_options.pkl')
     print(skdetsim_options.particle)
 
-    for i in range(num_jobs):
-        talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=2G --nodes=1 --ntasks-per-node=1 --time=00:20:00 --export=ALL,ARG1='+str(events_per_job)+',ARG2='+str(args.output_path)+' skdetsim_job.sh')
-        subprocess.call(talk, shell=True)
-        print(f'job: {i}/{num_jobs} ({(i/num_jobs)*100:.2f}%)')
-        #print([m.start() for m in re.finditer('\\n', str(subprocess.check_output(["squeue", "-u", "fcormier"])))])
-        if i%50==0:
-            current_num_jobs = str(subprocess.check_output(["squeue", "-u", "fcormier"])).count('\\n')
-            while current_num_jobs > 950:
-                time.sleep(10)
-                current_num_jobs = str(subprocess.check_output(["squeue", "-u", "fcormier"])).count('\\n')
-                print(f'Num Jobs: {current_num_jobs}, waiting until < 950')
+    talk = ('sbatch  --account=rpp-blairt2k --array=1-'+str(num_jobs)+'%1000 --mem-per-cpu=2G --nodes=1 --ntasks-per-node=1 --time=00:45:00 --export=ALL,ARG1='+str(events_per_job)+',ARG2='+str(args.output_path)+',ARG3='+str(args.decayE)+' job_scripts/skdetsim_job.sh')
+    subprocess.call(talk, shell=True)
+    #print([m.start() for m in re.finditer('\\n', str(subprocess.check_output(["squeue", "-u", "fcormier"])))])
+    #if i%50==0:
+    #    current_num_jobs = str(subprocess.check_output(["squeue", "-u", "fcormier"])).count('\\n')
+    #    while current_num_jobs > 950:
+    #        time.sleep(10)
+    #        current_num_jobs = str(subprocess.check_output(["squeue", "-u", "fcormier"])).count('\\n')
+    #        print(f'Num Jobs: {current_num_jobs}, waiting until < 950')
 
 elif args.doZBS2ROOT and args.doTransform and args.doBatch and args.output_path is not None:
     print("Submitting ZBS2ROOT and Transform jobs")
@@ -293,10 +298,10 @@ if args.makeVisualizations:
     myfile = h5py.File(args.input_vis_file_path,'r')
     wcsim_options = WCSimOptions(output_directory=args.output_vis_path)
     wcsim_options.set_output_directory()
-    make_visualizations(myfile, args.output_vis_path)
+    make_visualizations(myfile, args.output_vis_path, decayE_study=True)
 
 if args.doCombination and args.doBatch:
-    talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=8192M --nodes=1 --ntasks-per-node=2 --time=48:00:00 --export=ALL,ARG1='+str(args.input_combination_path)+',ARG2='+str(args.output_combination_path)+',ARG3='+str(args.combinationString)+' job_scripts/combine_job.sh')
+    talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=8192M --nodes=1 --ntasks-per-node=2 --time=0:59:00 --export=ALL,ARG1='+str(args.input_combination_path)+',ARG2='+str(args.output_combination_path)+',ARG3='+str(args.combinationString)+' job_scripts/combine_job.sh')
     subprocess.call(talk, shell=True)
 
 elif args.doCombination:
@@ -331,7 +336,7 @@ if args.makeInputPlots:
     if args.useIndexFile:
         plot_wcsim(args.input_plot_path, args.output_plot_path, wcsim_options, index_file_path=args.index_file_path, text_file=use_text_file, moreVariables=False)
     else:
-        plot_wcsim(args.input_plot_path, args.output_plot_path, wcsim_options, text_file=use_text_file, moreVariables=False, include_truth=True, skip_pmt_vars=False)
+        plot_wcsim(args.input_plot_path, args.output_plot_path, wcsim_options, text_file=use_text_file, moreVariables=False, include_truth=True, skip_pmt_vars=True)
 
 if args.dumpOptions:
     text_file = open(args.input_plot_path, "r")
@@ -351,5 +356,8 @@ if args.makeEnergyFlat:
     flatten_energy(input_path=args.input_plot_path, text_file=use_text_file, overwrite=True)
 
 
-if false and args.doSecondaries:
-   combine_secondaries(args.secondaryInput, args.secondaryData) 
+if False and args.doSecondaries:
+    from classes.secondaries_class import secondaries
+    from secondaries.combine_secondaries import combine_secondaries
+    from job_scripts.secondaries_batch import transform_secondaries
+    combine_secondaries(args.secondaryInput, args.secondaryData) 

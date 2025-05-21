@@ -135,7 +135,7 @@ class SKDETSimOptions():
         os.system('/project/rpp-blairt2k/fcormier/skdetsim_szoldosVersion/skdetsim-v13p90_mar16/skdetsim_high.sh sk4_odtune.card '+self.output_name+'.zbs')
         print("Finished simulation")
         os.system("ls -l data/")
-        os.system('/project/rpp-blairt2k/fcormier/skdetsim_szoldosVersion/ZBS2ROOT/read_zbs '+self.output_name+'.zbs ' +self.output_name)
+        os.system('/project/rpp-blairt2k/fcormier/skdetsim_szoldosVersion/ZBS2ROOT/read_zbs '+self.output_name+'.zbs ' +self.output_name +' 2')
         os.system("ls -l data/")
         print("Finished ZBS2ROOT")
         if self.save_input_options:
@@ -147,6 +147,6 @@ class SKDETSimOptions():
         self.set_output_directory()
         os.system("ls -l data/")
         print(self.output_name)
-        os.system('/project/rpp-blairt2k/fcormier/skdetsim_szoldosVersion/ZBS2ROOT/read_zbs '+self.output_name+'.zbs ' +self.output_name+'.root')
+        os.system('/project/rpp-blairt2k/fcormier/skdetsim_szoldosVersion/ZBS2ROOT/read_zbs '+self.output_name+'.zbs ' +self.output_name+'.root 2')
         os.system("ls -l data/")
         print("Finished ZBS2ROOT")

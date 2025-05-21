@@ -1,5 +1,6 @@
-from DataTools.root_utils.merge_h5 import combine_files
 import sys
+sys.path.append(f"{sys.path[0]}/../")
+from DataTools.root_utils.merge_h5 import combine_files
 
 name, input_combination_path, output_combination_path, extra_string  = sys.argv
 use_text_file=False

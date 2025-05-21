@@ -1,7 +1,8 @@
-import numpy as np
 import glob
 
 from classes.skdetsim_options import SKDETSimOptions
+
+import numpy as np
 
 def get_filename_no_type(fullpath):
     filename = np.char.split(fullpath,'/')

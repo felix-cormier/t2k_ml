@@ -246,13 +246,13 @@ def plot_wcsim(input_path, output_path, wcsim_options, index_file_path=None, tex
     generic_histogram(num_pmt, 'Number of PMTs', output_path, 'num_pmt', y_name = yname, label=legend_label, range=[0,11000], bins=110, doNorm=True, y_log=True)
     generic_histogram(total_charge, 'Total Charge', output_path, 'total_charge', y_name = yname, label=legend_label, range=[0,12000], bins=120, doNorm=True, y_log=True)
     generic_histogram(mean_charge, 'Mean Charge', output_path, 'mean_charge', y_name = yname, label=legend_label, range=[0,25], bins=100, doNorm=True, y_log=True)
-    generic_histogram(mean_time, 'Mean Time', output_path, 'mean_time', y_name = yname, label=legend_label, range=[900,1500], bins=80, doNorm=True, y_log=True)
+    generic_histogram(mean_time, 'Mean Time', output_path, 'mean_time', y_name = yname, label=legend_label, range=[900,5000], bins=80, doNorm=True, y_log=True)
     generic_histogram(length_time, 'Cluster Length [ns]', output_path, 'length_time', y_name = yname, label=legend_label, range=[1000,2000], bins=100, doNorm=True, y_log=False)
     generic_histogram(charge_rate, 'Charge Rate [pe/ns]', output_path, 'chargeOverLength', y_name = yname, label=legend_label, range=[0,100], bins=50, doNorm=True, y_log=False)
 
 
-    generic_histogram(all_charge, 'PMT Charge', output_path, 'all_pmt_charge', y_name = yname, range=[0,30], label=legend_label, bins=100, doNorm=True)
-    generic_histogram(all_time, 'PMT Time [ns]', output_path, 'all_pmt_time', y_name = yname, range=[0,2000], label=legend_label, bins=100, doNorm=True)
+    generic_histogram(all_charge, 'PMT Charge', output_path, 'all_pmt_charge', y_name = yname, range=[0.01,30], label=legend_label, bins=100, doNorm=True)
+    generic_histogram(all_time, 'PMT Time [ns]', output_path, 'all_pmt_time', y_name = yname, range=[400,2000], label=legend_label, bins=100, doNorm=True, y_log=True)
 
     if include_truth:
         print(towall[0])
@@ -482,6 +482,7 @@ def fill_vars(h5fw, wcsim_options, moreVariables, geofile, file_paths, mean_char
         temp_all_charge = np.ravel(h5fw['hit_charge'])
         print("Starting time")
         temp_all_time = np.ravel(h5fw['hit_time'])
+        print(f"TIME ALL: {temp_all_time}")
 
     if include_truth:
         temp_direction_x = (np.ravel(h5fw['directions'][:,:,0])[keep_events])
