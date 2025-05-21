@@ -84,6 +84,8 @@ This set of options calls (currently) line 220 in _t2k\_ml\_runner.py_, which us
 
 There is similar code that uses _doWCSim_ instead of _doSKDETSim_ but hasn't been updated in a long time. 
 
+You can add the _--decayElectron_ flag to only keep decay electrons using a simple algorithm. This will save the entire time after trigger (rather than 1 microsecond), then only keep event if there is a timing peak after the 2 microsecond time stamp in time.
+
 
 #### Combine h5py files
 
