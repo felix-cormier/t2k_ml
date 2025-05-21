@@ -18,10 +18,17 @@ then
 fi
 export PATH
 
+echo "JOBID"
+echo $SLURM_JOBID
+echo "TASKID"
+echo $SLURM_ARRAY_TASK_ID
+jobString="${SLURM_JOBID}${SLURM_ARRAY_TASKID}"
+echo $jobString
+
 source /home/fcormier/ml_root_3p10/bin/activate
 
 source /project/rpp-blairt2k/fcormier/skdetsim_szoldosVersion/setup.sh
-bash $SLURM_TMPDIR/t2k_ml/skdetsim_run.sh
+bash $SLURM_TMPDIR/t2k_ml/job_scripts/skdetsim_run.sh
 #bash "/home/fcormier/t2k/t2k_ml_base/t2k_ml/singularity_run.sh"
 #python wcsim_batch.py $ARG1 $ARG2
 echo "finished skdetsim"
@@ -40,11 +47,11 @@ source /home/fcormier/ml_root_3p10/bin/activate
 ls -l data/
 
 
-python transform_batch.py "$SLURM_TMPDIR/t2k_ml/data/" $SLURM_JOBID 1
+python job_scripts/transform_batch.py "$SLURM_TMPDIR/t2k_ml/data/" $jobString 1 $ARG3
 echo "finished transform"
 cp data/*.hy $ARG2
 cp data/*.zbs $ARG2
-#cp data/*.root $ARG2
+cp data/*.root $ARG2
 cp *.card $ARG2
 cd $SLURM_TMPDIR
 rm -rf t2k_ml/

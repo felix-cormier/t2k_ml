@@ -98,13 +98,13 @@ C
 C number of generated event
 C
 
-VECT-NEVT 1000
+VECT-NEVT NUM_EVENTS
 
 C
 C seeds for random number generators; three values must be given
 C
 
-VECT-RAND  0  200004  0  0  0
+VECT-RAND  SEED2  SEED3  SEED  0  0
 
 C
 C If the energy of the particles is high,
@@ -147,7 +147,7 @@ C               = 2   randomly generated
 VECT-MVTX 2
 CVECT-VTX  0.0 0.0 0.0
 
-VECT-WALL 200
+VECT-WALL WALL_SET
 
 C
 C VECT-MDIR    Control directions
@@ -157,14 +157,14 @@ VECT-MDIR 2
 CVECT-DIR -1. 0. 0.
 
 C VECT-PART    input particle ID
-VECT-PART 13
+VECT-PART    PARTICLE
 
 C VECT-MMOM    Control momentum MeV
 C               = 1   fixed momentum set by the 1st argument of 'VECT-MOM'
 C               = 2   randomly set between p_1 and p_2
 
 VECT-MMOM 2
-VECT-MOM 154.6 1254.6
+VECT-MOM ENERGY_MIN ENERGY_MAX
 
 C
 C
@@ -262,6 +262,8 @@ DS-WRTBANK   FALSE   FALSE   FALSE     FALSE   TRUE  TRUE  TRUE   TRUE    FALSE
 C Flash ADC Bank Control
 DS-WRTFADCBNK FALSE
 
+SAVESECONDARIES TRUE
+
 C - Spe response parameters for old od-tubes (gaussian+plateau)
 DS-GAINPLATEAU 0.9
 DS-GAINFACT 0.72
@@ -350,6 +352,6 @@ C
 C RAND : random seed
 C      0 : Read RANDOM number from FILE 
 C          (set path via environment variable: RANFILE)
-C      1 : Generating RANDOM 0 from the time
+C      1 : Generating RANDOM SEED from the time
 C
 NEUT-RAND 1

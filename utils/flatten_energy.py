@@ -1,7 +1,7 @@
 import h5py
 from tqdm import tqdm
 import numpy as np
-from plot_wcsim import get_cherenkov_threshold, convert_label
+from utils.plot_wcsim import get_cherenkov_threshold, convert_label
 import matplotlib.pyplot as plt
 
 # can make this more general to flatten along any key given if thats helpful
@@ -44,7 +44,7 @@ def flatten_energy(input_path, output_path=None, text_file=False, overwrite=Fals
         print(f'New path: {path}')
     
         # read in origional visible energy and label values
-        with h5py.File(path+'/digi_combine.hy',mode='r') as h5fw:
+        with h5py.File(path+'/multi_combine.hy',mode='r') as h5fw:
             temp_truth_visible_energy, temp_truth_labels = [], []
             temp_label = convert_label(np.median(h5fw['labels']))
             temp_truth_labels = np.ravel(h5fw['labels'])
@@ -57,7 +57,7 @@ def flatten_energy(input_path, output_path=None, text_file=False, overwrite=Fals
 
     # create histogram bins and fill them with truth_visible_energy values
     granularity = 10 # MeV/bin
-    manual_bins = range(0, 1500+granularity, granularity)
+    manual_bins = range(0, 2000+granularity, granularity)
     (n, bins, patches) = plt.hist(truth_visible_energy, label=label, bins=manual_bins)
 
     # just tested for 2 labels
@@ -113,9 +113,14 @@ def flatten_energy(input_path, output_path=None, text_file=False, overwrite=Fals
 
         # if overwrite is True then add the 'keep_event' key to input file
         if overwrite:
-            output_path = path + '/digi_combine.hy'
+            output_path = path + '/multi_combine.hy'
             with h5py.File(output_path, mode='a') as h5fw: 
-                h5fw.create_dataset('keep_event', data=bool_array)
+                try:
+                    h5fw.create_dataset('keep_event', data=bool_array)
+                #If already exists, delete then write again
+                except ValueError:
+                    del h5fw['keep_event']
+                    h5fw.create_dataset('keep_event', data=bool_array)
 
             print(f'"keep_event" key added to original HDF5 file: {output_path}') 
             
@@ -123,10 +128,10 @@ def flatten_energy(input_path, output_path=None, text_file=False, overwrite=Fals
         else:
             # give default output file name if none are specified
             if output_path == None:
-                temp_output_path = path + '/digi_combine_flatE.hy' # this is the issue
+                temp_output_path = path + '/multi_combine_flatE.hy' # this is the issue
 
             # read in original file 
-            with h5py.File(path+'/digi_combine.hy', mode='r') as h5fw:
+            with h5py.File(path+'/multi_combine.hy', mode='r') as h5fw:
                 keys = h5fw.keys()
 
                 # open new file to save data to 

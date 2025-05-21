@@ -7,4 +7,4 @@ then
 fi
 export PATH
 
-python skdetsim_batch.py $ARG1 "$SLURM_TMPDIR/t2k_ml/data/" $SLURM_JOBID
+python job_scripts/zbsTransform_batch.py $ARG1 "$SLURM_TMPDIR/t2k_ml/data/"

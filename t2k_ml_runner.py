@@ -3,23 +3,33 @@ import subprocess
 import time
 import os
 
-from wcsim_options import WCSimOptions
-from skdetsim_options import SKDETSimOptions
-from DataTools.root_utils.merge_h5 import combine_files
-from fitqun_class import fitqun
+
+import glob
 
 import h5py
 import numpy as np
 
+from DataTools.root_utils.merge_h5 import combine_files
+from classes.fitqun_class import fitqun
+
+from classes.wcsim_options import WCSimOptions
+from classes.skdetsim_options import SKDETSimOptions
+
+
 parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
 parser.add_argument("--doWCSim", help="run WCSim", action="store_true")
 parser.add_argument("--dofiTQun", help="run fiTQun", action="store_true")
+parser.add_argument("--dofiTQunTransform", help="run fiTQun transform only", action="store_true")
 parser.add_argument("--doSKDETSim", help="run SKDETSim", action="store_true")
 parser.add_argument("--skdetsim", help="run SKDETSim", action="store_true")
 parser.add_argument("--doTransform", help="transform WCSim root file to numpy", action="store_true")
 #parser.add_argument("--skdetsim", help="Use if transforming skdetsim file (will be wcsim if left off)", action="store_true")
 parser.add_argument("--doBatch", help="use the batch system", action="store_true")
+parser.add_argument("--decayE", help="Get decay E variables", action="store_true")
+parser.add_argument("--doSecondaries", help="combine secondaries", action="store_true")
 parser.add_argument("--doCombination", help="use the batch system", action="store_true")
+parser.add_argument("--doZBS2ROOT", help="only do .zbs to root conversion", action="store_true")
+parser.add_argument("--isData", help="Notifies ZBS2ROOT that we are dealing with data file", action="store_true")
 parser.add_argument("--makeVisualizations", help="make 3D plots of events", action="store_true")
 parser.add_argument("--makeInputPlots", help="make 3D plots of events", action="store_true")
 parser.add_argument("--useIndexFile", help="use index file to select events when making input plots", action="store_true")
@@ -29,17 +39,23 @@ parser.add_argument("--transformName", help="Name of files to transform")
 parser.add_argument("--output_path", help="Path to output for batch jobs")
 parser.add_argument("--input_vis_file_path", help="Where to output visualizations")
 parser.add_argument("--input_plot_path", help="Directory where to get .hy files from which to make plots")
+parser.add_argument("--input_zbs_path", help="Directory where to get .hy files from which to make plots")
 parser.add_argument("--index_file_path", help="Directory where to get index file")
 parser.add_argument("--output_vis_path", help="Where to output visualizations")
 parser.add_argument("--output_plot_path", help="Where to output plots")
 parser.add_argument("--input_combination_path", help="Path to directory to combine .hy files")
 parser.add_argument("--output_combination_path", help="Path to directory where the output of combination is saved ")
+parser.add_argument("--combinationString", help="string in front of _transform.h5")
 parser.add_argument("--input_fitqun_path", help="Path to directory where fitqun file is")
 parser.add_argument("--output_fitqun_path", help="Where to output fitqun results")
+parser.add_argument("--input_secondaries_path", help="Path to directory where secondaries file is")
+parser.add_argument("--output_secondaries_path", help="Where to output secondaries results")
 parser.add_argument("--fitqun_directories", help="Where to find .root files to run fitqun on (should be .txt file of paths)")
 parser.add_argument("--eventsPerJob", help="Batch Generation: number to generate per job")
 parser.add_argument("--numJobs", help="Batch Generation: Number of jobs to submit")
 parser.add_argument("--doSKGeofile", help="Convert SKDETSIM .txt geofile to numpy format", action="store_true")
+parser.add_argument("--secondaryInput", help="Convert SKDETSIM .txt geofile to numpy format")
+parser.add_argument("--secondaryData", help="Convert SKDETSIM .txt geofile to numpy format")
 parser.add_argument("--inputSKGeofile", help="Convert SKDETSIM .txt geofile to numpy format")
 parser.add_argument("--outputSKGeofile", help="Convert SKDETSIM .txt geofile to numpy format")
 parser.add_argument("--makeEnergyFlat", help="Re-sample data to create a flat visible menergy distribution", action="store_true")
@@ -48,16 +64,22 @@ args = parser.parse_args(['--transformPath','foo','@args_ml.txt',
                    '--input_vis_file_path','foo','@args_ml.txt',
                    '--output_vis_path','foo','@args_ml.txt',
                    '--input_plot_path','foo','@args_ml.txt',
+                   '--input_zbs_path','foo','@args_ml.txt',
                    '--output_plot_path','foo','@args_ml.txt',
                    '--input_combination_path','foo','@args_ml.txt',
                    '--output_combination_path','foo','@args_ml.txt',
+                   '--combinationString','foo','@args_ml.txt',
                    '--input_fitqun_path','foo','@args_ml.txt',
                    '--output_fitqun_path','foo','@args_ml.txt',
+                   '--input_secondaries_path','foo','@args_ml.txt',
+                   '--output_secondaries_path','foo','@args_ml.txt',
                    '--fitqun_directories','foo','@args_ml.txt',
                    '--eventsPerJob','foo','@args_ml.txt',
                    '--numJobs','foo','@args_ml.txt',
                    '--inputSKGeofile','foo','@args_ml.txt',
                    '--outputSKGeofile','foo','@args_ml.txt',
+                   '--secondaryInput','foo','@args_ml.txt',
+                   '--secondaryData','foo','@args_ml.txt',
                    '--transformName','foo','@args_ml.txt'])
 
 if args.doBatch and args.dofiTQun and args.doTransform:
@@ -67,12 +89,70 @@ if args.doBatch and args.dofiTQun and args.doTransform:
             os.makedirs(args.output_fitqun_path)
         except FileExistsError as error:
             print("path " + str(args.output_fitqun_path) +" already exists")
-    fitqun_settings = fitqun(args.input_fitqun_path, args.output_fitqun_path, args.fitqun_directories)
+    fitqun_settings = fitqun(args.input_fitqun_path, args.output_fitqun_path, args.fitqun_directories, doAll=True)
+    exit
     for i, (file, label) in enumerate(zip(fitqun_settings.zbs_files, fitqun_settings.labels)):
         if file is None:
             continue
         temp_number = fitqun_settings.get_number_from_rootfile(file)
-        talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=4096M --nodes=1 --ntasks-per-node=1 --time=03:00:00 --export=ALL,ARG1='+str(file)+',ARG2='+str(args.output_fitqun_path)+',ARG3='+str(temp_number)+',ARG4=' + str(label)+' fitqun_job.sh')
+        talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=4096M --nodes=1 --ntasks-per-node=1 --time=24:00:00 --export=ALL,ARG1='+str(file)+',ARG2='+str(args.output_fitqun_path)+',ARG3='+str(temp_number)+',ARG4=' + str(label)+' job_scripts/fitqun_job.sh')
+        subprocess.call(talk, shell=True)
+        #print([m.start() for m in re.finditer('\\n', str(subprocess.check_output(["squeue", "-u", "fcormier"])))])
+        if i%50==0:
+            num_jobs = str(subprocess.check_output(["squeue", "-u", "fcormier"])).count('\\n')
+            while num_jobs > 950:
+                time.sleep(10)
+                num_jobs = str(subprocess.check_output(["squeue", "-u", "fcormier"])).count('\\n')
+                print(f'Num Jobs: {num_jobs}, waiting until < 950')
+if args.doSecondaries and args.doTransform:
+    from classes.secondaries_class import secondaries
+    from secondaries.combine_secondaries import combine_secondaries
+    from job_scripts.secondaries_batch import transform_secondaries
+    secondaries_settings = secondaries(args.input_secondaries_path, args.output_secondaries_path)
+    transform_secondaries(args.input_secondaries_path, args.output_secondaries_path, secondaries_settings.get_number_from_rootfile(args.input_secondaries_path))
+
+elif args.doBatch and args.doSecondaries and args.doTransform:
+    from classes.secondaries_class import secondaries
+    from secondaries.combine_secondaries import combine_secondaries
+    from job_scripts.secondaries_batch import transform_secondaries
+    #Making output directory if it doesn't exist already
+    if not(os.path.exists(args.output_secondaries_path) and os.path.isdir(args.output_secondaries_path)):
+        try:
+            os.makedirs(args.output_secondaries_path)
+        except FileExistsError as error:
+            print("path " + str(args.output_secondaries_path) +" already exists")
+    secondaries_settings = secondaries(args.input_secondaries_path, args.output_secondaries_path)
+    for i, file in enumerate(secondaries_settings.rootfile_files):
+        if file is None:
+            continue
+        temp_number = secondaries_settings.get_number_from_rootfile(file)
+        talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=4096M --nodes=1 --ntasks-per-node=1 --time=00:59:00 --export=ALL,ARG1='+str(file)+',ARG2='+str(args.output_secondaries_path)+',ARG3='+str(temp_number)+' job_scripts/secondaries_job.sh')
+        subprocess.call(talk, shell=True)
+        #print([m.start() for m in re.finditer('\\n', str(subprocess.check_output(["squeue", "-u", "fcormier"])))])
+        if i%50==0:
+            num_jobs = str(subprocess.check_output(["squeue", "-u", "fcormier"])).count('\\n')
+            while num_jobs > 950:
+                time.sleep(10)
+                num_jobs = str(subprocess.check_output(["squeue", "-u", "fcormier"])).count('\\n')
+                print(f'Num Jobs: {num_jobs}, waiting until < 950')
+
+elif args.doBatch and args.dofiTQunTransform:
+    skdetsim_options = SKDETSimOptions(output_directory=args.output_fitqun_path, save_input_options=False,  energy=[0.,1500.,'MeV'], particle=13, wall=0.)
+    skdetsim_options.set_output_directory()
+    skdetsim_options.save_options(args.input_fitqun_path,'sk_options.pkl')
+    #Making output directory if it doesn't exist already
+    if not(os.path.exists(args.output_fitqun_path) and os.path.isdir(args.output_fitqun_path)):
+        try:
+            os.makedirs(args.output_fitqun_path)
+        except FileExistsError as error:
+            print("path " + str(args.output_fitqun_path) +" already exists")
+    fitqun_settings = fitqun(args.input_fitqun_path, args.output_fitqun_path, args.fitqun_directories, transformOnly=True)
+    for i, (file, label) in enumerate(zip(fitqun_settings.rootfiles, fitqun_settings.labels)):
+        if file is None:
+            continue
+        temp_number = fitqun_settings.get_number_from_rootfile(file)
+        print(file)
+        talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=1096M --nodes=1 --ntasks-per-node=1 --time=00:59:00 --export=ALL,ARG1='+str(file)+',ARG2='+str(args.output_fitqun_path)+',ARG3='+str(temp_number)+',ARG4=' + str(label)+' job_scripts/fitqunTransform_job.sh')
         subprocess.call(talk, shell=True)
         #print([m.start() for m in re.finditer('\\n', str(subprocess.check_output(["squeue", "-u", "fcormier"])))])
         if i%50==0:
@@ -122,7 +202,7 @@ elif args.doSKGeofile:
 
     np.savez('data/geofile_skdetsim',position=positions, orientation=orientations)
 
-
+#Untested now 21/05/2025.
 elif args.doWCSim and args.doTransform and args.doBatch and args.output_path is not None:
     print("Submitting WCSim jobs")
     num_jobs = int(args.numJobs)
@@ -137,20 +217,41 @@ elif args.doWCSim and args.doTransform and args.doBatch and args.output_path is 
         talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=2G --nodes=1 --ntasks-per-node=1 --time=01:00:00 --export=ALL,ARG1='+str(events_per_job)+',ARG2='+str(args.output_path)+' wcsim_job.sh')
         subprocess.call(talk, shell=True)
 
+#Makes a job array of SKDETSim simulations, then transforms each to hdf5
 elif args.doSKDETSim and args.doTransform and args.doBatch and args.output_path is not None:
     print("Submitting SKDETSim jobs")
     num_jobs = int(args.numJobs)
     events_per_job = int(args.eventsPerJob)
     #particle 11 (e-), 13 (mu-), 22 (gamma), 211 (pion+)
-    skdetsim_options = SKDETSimOptions(output_directory=args.output_path, save_input_options=False,  energy=[0.,1500.,'MeV'], particle=13, wall=0.)
+    skdetsim_options = SKDETSimOptions(output_directory=args.output_path, save_input_options=False,  energy=[0.,2000.,'MeV'], particle=13, wall=0.)
     skdetsim_options.set_output_directory()
     skdetsim_options.save_options(args.output_path,'sk_options.pkl')
     print(skdetsim_options.particle)
 
-    for i in range(num_jobs):
-        talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=4G --nodes=1 --ntasks-per-node=1 --time=00:59:00 --export=ALL,ARG1='+str(events_per_job)+',ARG2='+str(args.output_path)+' skdetsim_job.sh')
+    talk = ('sbatch  --account=rpp-blairt2k --array=1-'+str(num_jobs)+'%1000 --mem-per-cpu=2G --nodes=1 --ntasks-per-node=1 --time=00:45:00 --export=ALL,ARG1='+str(events_per_job)+',ARG2='+str(args.output_path)+',ARG3='+str(args.decayE)+' job_scripts/skdetsim_job.sh')
+    subprocess.call(talk, shell=True)
+    #print([m.start() for m in re.finditer('\\n', str(subprocess.check_output(["squeue", "-u", "fcormier"])))])
+    #if i%50==0:
+    #    current_num_jobs = str(subprocess.check_output(["squeue", "-u", "fcormier"])).count('\\n')
+    #    while current_num_jobs > 950:
+    #        time.sleep(10)
+    #        current_num_jobs = str(subprocess.check_output(["squeue", "-u", "fcormier"])).count('\\n')
+    #        print(f'Num Jobs: {current_num_jobs}, waiting until < 950')
+
+elif args.doZBS2ROOT and args.doTransform and args.doBatch and args.output_path is not None:
+    print("Submitting ZBS2ROOT and Transform jobs")
+    zbs_files = glob.glob(args.input_zbs_path+'stopmu*.zbs')
+    #particle 11 (e-), 13 (mu-), 22 (gamma), 211 (pion+)
+    skdetsim_options = SKDETSimOptions(output_directory=args.output_path, save_input_options=False,  energy=[0.,1500.,'MeV'], particle=13, wall=0.)
+    skdetsim_options.set_output_directory()
+    skdetsim_options.save_options(args.output_path,'sk_options.pkl')
+    print(zbs_files)
+
+    for i in range(len(zbs_files)):
+        
+        talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=4G --nodes=1 --ntasks-per-node=1 --time=04:00:00 --export=ALL,ARG1='+str(zbs_files[i])+',ARG2='+str(args.output_path)+' zbsTransform_job.sh')
         subprocess.call(talk, shell=True)
-        print(f'job: {i}/{num_jobs} ({(i/num_jobs)*100:.2f}%)')
+        print(f'job: {i}/{len(zbs_files)} ({(i/len(zbs_files))*100:.2f}%)')
         #print([m.start() for m in re.finditer('\\n', str(subprocess.check_output(["squeue", "-u", "fcormier"])))])
         if i%50==0:
             current_num_jobs = str(subprocess.check_output(["squeue", "-u", "fcormier"])).count('\\n')
@@ -192,15 +293,19 @@ elif args.doTransform:
 
 if args.makeVisualizations:
     import h5py
-    from plot_wcsim import plot_wcsim
-    from make_visualizations import make_visualizations
+    from utils.plot_wcsim import plot_wcsim
+    from utils.make_visualizations import make_visualizations
     myfile = h5py.File(args.input_vis_file_path,'r')
     wcsim_options = WCSimOptions(output_directory=args.output_vis_path)
     wcsim_options.set_output_directory()
-    make_visualizations(myfile, args.output_vis_path)
+    make_visualizations(myfile, args.output_vis_path, decayE_study=True)
 
-if args.doCombination:
-    extra_string = 'digi'
+if args.doCombination and args.doBatch:
+    talk = ('sbatch  --account=rpp-blairt2k --mem-per-cpu=8192M --nodes=1 --ntasks-per-node=2 --time=0:59:00 --export=ALL,ARG1='+str(args.input_combination_path)+',ARG2='+str(args.output_combination_path)+',ARG3='+str(args.combinationString)+' job_scripts/combine_job.sh')
+    subprocess.call(talk, shell=True)
+
+elif args.doCombination:
+    extra_string = args.combinationString
     use_text_file=False
     file_paths=None
     if ".txt" in args.input_combination_path:
@@ -208,13 +313,15 @@ if args.doCombination:
         extra_string = 'multi'
         text_file = open(args.input_combination_path, "r")
         file_paths = text_file.readlines()
+        #Remove \n
+        #file_paths = [s.rstrip() for s in file_paths]
         print(file_paths)
         num_files = len(file_paths)
     combine_files(args.input_combination_path, args.output_combination_path, extra_string, specific_files=file_paths)
 
 if args.makeInputPlots:
 
-    from plot_wcsim import plot_wcsim
+    from utils.plot_wcsim import plot_wcsim
     wcsim_options = WCSimOptions()
     use_text_file=False
     if ".txt" in args.input_plot_path:
@@ -229,7 +336,7 @@ if args.makeInputPlots:
     if args.useIndexFile:
         plot_wcsim(args.input_plot_path, args.output_plot_path, wcsim_options, index_file_path=args.index_file_path, text_file=use_text_file, moreVariables=False)
     else:
-        plot_wcsim(args.input_plot_path, args.output_plot_path, wcsim_options, text_file=use_text_file, moreVariables=False)
+        plot_wcsim(args.input_plot_path, args.output_plot_path, wcsim_options, text_file=use_text_file, moreVariables=False, include_truth=True, skip_pmt_vars=True)
 
 if args.dumpOptions:
     text_file = open(args.input_plot_path, "r")
@@ -242,8 +349,15 @@ if args.dumpOptions:
         print(f'Particle: {wcsim_options.particle}')
 
 if args.makeEnergyFlat:
-    from flatten_energy import flatten_energy
+    from utils.flatten_energy import flatten_energy
     use_text_file=False
     if ".txt" in args.input_plot_path:
         use_text_file=True
     flatten_energy(input_path=args.input_plot_path, text_file=use_text_file, overwrite=True)
+
+
+if False and args.doSecondaries:
+    from classes.secondaries_class import secondaries
+    from secondaries.combine_secondaries import combine_secondaries
+    from job_scripts.secondaries_batch import transform_secondaries
+    combine_secondaries(args.secondaryInput, args.secondaryData) 

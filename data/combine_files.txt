@@ -1,0 +1,3 @@
+/scratch/fcormier/t2k/ml/output_skdetsim/may4_2025_muons_combine_2//multi_combine.hy
+/scratch/fcormier/t2k/ml/output_skdetsim/may4_2025_electrons_combine//multi_combine.hy
+/scratch/fcormier/t2k/ml/output_skdetsim/may4_2025_piPlus_combine//multi_combine.hy

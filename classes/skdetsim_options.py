@@ -7,7 +7,7 @@ import math
 class SKDETSimOptions():
     """A class which can set, store, steer WCSim and its options
     """
-    def __init__(self, particle=11, energy=[0.,1000.], wall = 100., output_name='skdetsim', output_directory='/scratch/fcormier/t2k/ml/output_skdetsim/', num_events=500, batch=False, save_input_options=False, seed=0):
+    def __init__(self, particle=11, energy=[0.,1000.], wall = 100., output_name='skdetsim', output_directory='/scratch/fcormier/t2k/ml/output_skdetsim/', num_events=500, batch=False, save_input_options=False, seed=0, seed_2=0, seed_3=0):
         """_summary_
 
         Args:
@@ -33,6 +33,8 @@ class SKDETSimOptions():
         self.num_events = num_events
         self.batch=batch
         self.seed=seed
+        self.seed_2=seed_2
+        self.seed_3=seed_3
         self.save_input_options=save_input_options
 
     def correct_energy(self):
@@ -94,10 +96,12 @@ class SKDETSimOptions():
             filename (str, optional): Filename to copy and edit Defaults to 'sk4_odtune_toEdit.card'.
 
         """
-        pat = re.compile(b'PARTICLE|SEED|ENERGY_MIN|ENERGY_MAX|WALL_SET|OUTPUT_NAME|NUM_EVENTS')
+        pat = re.compile(b'PARTICLE|SEED|SEED2|SEED3|ENERGY_MIN|ENERGY_MAX|WALL_SET|OUTPUT_NAME|NUM_EVENTS')
 
         def jojo(mat,dic = {b'PARTICLE':str.encode(str(self.particle)),
                             b'SEED':str.encode(str(self.seed)),
+                            b'SEED_2':str.encode(str(self.seed_2)),
+                            b'SEED_3':str.encode(str(self.seed_3)),
                             b'ENERGY_MIN':str.encode(str(self.energy[0])),
                             b'ENERGY_MAX':str.encode(str(self.energy[1])),
                             b'WALL_SET':str.encode(str(self.wall)),
@@ -131,8 +135,18 @@ class SKDETSimOptions():
         os.system('/project/rpp-blairt2k/fcormier/skdetsim_szoldosVersion/skdetsim-v13p90_mar16/skdetsim_high.sh sk4_odtune.card '+self.output_name+'.zbs')
         print("Finished simulation")
         os.system("ls -l data/")
-        os.system('/project/rpp-blairt2k/fcormier/skdetsim_szoldosVersion/ZBS2ROOT/read_zbs '+self.output_name+'.zbs ' +self.output_name)
+        os.system('/project/rpp-blairt2k/fcormier/skdetsim_szoldosVersion/ZBS2ROOT/read_zbs '+self.output_name+'.zbs ' +self.output_name +' 2')
         os.system("ls -l data/")
         print("Finished ZBS2ROOT")
         if self.save_input_options:
             self.save_options(self.output_directory,'sk_options.pkl')
+
+    def run_local_zbs2root(self):
+        """Runs SKDETSim on current CPU
+        """
+        self.set_output_directory()
+        os.system("ls -l data/")
+        print(self.output_name)
+        os.system('/project/rpp-blairt2k/fcormier/skdetsim_szoldosVersion/ZBS2ROOT/read_zbs '+self.output_name+'.zbs ' +self.output_name+'.root 2')
+        os.system("ls -l data/")
+        print("Finished ZBS2ROOT")

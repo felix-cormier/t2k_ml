@@ -42,10 +42,10 @@ source setup.sh
 
 ### Running on Compute Canada Clusters
 
-Preferably run this code on narval.computecanada.ca by
+Preferably run this code on cedar.computecanada.ca by
 
 ```
-ssh username@narval.computecanada.ca
+ssh username@cedar.computecanada.ca
 ```
 
 For code editing and light work you can run on the login node. But to run these functions with large amounts of data, you should run it in an interactive batch job. Compute Canada uses the slurm scheduler. To run an interactive batch job, do:
@@ -65,6 +65,27 @@ It is possible that large files will use more memory than allocated. If so, the 
 
 The file _t2k\_ml\_runner.py_ is the steering script for everything that can be done using this repo. It parses _args\_ml.txt_ for arguments on what to run and what directories to look into for input/output data. Possible arguments will be outlined in their respective sections.
 
+#### Create h5py files
+
+You can use these commands to set up batch jobs that run SKDETSim, then transform the .zbs output to hdf5.
+
+```
+--doSKDETSim
+--doTransform
+--doBatch
+--numJobs=N
+--eventsPerJob=M
+--output_path=[...]
+```
+
+Where _numJobs_ is the number of jobs sent, this is done in a job array, so jobs will be sent as nodes are free. There is a limit of 1000 jobs being processed at a time. _eventsPerJob_ is the number of events to simulate per job. _doSKDETSim_, _doTransform_ and _doBatch_ are meant to go together, running them individually has not been tested.
+
+This set of options calls (currently) line 220 in _t2k\_ml\_runner.py_, which uses the SKDETSim\_options class in the _classes_ sub-directory. This creates a job array following the _skdetsim\_job.sh_ in the _job\_scripts_ sub-directory.
+
+There is similar code that uses _doWCSim_ instead of _doSKDETSim_ but hasn't been updated in a long time. 
+
+You can add the _--decayElectron_ flag to only keep decay electrons using a simple algorithm. This will save the entire time after trigger (rather than 1 microsecond), then only keep event if there is a timing peak after the 2 microsecond time stamp in time.
+
 
 #### Combine h5py files
 
@@ -74,7 +95,7 @@ You can use this to combine a directory of hypy (.hy) files to one large h5py fi
 --doCombination
 --input_combination_path=[...]
 --output_combination_path=[...]
-```
+
 
 Where the input path is a path to a directory where the .hy files to be merged are, and output path is where the combination output file should be saved to. In _t2k\_ml\_runner.py_, in the line for doing combination, the third options is a common string it will look for in all files to combine. In practice this will usually be 'digi'.
 

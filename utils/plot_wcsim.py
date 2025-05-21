@@ -95,14 +95,16 @@ def convert_label(label):
         return 'Electron'
     if label == 2:
         return 'Pi+'
+    if label == -1:
+        return 'Stopping Muons'
     else:
         return label
 
 def get_cherenkov_threshold(label):
-    threshold_dict = {0: 160., 1:0.8, 2:211.715}
+    threshold_dict = {0: 160., 1:0.8, 2:211.715, -1:0}
     return threshold_dict[label]
 
-def plot_wcsim(input_path, output_path, wcsim_options, index_file_path=None, text_file=False, moreVariables = False):
+def plot_wcsim(input_path, output_path, wcsim_options, index_file_path=None, text_file=False, moreVariables = False, include_truth=False, skip_pmt_vars=False):
     """Plots PMT and event variables
 
     Args:
@@ -127,6 +129,8 @@ def plot_wcsim(input_path, output_path, wcsim_options, index_file_path=None, tex
     mean_charge = []
     total_charge = []
     mean_time = []
+    length_time = []
+    charge_rate = []
     mean_x = []
     mean_y = []
     mean_z = []
@@ -202,45 +206,94 @@ def plot_wcsim(input_path, output_path, wcsim_options, index_file_path=None, tex
 
         with h5py.File(file,mode='r') as h5fw:
             file_labels = np.unique(np.ravel(h5fw['labels']))
+            print(f"File Labels: {np.unique(np.ravel(h5fw['labels']), return_counts=True)}")
             if len(file_paths) == 1 and len(file_labels) > 1:
                 print(f'Dealing with one file')
                 for label in file_labels:
                     print(label)
-                    fill_vars(h5fw, wcsim_options, moreVariables, geofile, file_paths, mean_charge, total_charge, mean_time, mean_x, mean_y, mean_z, weighted_mean_x, weighted_mean_y, weighted_mean_z, std_x, std_y, std_z, num_pmt, wall, towall, decayE_exists, decayE_energy, decayE_time, direction_x, direction_y, direction_z, position_x, position_y, position_z, all_charge, all_time, primary_charged_range, truth_energy, truth_energy_electron, truth_energy_positron, epos_energy_difference, epos_energy_sum, truth_visible_energy, truth_veto, truth_labels, eposTotalEDiff, path, options_exists, legend_label, indices_to_use, label=label)
+                    if label == -1:
+                        continue
+                    fill_vars(h5fw, wcsim_options, moreVariables, geofile, file_paths, mean_charge, total_charge, mean_time, length_time, charge_rate, mean_x, mean_y, mean_z, weighted_mean_x, weighted_mean_y, weighted_mean_z, std_x, std_y, std_z, num_pmt, wall, towall, decayE_exists, decayE_energy, decayE_time, direction_x, direction_y, direction_z, position_x, position_y, position_z, all_charge, all_time, primary_charged_range, truth_energy, truth_energy_electron, truth_energy_positron, epos_energy_difference, epos_energy_sum, truth_visible_energy, truth_veto, truth_labels, eposTotalEDiff, path, options_exists, legend_label, indices_to_use, file, include_truth, skip_pmt_vars, label=label)
                     gc.collect()
             else:
-                fill_vars(h5fw, wcsim_options, moreVariables, geofile, file_paths, mean_charge, total_charge, mean_time, mean_x, mean_y, mean_z, weighted_mean_x, weighted_mean_y, weighted_mean_z, std_x, std_y, std_z, num_pmt, wall, towall, decayE_exists, decayE_energy, decayE_time, direction_x, direction_y, direction_z, position_x, position_y, position_z, all_charge, all_time, primary_charged_range, truth_energy, truth_energy_electron, truth_energy_positron, epos_energy_difference, epos_energy_sum, truth_visible_energy, truth_veto, truth_labels, eposTotalEDiff, path, options_exists, legend_label, indices_to_use, label=None)
+                fill_vars(h5fw, wcsim_options, moreVariables, geofile, file_paths, mean_charge, total_charge, mean_time, length_time, charge_rate, mean_x, mean_y, mean_z, weighted_mean_x, weighted_mean_y, weighted_mean_z, std_x, std_y, std_z, num_pmt, wall, towall, decayE_exists, decayE_energy, decayE_time, direction_x, direction_y, direction_z, position_x, position_y, position_z, all_charge, all_time, primary_charged_range, truth_energy, truth_energy_electron, truth_energy_positron, epos_energy_difference, epos_energy_sum, truth_visible_energy, truth_veto, truth_labels, eposTotalEDiff, path, options_exists, legend_label, indices_to_use, file, include_truth, skip_pmt_vars, label=None)
                 gc.collect()
 
 
     #Plot all
     yname="Num. Events"
-    print(f"Num PMT: {len(num_pmt)}, {num_pmt}")
-    print(f"VE: {len(truth_visible_energy)}, {truth_visible_energy}")
-    generic_2D_plot(num_pmt[0],truth_visible_energy[0],[0,4000], 100, "Num. PMTs", [50,1000], 50, "Truth Visible Energy [MeV]", legend_label, output_path, "numPMT_ve")
-    generic_2D_plot(num_pmt[0],truth_visible_energy[0],[0,300], 50, "Num. PMTs", [0,50], 50, "Truth Visible Energy [MeV]", legend_label, output_path, "numPMT_ve_zoom")
-    generic_2D_plot(num_pmt[0],towall[0],[0,4000], 100, "Num. PMTs", [0,2000], 100, "Towall [cm]", legend_label, output_path, "numPMT_towall")
-    generic_2D_plot(num_pmt[0],towall[0],[0,300], 50, "Num. PMTs", [0,200], 50, "Towall [cm]", legend_label, output_path, "numPMT_towall_zoom")
-    generic_histogram(wall, 'Wall [cm]', output_path, 'wall', range=[0,2000], y_name = yname, label=legend_label, bins=20, doNorm=True)
-    generic_histogram(towall, 'Towall [cm]', output_path, 'towall', range = [0,5000], y_name = yname, label=legend_label, bins=20, doNorm=True)
-    generic_histogram(truth_energy, 'Truth Energy [MeV]', output_path, 'truth_energy', range=[50,1000], y_name = yname, label=legend_label, bins=20, doNorm=True)
-    generic_histogram(truth_visible_energy, 'Truth Visible Energy [MeV]', output_path, 'truth_visible_energy', range=[0,1200], y_name = yname, label=legend_label, bins=50, doNorm=True)
-    generic_histogram(truth_veto, 'Truth veto', output_path, 'truth_veto', y_name = yname, label=legend_label, bins=20, doNorm=True)
-    generic_histogram(truth_labels, 'Truth label', output_path, 'truth_label', y_name = yname, label=legend_label, bins=20, doNorm=True)
+    if include_truth:
+        print(f"Num PMT: {len(num_pmt)}, {num_pmt}")
+        print(f"VE: {len(truth_visible_energy)}, {truth_visible_energy}")
+        generic_histogram(wall, 'Wall [cm]', output_path, 'wall', range=[0,2000], y_name = yname, label=legend_label, bins=80, doNorm=True, y_log=True)
+        generic_histogram(towall, 'Towall [cm]', output_path, 'towall', range = [0,6000], y_name = yname, label=legend_label, bins=60, doNorm=True, y_log=True)
+        generic_histogram(truth_energy, 'Truth Energy [MeV]', output_path, 'truth_energy', range=[50,2000], y_name = yname, label=legend_label, bins=40, doNorm=True)
+        generic_histogram(truth_visible_energy, 'Truth Visible Energy [MeV]', output_path, 'truth_visible_energy', range=[0,2100], y_name = yname, label=legend_label, bins=42, doNorm=True)
+        #generic_histogram(truth_veto, 'Truth veto', output_path, 'truth_veto', y_name = yname, label=legend_label, bins=20, doNorm=True)
+        generic_histogram(truth_labels, 'Truth label', output_path, 'truth_label', y_name = yname, label=legend_label, bins=20, doNorm=True)
 
-    generic_histogram(direction_x, 'Truth Direction X', output_path, 'truth_direction_x', y_name = yname, label=legend_label, bins=20, doNorm=True)
-    generic_histogram(direction_y, 'Truth Direction Y', output_path, 'truth_direction_y', y_name = yname, label=legend_label, bins=20, doNorm=True)
-    generic_histogram(direction_z, 'Truth Direction Z', output_path, 'truth_direction_z', y_name = yname, label=legend_label, bins=20, doNorm=True)
+        generic_histogram(direction_x, 'Truth Direction X', output_path, 'truth_direction_x', y_name = yname, label=legend_label, bins=20, doNorm=True)
+        generic_histogram(direction_y, 'Truth Direction Y', output_path, 'truth_direction_y', y_name = yname, label=legend_label, bins=20, doNorm=True)
+        generic_histogram(direction_z, 'Truth Direction Z', output_path, 'truth_direction_z', y_name = yname, label=legend_label, bins=20, doNorm=True)
 
-    generic_histogram(position_x, 'Truth position X [cm]', output_path, 'truth_position_x', y_name = yname, label=legend_label, bins=20, doNorm=True)
-    generic_histogram(position_y, 'Truth position Y [cm]', output_path, 'truth_position_y', y_name = yname, label=legend_label, bins=20, doNorm=True)
-    generic_histogram(position_z, 'Truth position Z [cm]', output_path, 'truth_position_z', y_name = yname, label=legend_label, bins=20, doNorm=True)
 
-    generic_histogram(all_charge, 'PMT Charge', output_path, 'all_pmt_charge', y_name = yname, range=[0,30], label=legend_label, bins=300, doNorm=True)
-    generic_histogram(all_time, 'PMT Time [ns]', output_path, 'all_pmt_time', y_name = yname, range=[0,2000], label=legend_label, bins=200, doNorm=True)
 
-    generic_histogram(num_pmt, 'Number of PMTs', output_path, 'num_pmt', y_name = yname, label=legend_label, range=[0,4000], bins=20, doNorm=True)
-    generic_histogram(total_charge, 'Total Charge', output_path, 'total_charge', y_name = yname, label=legend_label, range=[0,20000], bins=40, doNorm=True)
+        generic_histogram(position_x, 'Truth position X [cm]', output_path, 'truth_position_x', y_name = yname, label=legend_label, bins=20, doNorm=True)
+        generic_histogram(position_y, 'Truth position Y [cm]', output_path, 'truth_position_y', y_name = yname, label=legend_label, bins=20, doNorm=True)
+        generic_histogram(position_z, 'Truth position Z [cm]', output_path, 'truth_position_z', y_name = yname, label=legend_label, bins=20, doNorm=True)
+        print(f"Highest z: {np.amax(position_z)}, lowest z: {np.amin(position_z)}")
+
+    generic_histogram(num_pmt, 'Number of PMTs', output_path, 'num_pmt', y_name = yname, label=legend_label, range=[0,11000], bins=110, doNorm=True, y_log=True)
+    generic_histogram(total_charge, 'Total Charge', output_path, 'total_charge', y_name = yname, label=legend_label, range=[0,12000], bins=120, doNorm=True, y_log=True)
+    generic_histogram(mean_charge, 'Mean Charge', output_path, 'mean_charge', y_name = yname, label=legend_label, range=[0,25], bins=100, doNorm=True, y_log=True)
+    generic_histogram(mean_time, 'Mean Time', output_path, 'mean_time', y_name = yname, label=legend_label, range=[900,5000], bins=80, doNorm=True, y_log=True)
+    generic_histogram(length_time, 'Cluster Length [ns]', output_path, 'length_time', y_name = yname, label=legend_label, range=[1000,2000], bins=100, doNorm=True, y_log=False)
+    generic_histogram(charge_rate, 'Charge Rate [pe/ns]', output_path, 'chargeOverLength', y_name = yname, label=legend_label, range=[0,100], bins=50, doNorm=True, y_log=False)
+
+
+    generic_histogram(all_charge, 'PMT Charge', output_path, 'all_pmt_charge', y_name = yname, range=[0.01,30], label=legend_label, bins=100, doNorm=True)
+    generic_histogram(all_time, 'PMT Time [ns]', output_path, 'all_pmt_time', y_name = yname, range=[400,2000], label=legend_label, bins=100, doNorm=True, y_log=True)
+
+    if include_truth:
+        print(towall[0])
+        #generic_2D_plot(truth_visible_energy,total_charge,[0,1000], 100, "Truth Visible Energy [MeV]", [0,10000], 100, "Total Charge", legend_label, output_path, "ve_totalCharge")
+        #generic_2D_plot(np.array(truth_visible_energy[0])[np.array(towall[0]) > 3000],np.array(total_charge[0])[np.array(towall[0])>3000],[0,1000], 100, "Truth Visible Energy [MeV]", [0,10000], 100, "Total Charge", legend_label, output_path, "ve_totalCharge_hiTowall")
+        #generic_2D_plot(np.array(truth_visible_energy[0])[towall[0] < 3000],np.array(total_charge[0])[towall[0]<3000],[0,1000], 100, "Truth Visible Energy [MeV]", [0,10000], 100, "Total Charge", legend_label, output_path, "ve_totalCharge_lowTowall")
+        generic_2D_plot(num_pmt[0],truth_visible_energy[0],[0,6000], 100, "Num. PMTs", [50,1000], 50, "Truth Visible Energy [MeV]", legend_label, output_path, "numPMT_ve_new")
+        generic_2D_plot(num_pmt[1],truth_visible_energy[1],[0,6000], 100, "Num. PMTs", [50,1000], 50, "Truth Visible Energy [MeV]", legend_label, output_path, "numPMT_ve_old")
+        generic_2D_plot(num_pmt[0],truth_visible_energy[0],[0,300], 50, "Num. PMTs", [0,50], 50, "Truth Visible Energy [MeV]", legend_label, output_path, "numPMT_ve_zoom_new")
+        generic_2D_plot(num_pmt[1],truth_visible_energy[1],[0,300], 50, "Num. PMTs", [0,50], 50, "Truth Visible Energy [MeV]", legend_label, output_path, "numPMT_ve_zoom_old")
+        generic_2D_plot(num_pmt[0],towall[0],[0,6000], 100, "Num. PMTs", [0,4000], 100, "Towall [cm]", legend_label, output_path, "numPMT_towall_new")
+        generic_2D_plot(num_pmt[1],towall[1],[0,6000], 100, "Num. PMTs", [0,4000], 100, "Towall [cm]", legend_label, output_path, "numPMT_towall_old")
+        generic_2D_plot(num_pmt[0],towall[0],[0,300], 50, "Num. PMTs", [0,200], 50, "Towall [cm]", legend_label, output_path, "numPMT_towall_zoom_new")
+        generic_2D_plot(num_pmt[1],towall[1],[0,300], 50, "Num. PMTs", [0,200], 50, "Towall [cm]", legend_label, output_path, "numPMT_towall_zoom_old")
+        generic_2D_plot(towall[0],truth_visible_energy[0],[0,6000], 100, "Towall", [50,1000], 50, "Truth Visible Energy [MeV]", legend_label, output_path, "towall_ve_new")
+        generic_2D_plot(towall[1],truth_visible_energy[1],[0,6000], 100, "Towall", [50,1000], 50, "Truth Visible Energy [MeV]", legend_label, output_path, "towall_ve_old")
+        generic_2D_plot(towall[0],truth_visible_energy[0],[0,300], 50, "Towall", [0,50], 50, "Truth Visible Energy [MeV]", legend_label, output_path, "towall_ve_zoom_new")
+        generic_2D_plot(towall[1],truth_visible_energy[1],[0,300], 50, "Towall", [0,50], 50, "Truth Visible Energy [MeV]", legend_label, output_path, "towall_ve_zoom_old")
+
+
+    generic_2D_plot(num_pmt[0],total_charge[0],[0,6000], 100, "Num. PMTs", [0,15000], 100, "totalCharge [cm]", legend_label, output_path, "numPMT_totalCharge_new")
+    generic_2D_plot(num_pmt[1],total_charge[1],[0,6000], 100, "Num. PMTs", [0,15000], 100, "totalCharge [cm]", legend_label, output_path, "numPMT_totalCharge_old")
+    generic_2D_plot(num_pmt[0],total_charge[0],[0,300], 50, "Num. PMTs", [0,2000], 50, "totalCharge [cm]", legend_label, output_path, "numPMT_totalCharge_zoom_new")
+    generic_2D_plot(num_pmt[1],total_charge[1],[0,300], 50, "Num. PMTs", [0,2000], 50, "totalCharge [cm]", legend_label, output_path, "numPMT_totalCharge_zoom_old")
+
+    generic_2D_plot(num_pmt[0],mean_charge[0],[0,6000], 100, "Num. PMTs", [0,15], 100, "meanCharge ", legend_label, output_path, "numPMT_meanCharge_new")
+    generic_2D_plot(num_pmt[1],mean_charge[1],[0,6000], 100, "Num. PMTs", [0,15], 100, "meanCharge ", legend_label, output_path, "numPMT_meanCharge_old")
+    generic_2D_plot(num_pmt[0],mean_charge[0],[0,300], 50, "Num. PMTs", [0,4], 50, "meanCharge ", legend_label, output_path, "numPMT_meanCharge_zoom_new")
+    generic_2D_plot(num_pmt[1],mean_charge[1],[0,300], 50, "Num. PMTs", [0,4], 50, "meanCharge ", legend_label, output_path, "numPMT_meanCharge_zoom_old")
+
+    generic_2D_plot(num_pmt[0],mean_time[0],[0,6000], 100, "Num. PMTs", [900,1500], 100, "meantime [ns]", legend_label, output_path, "numPMT_meantime_new")
+    generic_2D_plot(num_pmt[1],mean_time[1],[0,6000], 100, "Num. PMTs", [900,1500], 100, "meantime [ns]", legend_label, output_path, "numPMT_meantime_old")
+    generic_2D_plot(num_pmt[0],mean_time[0],[0,300], 50, "Num. PMTs", [1050,1150], 50, "meantime [ns]", legend_label, output_path, "numPMT_meantime_zoom_new")
+    generic_2D_plot(num_pmt[1],mean_time[1],[0,300], 50, "Num. PMTs", [1050,1150], 50, "meantime [ns]", legend_label, output_path, "numPMT_meantime_zoom_old")
+
+    generic_2D_plot(mean_time[0],mean_charge[0],[900,1500], 100, "mean Time", [0,15], 100, "meanCharge ", legend_label, output_path, "meanTime_meanCharge_new")
+    generic_2D_plot(mean_time[1],mean_charge[1],[900,1500], 100, "mean Time", [0,15], 100, "meanCharge ", legend_label, output_path, "meanTime_meanCharge_old")
+    generic_2D_plot(mean_time[0],mean_charge[0],[1050,1150], 50, "mean Time", [0,4], 50, "meanCharge ", legend_label, output_path, "meanTime_meanCharge_zoom_new")
+    generic_2D_plot(mean_time[1],mean_charge[1],[1050,1150], 50, "mean Time", [0,4], 50, "meanCharge ", legend_label, output_path, "meanTime_meanCharge_zoom_old")
+
+    generic_2D_plot(truth_visible_energy[0],total_charge[0],[0,1200], 120, "Truth Visible Energy [MeV]", [0,120000], 120, "Total Charge", legend_label, output_path, "ve_totalCharge_MC")
 
 
 
@@ -287,11 +340,13 @@ def plot_wcsim(input_path, output_path, wcsim_options, index_file_path=None, tex
     generic_histogram(std_y, 'std dev PMT Y [cm]', output_path, 'std_y', y_name = yname, label=label, bins=20)
     generic_histogram(std_z, 'std dev PMT Z [cm]', output_path, 'std_z', y_name = yname, label=label, bins=20)
 
-def fill_vars(h5fw, wcsim_options, moreVariables, geofile, file_paths, mean_charge, total_charge, mean_time, mean_x, mean_y, mean_z, weighted_mean_x, weighted_mean_y, weighted_mean_z, std_x, std_y, std_z, num_pmt, wall, towall, decayE_exists, decayE_energy, decayE_time, direction_x, direction_y, direction_z, position_x, position_y, position_z, all_charge, all_time, primary_charged_range, truth_energy, truth_energy_electron, truth_energy_positron, epos_energy_difference, epos_energy_sum, truth_visible_energy, truth_veto, truth_labels, eposTotalEDiff, path, options_exists, legend_label, indices_to_use, label=None):
+def fill_vars(h5fw, wcsim_options, moreVariables, geofile, file_paths, mean_charge, total_charge, mean_time, length_time, charge_rate, mean_x, mean_y, mean_z, weighted_mean_x, weighted_mean_y, weighted_mean_z, std_x, std_y, std_z, num_pmt, wall, towall, decayE_exists, decayE_energy, decayE_time, direction_x, direction_y, direction_z, position_x, position_y, position_z, all_charge, all_time, primary_charged_range, truth_energy, truth_energy_electron, truth_energy_positron, epos_energy_difference, epos_energy_sum, truth_visible_energy, truth_veto, truth_labels, eposTotalEDiff, path, options_exists, legend_label, indices_to_use, file, include_truth, skip_pmt_vars, label=None):
     #Temporary list of variables for each event
     temp_mean_charge = []
     temp_total_charge = []
     temp_mean_time = []
+    temp_length_time = []
+    temp_charge_rate = []
     temp_mean_x = []
     temp_mean_y = []
     temp_mean_z = []
@@ -333,19 +388,72 @@ def fill_vars(h5fw, wcsim_options, moreVariables, geofile, file_paths, mean_char
 
     temp_legend_label = []
 
-    keep_events = np.ravel(h5fw['keep_event']) 
+    have_keep_event=True
+    try:
+        keep_events = np.ravel(h5fw['keep_event']) 
+    except KeyError:
+        print("No keep event")
+        have_keep_event=False
     #keep_events = np.ravel(h5fw['labels'])==2 
     temp_truth_labels = np.ravel(h5fw['labels'])
+    temp_truth_energy = np.ravel(h5fw['energies'])
+    cheThr = list(map(get_cherenkov_threshold, np.ravel(h5fw['labels'])))
+    temp_truth_visible_energy = temp_truth_energy - cheThr
+
+    #TODO:Check that this works
+    temp_num_pmt = np.subtract(np.ravel(h5fw['event_hits_index']), np.insert(np.delete(np.ravel(h5fw['event_hits_index']), -1),0,0))
+    temp_num_pmt = np.roll(temp_num_pmt,shift=-1)
+    temp_num_pmt = temp_num_pmt
+    if not skip_pmt_vars:
+        temp_mean_charge = np.array([part.mean() for part in np.split(h5fw['hit_charge'], np.cumsum(temp_num_pmt))[:-1]])
+        temp_total_time = np.array([part.sum() for part in np.split(h5fw['hit_time'], np.cumsum(temp_num_pmt))[:-1]])
+        temp_length_time = np.array([np.amax(part, initial=0) for part in np.split(h5fw['hit_time'], np.cumsum(temp_num_pmt))[:-1]]) - np.array([np.min(part, initial=0) for part in np.split(h5fw['hit_time'], np.cumsum(temp_num_pmt))[:-1]])
+        temp_mean_time = np.array([part.mean() for part in np.split(h5fw['hit_time'], np.cumsum(temp_num_pmt))[:-1]])
+        temp_total_charge = np.array([part.sum() for part in np.split(h5fw['hit_charge'], np.cumsum(temp_num_pmt))[:-1]])
+        temp_charge_rate = np.divide(temp_total_charge,temp_length_time)
+        temp_num_pmt = temp_num_pmt
+
+
+    print("Warning, setting max visible energy to 2000 MeV")
+    if have_keep_event:
+        keep_events = np.logical_and(keep_events,temp_truth_visible_energy < 10000)
+    else:
+        keep_events = np.logical_and(temp_total_charge > 0,temp_total_charge < 1000000)
+    
+    if not skip_pmt_vars:
+        temp_mean_charge = temp_mean_charge[keep_events]
+        temp_mean_time = temp_mean_time[keep_events]
+        temp_total_charge = temp_total_charge[keep_events]
+        temp_num_pmt = temp_num_pmt[keep_events]
+    temp_truth_visible_energy[keep_events]
+
 
 
     print("Starting keep events")
-    if indices_to_use is not None:
+    if have_keep_event == False:
+        if "stopmu" in file:
+            keep_events = np.ones(len(temp_truth_visible_energy)).astype(bool)
+            print(f"No keep events, stopping muons in file name, so keeping all events")
+        else:
+            keep_events = np.logical_and(np.ravel(h5fw['labels'])==0,temp_truth_visible_energy < 10000)
+        if "Electron" in legend_label or "jan" in file:
+            temp_label = "Electron - Old Dataset"
+        else:
+            temp_label=convert_label(label)
+        print(f'temp label:{temp_label}, label:{label}')
+        print("1")
+    elif indices_to_use is not None:
         keep_events = np.zeros(len(keep_events), dtype=bool)
         keep_events[indices_to_use] = True
+        print("2")
     if label is not None:
-        keep_events = np.logical_and(keep_events,temp_truth_labels==label)
-        temp_label=convert_label(label)
+        keep_events = np.logical_and(np.logical_and(keep_events,temp_truth_labels==label), temp_truth_visible_energy < 10000)
+        if "Electron" in legend_label or "jan" in file:
+            temp_label = "Electron - Old Dataset"
+        else:
+            temp_label=convert_label(label)
         print(f'temp label:{temp_label}')
+        print("3")
     #Get label from options, if not, take median of labels in file
     elif options_exists:
         temp_label = wcsim_options.particle[0]
@@ -354,16 +462,73 @@ def fill_vars(h5fw, wcsim_options, moreVariables, geofile, file_paths, mean_char
         if "m" in temp_label:
             temp_label = "Muons"
     else:
-        temp_label = convert_label(np.median(np.ravel(h5fw['labels'])))
+        if "Electron" in legend_label or "jan" in file:
+            temp_label = "Electron - Old Dataset"
+        else:
+            temp_label = convert_label(np.median(np.ravel(h5fw['labels'])))
+        if "MC" in file:
+            temp_label="Stopping Muons - MC"
+        elif "data" in file:
+            temp_label="Stopping Muons - Data"
+        print(f'temp label:{temp_label}, label:{label}')
+        print("4")
+
 
     temp_truth_labels = temp_truth_labels[keep_events]
+    print(f"Labels: {np.unique(temp_truth_labels, return_counts=True)}")
 
-    #TODO:Check that this works
-    temp_num_pmt = np.subtract(np.ravel(h5fw['event_hits_index']), np.insert(np.delete(np.ravel(h5fw['event_hits_index']), -1),0,0))
-    temp_num_pmt = np.roll(temp_num_pmt,shift=-1)
-    temp_num_pmt = temp_num_pmt[keep_events]
-    temp_total_charge = np.array([part.sum() for part in np.split(h5fw['hit_charge'], np.cumsum(temp_num_pmt))[:-1]])
-        
+    if not skip_pmt_vars:
+        print("Starting charge")
+        temp_all_charge = np.ravel(h5fw['hit_charge'])
+        print("Starting time")
+        temp_all_time = np.ravel(h5fw['hit_time'])
+        print(f"TIME ALL: {temp_all_time}")
+
+    if include_truth:
+        temp_direction_x = (np.ravel(h5fw['directions'][:,:,0])[keep_events])
+        print(f'NaNs in direction x: {np.unique(np.isnan(h5fw["directions"][:,:,0]),return_counts=True)}, direction y: {np.unique(np.isnan(h5fw["directions"][:,:,1]),return_counts=True)}, direction z: {np.unique(np.isnan(h5fw["directions"][:,:,2]),return_counts=True)}')
+        temp_direction_y = (np.ravel(h5fw['directions'][:,:,1])[keep_events])
+        temp_direction_z = (np.ravel(h5fw['directions'][:,:,2])[keep_events])
+        temp_position_x = (np.ravel(h5fw['positions'][:,:,0])[keep_events])
+        uniques_x, index_x, reverse_x, counts_x = np.unique(temp_position_x, return_index=True, return_inverse=True, return_counts=True)
+        rev_unique_x, rev_counts_x = np.unique(reverse_x, return_counts=True)
+        rev_unique_x = rev_unique_x[rev_counts_x > 1]
+        print(f"Uniques position x :{uniques_x[counts_x > 1]}, counts: {counts_x[counts_x > 1]}, mean counts: {np.mean(counts_x[counts_x > 1])}, number: {len(counts_x[counts_x>1])}, mid value: {uniques_x[int(len(counts_x[counts_x > 1])/2)]}, index x: {index_x}")
+        temp_position_y = (np.ravel(h5fw['positions'][:,:,1])[keep_events])
+        temp_position_z = (np.ravel(h5fw['positions'][:,:,2])[keep_events])
+        uniques_z, index_z, reverse_z, counts_z = np.unique(temp_position_z, return_index=True, return_inverse=True, return_counts=True)
+        rev_unique_z, rev_counts_z = np.unique(reverse_z, return_counts=True)
+        rev_unique_z = rev_unique_z[rev_counts_z > 1]
+        print(f"Uniques position z :{uniques_z[counts_z > 1]}, counts: {counts_z[counts_z > 1]}, mean counts: {np.mean(counts_z[counts_z > 1])}, number: {len(counts_z[counts_z>1])}, mid value: {uniques_z[int(len(counts_z[counts_z > 1])/2)]}, index: {index_z}")
+
+        uniques_y, index_y, reverse_y, counts_y = np.unique(temp_position_y, return_index=True, return_inverse=True, return_counts=True)
+        rev_unique_y, rev_counts_y = np.unique(reverse_y, return_counts=True)
+        rev_unique_y = rev_unique_y[rev_counts_y > 1]
+
+
+        uniques_ve, index_ve, reverse_ve, counts_ve = np.unique(temp_truth_visible_energy, return_index=True, return_inverse=True, return_counts=True)
+        rev_unique_ve, rev_counts_ve = np.unique(reverse_ve, return_counts=True)
+        rev_unique_ve = rev_unique_ve[rev_counts_ve > 1]
+
+        uniques_dirx, index_dirx, reverse_dirx, counts_dirx = np.unique(temp_direction_x, return_index=True, return_inverse=True, return_counts=True)
+        rev_unique_dirx, rev_counts_dirx = np.unique(reverse_dirx, return_counts=True)
+        rev_unique_dirx = rev_unique_dirx[rev_counts_dirx > 1]
+
+        uniques_diry, index_diry, reverse_diry, counts_diry = np.unique(temp_direction_y, return_index=True, return_inverse=True, return_counts=True)
+        rev_unique_diry, rev_counts_diry = np.unique(reverse_diry, return_counts=True)
+        rev_unique_diry = rev_unique_diry[rev_counts_diry > 1]
+
+        uniques_dirz, index_dirz, reverse_dirz, counts_dirz = np.unique(temp_direction_z, return_index=True, return_inverse=True, return_counts=True)
+        rev_unique_dirz, rev_counts_dirz = np.unique(reverse_dirz, return_counts=True)
+        rev_unique_dirz = rev_unique_dirz[rev_counts_dirz > 1]
+
+        print(f"Unique x: {(temp_position_x[index_x])}, min: {np.argmin((temp_position_x[index_x]))}, max: {np.argmax((temp_position_x[index_x]))}")
+
+
+
+        print(f"Intersect of index_x and index_z: {np.intersect1d(np.intersect1d(rev_unique_x, rev_unique_z), rev_unique_y)}, len x: {len(rev_unique_x)}, len x & y: {len(np.intersect1d(rev_unique_x, rev_unique_y))}, len x,y,z: {len(np.intersect1d(np.intersect1d(rev_unique_x, rev_unique_z), rev_unique_y))}, len x,y,z, ve: {len(np.intersect1d(np.intersect1d(np.intersect1d(rev_unique_x, rev_unique_z), rev_unique_y), rev_unique_ve))},  len x,y,z,ve, dir x: {len(np.intersect1d(np.intersect1d(np.intersect1d(np.intersect1d(rev_unique_x, rev_unique_z), rev_unique_y), rev_unique_ve), rev_unique_dirx))},  len x,y,z,ve, dir x, dir y: {len(np.intersect1d(np.intersect1d(np.intersect1d(np.intersect1d(np.intersect1d(rev_unique_x, rev_unique_z), rev_unique_y), rev_unique_ve), rev_unique_dirx), rev_unique_diry))},  len x,y,z,ve, dir x, dir y, dir z: {len(np.intersect1d(np.intersect1d(np.intersect1d(np.intersect1d(np.intersect1d(np.intersect1d(rev_unique_x, rev_unique_z), rev_unique_y), rev_unique_ve), rev_unique_dirx), rev_unique_diry), rev_unique_dirz))}")
+
+            
     '''
         if "Electron" in temp_label:
             #print(list(temp_event_ids[(temp_truth_visible_energy > 758.214) & (temp_truth_visible_energy < 758.216)]))
@@ -396,27 +561,11 @@ def fill_vars(h5fw, wcsim_options, moreVariables, geofile, file_paths, mean_char
 
 
     #temp_primary_charged_range = np.ravel(h5fw['primary_charged_range'])
-    temp_truth_energy = np.ravel(h5fw['energies'])[keep_events]
     #temp_truth_energy_positron = np.ravel(h5fw['energies_positron'])
     #temp_truth_energy_electron = np.ravel(h5fw['energies_electron'])
     #temp_epos_energy_difference = np.divide(np.subtract(temp_truth_energy_electron, temp_truth_energy_positron), temp_truth_energy)
     #temp_epos_energy_sum = np.add(temp_truth_energy_electron, temp_truth_energy_positron)
     #temp_eposTotalEDiff = np.divide(np.add(temp_truth_energy_electron, temp_truth_energy_positron), temp_truth_energy)
-    print("Starting wall vars")
-    #wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions'])[keep_events], np.array(h5fw['directions'])[keep_events]))
-    #wall_vars = list(zip(*wall_vars))
-    wall_vars = [np.zeros(temp_truth_energy.shape[0]),np.zeros(temp_truth_energy.shape[0])]
-    print("Finished wall vars")
-    temp_wall = wall_vars[0]
-    temp_towall = wall_vars[1]
-    temp_truth_veto = (np.ravel(h5fw['veto']))
-
-    max = h5fw['event_hits_index'].shape[0]
-
-    cheThr = list(map(get_cherenkov_threshold, np.ravel(h5fw['labels'])[keep_events]))
-    temp_truth_visible_energy = temp_truth_energy - cheThr
-    temp_event_ids = (np.ravel(h5fw['event_ids'])[keep_events])
-    temp_rootfile = (np.ravel(h5fw['root_files'])[keep_events])
 
     '''
         temp_decayE_exists = (np.ravel(h5fw['decay_electron_exists']))
@@ -426,18 +575,23 @@ def fill_vars(h5fw, wcsim_options, moreVariables, geofile, file_paths, mean_char
         '''
 
 
-    temp_direction_x = (np.ravel(h5fw['directions'][:,:,0])[keep_events])
-    temp_direction_y = (np.ravel(h5fw['directions'][:,:,1])[keep_events])
-    temp_direction_z = (np.ravel(h5fw['directions'][:,:,2])[keep_events])
-    temp_position_x = (np.ravel(h5fw['positions'][:,:,0])[keep_events])
-    temp_position_y = (np.ravel(h5fw['positions'][:,:,1])[keep_events])
-    temp_position_z = (np.ravel(h5fw['positions'][:,:,2])[keep_events])
+    if include_truth:
+        print("Starting wall vars")
+        if skip_pmt_vars:
+            wall_vars = list(map(calculate_wcsim_wall_variables,np.array(h5fw['positions'])[keep_events], np.array(h5fw['directions'])[keep_events]))
+            wall_vars = list(zip(*wall_vars))
+            #wall_vars = [np.zeros(temp_truth_energy.shape[0]),np.zeros(temp_truth_energy.shape[0])]
+            print("Finished wall vars")
+            temp_wall = wall_vars[0]
+            temp_towall = np.array(wall_vars[1])
+            temp_truth_veto = (np.ravel(h5fw['veto']))
+
+        max = h5fw['event_hits_index'].shape[0]
+
+    temp_event_ids = (np.ravel(h5fw['event_ids'])[keep_events])
+    temp_rootfile = (np.ravel(h5fw['root_files'])[keep_events])
 
 
-    print("Starting charge")
-    #temp_all_charge = np.ravel(h5fw['hit_charge'])
-    print("Starting time")
-    #temp_all_time = np.ravel(h5fw['hit_time'])
 
 
     #Loop through all events in file
@@ -495,6 +649,8 @@ def fill_vars(h5fw, wcsim_options, moreVariables, geofile, file_paths, mean_char
     wall.append(temp_wall)
     towall.append(temp_towall)
     mean_time.append(temp_mean_time)
+    charge_rate.append(temp_charge_rate)
+    length_time.append(temp_length_time)
     mean_x.append(temp_mean_x)
     mean_y.append(temp_mean_y)
     mean_z.append(temp_mean_z)
